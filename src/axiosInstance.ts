@@ -4,7 +4,7 @@ import Router from 'next/router';
 const axiosInstance: AxiosInstance = axios.create({
   // baseURL: 'https://zuzapp-test-v1-events-app-delta.vercel.app', // replace with your API endpoin
   // baseURL: 'https://www.zuzalu.city',
-  baseURL: 'http://localhost:3001',
+  baseURL: 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -38,12 +38,11 @@ axiosInstance.interceptors.response.use(
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          Router.push('/');
+          Router.push('/login');
           break;
-        // case 403:
-
-        //     alert('Forbidden. You do not have permission.');
-        //     break;
+        case 403:
+          Router.push('/login');
+          break;
         // case 500:
 
         //     alert('Server error. Please try again later.');

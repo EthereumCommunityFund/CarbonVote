@@ -18,9 +18,13 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import axiosInstance from "../src/axiosInstance";
 import { useRouter } from "next/router";
 
+import { SignInMessagePayload } from "@pcd/passport-interface";
+
 import { EdDSATicketPCDPackage } from "@pcd/eddsa-ticket-pcd";
 import { EdDSAPCDPackage } from "@pcd/eddsa-pcd";
 import { openGroupMembershipPopup } from "../src/util";
+import { verifyProof } from "../controllers/auth.controller";
+import { fetchAllPolls } from "../controllers/poll.controller";
 
 type UserPassportContextData = {
   signIn: any;
@@ -37,12 +41,15 @@ export function UserPassportContextProvider({
   children,
 }: UserPassportProviderProps) {
   const router = useRouter();
-
   const [pcdStr] = useZupassPopupMessages();
+  useEffect(() => {
+    if (pcdStr) {
+      let pcd = JSON.parse(pcdStr);
 
-  console.log(pcdStr, "pcd string");
-
-  //zupoll.org?config={"groupId":"1","groupUrl":"https://api.zupass.org/semaphore/1","name":"ZUZALU_PARTICIPANT","passportAppUrl":"https://zupass.org/","passportServerUrl":"https://api.zupass.org/"}
+      let _pcd = JSON.parse(pcd.pcd);
+      let res = verifyProof(_pcd);
+    }
+  }, [pcdStr]);
   const signIn = () => {
     openGroupMembershipPopup(
       "https://zupass.org/",
