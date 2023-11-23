@@ -28,7 +28,7 @@ export const NavigationBar = () => {
       </div>
       {/* Overlay that can close the dashboard menu */}
       <div
-        className={`hidden fixed inset-0 bg-black/10 z-10 ${navBarOpen ? "block" : "hidden"
+        className={`fixed inset-0 bg-black/10 z-10 ${navBarOpen ? "block" : "hidden"
           }`}
         onClick={handleNavBarShow}
       ></div>
