@@ -2,7 +2,7 @@ import { Label } from "@/components/ui/Label";
 import { useUserPassportContext } from "../context/PassportContext";
 import { polls, biggestPolls } from "@/constant/mockPolls";
 import { PollType } from "@/types";
-import { PollComponent } from "@/components/Poll";
+import { PollCardTemplate } from "@/components/templates/PollCard";
 
 export default function Home() {
   const pollList: PollType[] = polls;
@@ -15,7 +15,7 @@ export default function Home() {
         <div className="flex gap-3">
           {
             biggestPollList.map((poll: PollType, index: number) => (
-              <PollComponent
+              <PollCardTemplate
                 key={index}
                 id={poll.id}
                 name={poll.name}
@@ -33,7 +33,7 @@ export default function Home() {
         <div className='flex gap-3'>
           {
             pollList.map((poll: PollType, index: number) => (
-              <PollComponent
+              <PollCardTemplate
                 key={index}
                 id={poll.id}
                 name={poll.name}
