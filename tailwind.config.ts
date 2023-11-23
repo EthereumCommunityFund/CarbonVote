@@ -64,6 +64,8 @@ module.exports = {
         borderPrimary: "#393939",
         itemBgPrimary: "#2D2D2D",
         itemBgHover: "#393C3C",
+        inputField: "#242727",
+        btnStrongerGreen: "#79916E",
       },
       borderRadius: {
         lg: "var(--radius)",

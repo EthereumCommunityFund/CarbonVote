@@ -15,7 +15,9 @@
     "@pcd/semaphore-group-pcd": "^0.8.0",
     "@pcd/semaphore-identity-pcd": "^0.8.0",
     "@pcd/util": "^0.2.0",
+    "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-switch": "^1.0.3",
     "@semaphore-protocol/group": "^3.11.0",
     "@semaphore-protocol/identity": "^3.11.0",
     "@supabase/auth-helpers-react": "^0.4.2",
@@ -33,6 +35,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.12.0",
+    "react-quill": "^2.0.0",
     "styled-components": "^5.3.6",
     "tailwind-merge": "^2.0.0"
   },

@@ -1,5 +1,5 @@
 import { useUserPassportContext } from "@/context/PassportContext"
-import Button from "./ui/Button"
+import Button from "./ui/buttons/Button"
 
 export const HeaderComponent = () => {
   const { signIn } = useUserPassportContext();
