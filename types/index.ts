@@ -5,4 +5,6 @@ export type PollType = {
   startDate: Date | string,
   endDate: Date | string,
   isLive: boolean,
+  title: string,
+  description: string,
 }

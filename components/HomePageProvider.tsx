@@ -1,5 +1,5 @@
 import { HeaderComponent } from "./Header";
-import { NavigationBar } from "./navigation/NavigationBar";
+import { NavigationBar } from "./NavigationBar";
 export const HomePageProvider = ({ children, props }: { children: React.ReactNode; props: any }) => {
   return (
     <div className='bg-pagePrimary relative'>
