@@ -1,14 +1,22 @@
-import { PollType } from "@/types";
-import { Label } from "./ui/Label";
+import { Label } from "../ui/Label";
 import { useRouter } from "next/router";
 
-export const PollComponent = ({
+interface IPollCard {
+  id: string,
+  name: string,
+  startDate: string | Date,
+  endDate: string | Date,
+  isLive: boolean,
+  creator: string,
+}
+
+export const PollCardTemplate = ({
   id,
   name,
   startDate,
   endDate,
   isLive,
-}: PollType) => {
+}: IPollCard) => {
   const router = useRouter();
   const handleClickItem = () => {
     router.push({
