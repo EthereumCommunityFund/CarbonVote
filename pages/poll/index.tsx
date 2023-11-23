@@ -1,5 +1,5 @@
 import { StopCircleIcon, ThumbDownIcon, ThumbUpIcon } from "@/components/icons";
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/buttons/Button";
 import HtmlString from "@/components/ui/Html";
 import { Label } from "@/components/ui/Label";
 import { PollType } from "@/types";
