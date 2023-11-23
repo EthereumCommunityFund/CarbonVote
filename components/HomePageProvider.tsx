@@ -5,7 +5,7 @@ export const HomePageProvider = ({ children, props }: { children: React.ReactNod
     <div className='bg-pagePrimary relative'>
       <NavigationBar />
       <HeaderComponent />
-      <div className="lg:mt-16 -mt-24 relative lg:left-[260px] lg:w-[calc(100%-260px)]">
+      <div className="relative lg:left-[260px] lg:w-[calc(100%-260px)]">
         <div className="h-[90vh] mx-auto relative ">
           {children}
         </div>

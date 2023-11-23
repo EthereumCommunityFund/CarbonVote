@@ -2,6 +2,7 @@
 const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
+  darkMode: ["class"],
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -15,6 +16,9 @@ module.exports = {
       center: true,
       padding: "2rem",
       screens: {
+        "sm": "320px",
+        "md": "810px",
+        "lg": "1200px",
         "2xl": "1400px",
       },
     },
@@ -58,6 +62,8 @@ module.exports = {
         pagePrimary: '#222222',
         btnPrimary: '#FFFFFF',
         borderPrimary: "#393939",
+        itemBgPrimary: "#2D2D2D",
+        itemBgHover: "#393C3C",
       },
       borderRadius: {
         lg: "var(--radius)",
