@@ -5,61 +5,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-contract CarbonVote is Ownable {
-    struct Voter {
-        uint256 weight;
-        bool inSupport;
-    }
-
-    mapping(address => Voter) public votes;
-    mapping(address => bool) public hasVoted;
-    address[] public addressesWithWeight; // Addresses with weight greater than 0
-
-    string public secretMessage; // The secret message that allows voting
-
-    event VoteCast(address indexed voter, uint256 weight, bool inSupport);
-
-    modifier onlyWithSecretMessage(string memory providedSecretMessage) {
-        require(keccak256(abi.encodePacked(providedSecretMessage)) == keccak256(abi.encodePacked(secretMessage)), "Invalid secret message");
-        _;
-    }
-
-    modifier hasNotVoted() {
-        require(!hasVoted[msg.sender], "You have already voted");
-        _;
-    }
-
-    function setSecretMessage(string memory _secretMessage) external onlyOwner {
-        secretMessage = _secretMessage;
-    }
-
-    function delegate(address to, string memory providedSecretMessage) external hasNotVoted onlyWithSecretMessage(providedSecretMessage) {
-        require(to != msg.sender, "Cannot delegate to yourself");
-
-        votes[to].weight += votes[msg.sender].weight;
-        votes[msg.sender].weight = 0;
-
-        hasVoted[msg.sender] = true;
-        addressesWithWeight.push(to);
-        emit VoteCast(msg.sender, 0, false); // Delegate vote
-    }
-
-    function vote(uint256 weight, bool inSupport, string memory providedSecretMessage)
-        external
-        hasNotVoted
-        onlyWithSecretMessage(providedSecretMessage)
-    {
-        hasVoted[msg.sender] = true;
-        addressesWithWeight.push(msg.sender);
-        votes[msg.sender] = Voter(weight, inSupport);
-        emit VoteCast(msg.sender, weight, inSupport);
-    }
-}
-
-
-
-
-
 
 
 contract Vote is Ownable {
@@ -81,12 +26,7 @@ contract Vote is Ownable {
     event VoteChanged(address indexed voter, uint256 oldWeight, uint256 newWeight);
     event SecretMessageAdded(string secretMessage);
 
-    /*
-        modifier onlyWithSecretMessage(string memory providedSecretMessage) {
-            require(keccak256(abi.encodePacked(providedSecretMessage)) == keccak256(abi.encodePacked(secretMessages[msg.sender])), "Invalid secret message");
-            _;
-        }
-    */
+    
 
     modifier hasNotVoted() {
         require(!hasVoted[msg.sender], "You have already voted");
