@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
+    "@nomiclabs/hardhat-ethers": "^2.2.2",
     "@pcd/email-pcd": "^0.3.0",
     "@pcd/passport-interface": "^0.8.0",
     "@pcd/pcd-types": "^0.8.0",
@@ -26,7 +28,10 @@
     "axios": "^1.6.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "dotenv": "^16.3.1",
+    "ethers": "5.7.1",
     "express": "^4.18.2",
+    "hardhat": "^2.19.1",
     "https": "^1.0.0",
     "js-sha256": "^0.9.0",
     "json-stable-stringify": "^1.0.2",
