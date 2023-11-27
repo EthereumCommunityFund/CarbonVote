@@ -18,8 +18,8 @@ module.exports = {
       screens: {
         "sm": "320px",
         "md": "810px",
-        "lg": "1200px",
-        "2xl": "1400px",
+        "lg": "1440px",
+        "2xl": "1600px",
       },
     },
     extend: {
@@ -72,7 +72,9 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
-
+      fontFamily: {
+        'share-tech-mono': ['"Share Tech Mono"', 'monospace'],
+      },
     },
   },
   plugins: [],
