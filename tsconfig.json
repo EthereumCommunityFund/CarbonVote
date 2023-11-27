@@ -1,17 +1,34 @@
 {
   "extends": "@pcd/tsconfig/nextjs.json",
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
   "compilerOptions": {
     "jsx": "preserve",
-    "target": "es6"
+    "target": "es6",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "~/*": [
+        "./public"
+      ]
+    }
   },
 
   "ts-node": {
     "compilerOptions": {
       "module": "commonjs",
       "outDir": "dist",
-      "lib": ["es2019"],
+      "lib": [
+        "es2019"
+      ],
       "target": "es2019",
       "isolatedModules": false,
       "noEmit": false
