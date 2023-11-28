@@ -1,3 +1,5 @@
+import { useRouter } from "next/router";
+
 import { Label } from "@/components/ui/Label";
 import { useUserPassportContext } from "../context/PassportContext";
 import { polls } from "@/constant/mockPolls";
@@ -7,8 +9,12 @@ import Button from "@/components/ui/buttons/Button";
 import { PlusCirceIcon } from "@/components/icons";
 
 export default function Home() {
+  const router = useRouter();
   const pollList: PollType[] = polls;
 
+  const handleCreatePoll = () => {
+    router.push(`/create`);
+  }
 
   return (
     <div className="flex flex-col p-5 gap-2.5 text-black">
@@ -20,7 +26,7 @@ export default function Home() {
       </div>
       <div className="px-[273px] flex flex-col gap-[30px]">
         <div className="flex justify-end">
-          <Button className="rounded-full" leftIcon={PlusCirceIcon}>Create a Poll</Button>
+          <Button className="rounded-full" leftIcon={PlusCirceIcon} onClick={handleCreatePoll}>Create a Poll</Button>
         </div>
         <div className="flex flex-col gap-2.5 h-[400px] overflow-y-auto">
           {pollList.map((poll) => {
