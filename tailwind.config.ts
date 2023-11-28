@@ -7,7 +7,7 @@ module.exports = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
- 
+
     // Or if using `src` directory:
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
@@ -64,7 +64,7 @@ module.exports = {
         borderPrimary: "#393939",
         itemBgPrimary: "#2D2D2D",
         itemBgHover: "#393C3C",
-        inputField: "#242727",
+        inputField: "#EFEFEF",
         btnStrongerGreen: "#79916E",
       },
       borderRadius: {
