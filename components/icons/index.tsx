@@ -4,6 +4,7 @@ import { StopCircleIcon } from "./stop";
 import { BoltIcon } from "./bolt";
 import { PlusCirceIcon } from "./pluscircle";
 import { ArrowLeftIcon } from "./arrowleft";
+import { PlusIcon } from './plus';
 
 export {
   ThumbUpIcon,
@@ -11,5 +12,6 @@ export {
   StopCircleIcon,
   BoltIcon,
   PlusCirceIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  PlusIcon
 }

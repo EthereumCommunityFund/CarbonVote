@@ -12,7 +12,7 @@
   margin: 0px;
   position: relative;
   border: rgba(255, 255, 255, 0.1);
-  background-color: #242727;
+  background-color: #EFEFEF;
   border-radius: 6px;
   align-items: flex-start;
   padding: 10px 12px 10px 10px;
@@ -504,7 +504,7 @@
 }
 
 .ql-editor.ql-blank::before {
-  color: #ffffff50;
+  color: #00000090;
   content: attr(data-placeholder);
 
 
@@ -530,7 +530,7 @@
   height: 24px;
   padding: 3px 5px;
   width: 28px;
-  color: white;
+  color: black;
 }
 
 .ql-snow.ql-toolbar button svg,
@@ -693,23 +693,23 @@
 }
 
 .ql-snow .ql-stroke {
-  fill: #444;
-  stroke: white;
+  fill: #EFEFEF;
+  stroke: black;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 2;
 }
 
 .ql-snow .ql-stroke-miter {
-  fill: white;
-  stroke: white;
+  fill: black;
+  stroke: black;
   stroke-miterlimit: 10;
   stroke-width: 2;
 }
 
 .ql-snow .ql-fill,
 .ql-snow .ql-stroke.ql-fill {
-  fill: white;
+  fill: black;
 }
 
 .ql-snow .ql-empty {
@@ -832,7 +832,7 @@
 }
 
 .ql-snow .ql-picker-options {
-  background-color: #242727;
+  background-color: #EFEFEF;
   display: none;
   min-width: 100%;
   padding: 4px 8px;
@@ -848,16 +848,16 @@
 }
 
 .ql-snow .ql-picker.ql-expanded .ql-picker-label {
-  color: #ccc;
+  color: black;
   z-index: 2;
 }
 
 .ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-fill {
-  fill: #ccc;
+  fill: black;
 }
 
 .ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-stroke {
-  stroke: #ccc;
+  stroke: black;
 }
 
 .ql-snow .ql-picker.ql-expanded .ql-picker-options {
@@ -867,7 +867,7 @@
   z-index: 1;
   border: #242727;
   border-radius: 8px;
-  color: white;
+  color: black;
 }
 
 .ql-snow .ql-color-picker,
@@ -1057,7 +1057,7 @@
 }
 
 .ql-snow .ql-color-picker.ql-color .ql-picker-item {
-  background-color: #000;
+  background-color: white;
 }
 
 .ql-toolbar.ql-snow {
@@ -1065,9 +1065,9 @@
   box-sizing: border-box;
   font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
   padding: 8px;
-  background-color: #242727;
+  background-color: #EFEFEF;
   border-radius: 10px;
-  color: white;
+  color: black;
 }
 
 .ql-toolbar.ql-snow .ql-formats {
@@ -1076,7 +1076,7 @@
 
 .ql-toolbar.ql-snow .ql-picker-label {
   border: 1px solid transparent;
-  color: white;
+  color: black;
 }
 
 .ql-toolbar.ql-snow .ql-picker-options {
@@ -1174,5 +1174,5 @@
 }
 
 .ql-container.ql-snow {
-  border: 1px solid #393939;
+  border: 1px solid #EFEFEF;
 }
