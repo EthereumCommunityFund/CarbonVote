@@ -7,7 +7,7 @@ module.exports = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
- 
+
     // Or if using `src` directory:
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
@@ -18,8 +18,8 @@ module.exports = {
       screens: {
         "sm": "320px",
         "md": "810px",
-        "lg": "1200px",
-        "2xl": "1400px",
+        "lg": "1440px",
+        "2xl": "1600px",
       },
     },
     extend: {
@@ -64,7 +64,7 @@ module.exports = {
         borderPrimary: "#393939",
         itemBgPrimary: "#2D2D2D",
         itemBgHover: "#393C3C",
-        inputField: "#242727",
+        inputField: "#EFEFEF",
         btnStrongerGreen: "#79916E",
       },
       borderRadius: {
@@ -72,7 +72,9 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
-
+      fontFamily: {
+        'share-tech-mono': ['"Share Tech Mono"', 'monospace'],
+      },
     },
   },
   plugins: [],

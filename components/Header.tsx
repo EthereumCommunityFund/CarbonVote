@@ -1,17 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
-import Button from './ui/buttons/Button';
 import { useUserPassportContext } from '@/context/PassportContext';
-
-// Extend window type to include ethereum
-declare global {
-  interface Window {
-    ethereum?: ethers.providers.ExternalProvider & {
-      on?: (...args: any[]) => void;
-      removeListener?: (...args: any[]) => void;
-    };
-  }
-}
+import Button from './ui/buttons/Button';
+import Image from 'next/image';
+import { Label } from './ui/Label';
+import { BoltIcon } from './icons';
+import { useEffect, useState } from 'react';
+import { ethers } from 'ethers';
 
 export const HeaderComponent = () => {
   const { signIn } = useUserPassportContext();
@@ -70,11 +63,14 @@ export const HeaderComponent = () => {
   };
 
   return (
-    <div className="bg-grayBackground flex w-full h-20 justify-end items-center p-5">
-      <Button className="outline-none h-10 items-center rounded-md" onClick={signIn}>
-        Zupass Connect
+    <div className="bg-white flex w-full h-16 justify-between items-center p-5 rounded-3xl">
+      <div className="flex gap-1.5 items-center">
+        <Image src={'/images/carbonvote.png'} width={30} height={30} alt={'Carbonvote'} />
+        <Label className="text-red-600 text-lg">Carbonvote</Label>
+      </div>
+      <Button className="outline-none h-10 items-center rounded-full" leftIcon={BoltIcon} onClick={signIn}>
+        Sign In
       </Button>
-      <Button onClick={connectToMetamask}>{isConnected ? 'Connected' : 'Wallet Connect'}</Button>
     </div>
   );
 };
