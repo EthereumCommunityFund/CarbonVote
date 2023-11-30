@@ -14,6 +14,7 @@ const CreatePollPage = () => {
   const [motionTitle, setMotionTitle] = useState<string>();
   const [motionDescription, setMotionDescription] = useState<string>('');
   const [timeLimit, setTimeLimit] = useState<string>();
+  const [votingMethod, setVotingMethod] = useState<'ethholding' | 'voting1' | 'voting2'>('ethholding');
 
   const handleTitleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setMotionTitle(event.target.value);
@@ -23,6 +24,10 @@ const CreatePollPage = () => {
   }
   const handleTimeLimitChange = (event: ChangeEvent<HTMLInputElement>) => {
     setTimeLimit(event.target.value);
+  }
+  const handleVotingSelect = (e: any) => {
+    console.log(e.target.value, 'voting method: ');
+    setVotingMethod(e.target.value);
   }
 
   const handleBack = () => {
@@ -68,25 +73,30 @@ const CreatePollPage = () => {
             <div className="flex flex-col gap-1">
               <Label className="text-base">Select a Method</Label>
               <select
+                onChange={handleVotingSelect}
+                value={votingMethod}
                 className="flex w-full text-black outline-none rounded-lg py-2.5 pr-3 pl-2.5 bg-inputField gap-2.5 items-center border border-white/10 border-opacity-10"
                 title="Voting Method"
               >
-                <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="once">
+                <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="ethholding">
                   EthHolding
                 </option>
-                <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="everyday">
+                <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="voting1">
                   Voting 1
                 </option>
-                <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="weekly">
+                <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="voting2">
                   Voting 2
                 </option>
               </select>
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <Label className="text-2xl">Access Rules</Label>
-            <CredentialForm />
-          </div>
+          {votingMethod === 'ethholding' ?
+            <></> :
+            <div className="flex flex-col gap-2">
+              <Label className="text-2xl">Access Rules</Label>
+              <CredentialForm />
+            </div>
+          }
         </div>
         <div className="flex gap-2.5 justify-end">
           <Button className="rounded-full" leftIcon={XMarkIcon}>Discard</Button>
