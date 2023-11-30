@@ -7,6 +7,9 @@ import HtmlString from '@/components/ui/Html';
 import { Label } from '@/components/ui/Label';
 import { PollType } from '@/types';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { ethers, Contract } from 'ethers';
+import { contractAbi, contractAddress } from '@/constant/constants';
 
 const PollPage = () => {
   const router = useRouter();
@@ -26,6 +29,15 @@ const PollPage = () => {
   const handleBack = () => {
     router.push('/');
   };
+  const [pollContract, setPollContract] = useState<Contract | null>(null);
+  useEffect(() => {
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+      setPollContract(contract);
+    }
+  }, []);
 
   return (
     <div className="flex gap-20 px-20 pt-5 text-black w-full justify-center">
