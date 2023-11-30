@@ -68,9 +68,14 @@ export const HeaderComponent = () => {
         <Image src={'/images/carbonvote.png'} width={30} height={30} alt={'Carbonvote'} />
         <Label className="text-red-600 text-lg">Carbonvote</Label>
       </div>
-      <Button className="outline-none h-10 items-center rounded-full" leftIcon={BoltIcon} onClick={signIn}>
-        Sign In
-      </Button>
+      <div className="flex gap-1.5 items-center">
+        <Button className="outline-none h-10 items-center rounded-full" leftIcon={BoltIcon} onClick={signIn}>
+          Connect Passport
+        </Button>
+        <Button className="outline-none h-10 items-center rounded-full" onClick={connectToMetamask}>
+          {isConnected ? 'Wallet Connected' : 'Connect Wallet'}
+        </Button>
+      </div>
     </div>
   );
 };

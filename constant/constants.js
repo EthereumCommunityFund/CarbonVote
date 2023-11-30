@@ -1,21 +1,47 @@
-const contractAddress = '0x4fFEB1f62032067a43dfa40b96D500936139dC26';
+const contractAddress = '0xA5CCcC6f9EaD5a4937d97B4B1cB6F0A3682b2265';
 
 const contractAbi = [
   {
+    inputs: [],
+    stateMutability: 'nonpayable',
+    type: 'constructor',
+  },
+  {
+    anonymous: false,
+    inputs: [],
+    name: 'PollClosed',
+    type: 'event',
+  },
+  {
+    anonymous: false,
     inputs: [
       {
+        indexed: false,
         internalType: 'string',
-        name: '_motionDescription',
+        name: 'newQuestion',
         type: 'string',
       },
       {
+        indexed: false,
+        internalType: 'string',
+        name: 'newPollDescription',
+        type: 'string',
+      },
+      {
+        indexed: false,
         internalType: 'uint256',
-        name: '_durationInMinutes',
+        name: 'newDuration',
+        type: 'uint256',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'newNumOptions',
         type: 'uint256',
       },
     ],
-    stateMutability: 'nonpayable',
-    type: 'constructor',
+    name: 'PollCreated',
+    type: 'event',
   },
   {
     anonymous: false,
@@ -28,17 +54,17 @@ const contractAbi = [
       },
       {
         indexed: false,
-        internalType: 'string',
-        name: 'vote',
-        type: 'string',
+        internalType: 'uint256',
+        name: 'option',
+        type: 'uint256',
       },
     ],
-    name: 'VoteCast',
+    name: 'Voted',
     type: 'event',
   },
   {
     inputs: [],
-    name: 'abstainVotes',
+    name: 'MAX_DESCRIPTION_LENGTH',
     outputs: [
       {
         internalType: 'uint256',
@@ -50,41 +76,74 @@ const contractAbi = [
     type: 'function',
   },
   {
-    inputs: [
+    inputs: [],
+    name: 'MAX_QUESTION_LENGTH',
+    outputs: [
       {
-        internalType: 'bool',
-        name: '_voteYes',
-        type: 'bool',
-      },
-      {
-        internalType: 'bool',
-        name: '_abstain',
-        type: 'bool',
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
       },
     ],
-    name: 'castVote',
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'admin',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'closePoll',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'string',
+        name: '_question',
+        type: 'string',
+      },
+      {
+        internalType: 'string',
+        name: '_pollDescription',
+        type: 'string',
+      },
+      {
+        internalType: 'uint256',
+        name: '_durationInMinutes',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: '_numOptions',
+        type: 'uint256',
+      },
+    ],
+    name: 'createPoll',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
   },
   {
     inputs: [],
-    name: 'getResults',
+    name: 'creator',
     outputs: [
       {
-        internalType: 'uint256',
-        name: '_yesVotes',
-        type: 'uint256',
-      },
-      {
-        internalType: 'uint256',
-        name: '_noVotes',
-        type: 'uint256',
-      },
-      {
-        internalType: 'uint256',
-        name: '_abstainVotes',
-        type: 'uint256',
+        internalType: 'address',
+        name: '',
+        type: 'address',
       },
     ],
     stateMutability: 'view',
@@ -111,7 +170,7 @@ const contractAbi = [
   },
   {
     inputs: [],
-    name: 'isVotingFinished',
+    name: 'isOpen',
     outputs: [
       {
         internalType: 'bool',
@@ -124,7 +183,20 @@ const contractAbi = [
   },
   {
     inputs: [],
-    name: 'motionDescription',
+    name: 'numOptions',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'pollDescription',
     outputs: [
       {
         internalType: 'string',
@@ -137,7 +209,7 @@ const contractAbi = [
   },
   {
     inputs: [],
-    name: 'noVotes',
+    name: 'pollEndTime',
     outputs: [
       {
         internalType: 'uint256',
@@ -150,20 +222,61 @@ const contractAbi = [
   },
   {
     inputs: [],
-    name: 'owner',
+    name: 'question',
     outputs: [
       {
-        internalType: 'address',
+        internalType: 'string',
         name: '',
+        type: 'string',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'string',
+        name: '_question',
+        type: 'string',
+      },
+      {
+        internalType: 'string',
+        name: '_pollDescription',
+        type: 'string',
+      },
+      {
+        internalType: 'uint256',
+        name: '_durationInMinutes',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: '_numOptions',
+        type: 'uint256',
+      },
+    ],
+    name: 'resetPoll',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_creator',
         type: 'address',
       },
     ],
-    stateMutability: 'view',
+    name: 'setCreator',
+    outputs: [],
+    stateMutability: 'nonpayable',
     type: 'function',
   },
   {
     inputs: [],
-    name: 'votingEnd',
+    name: 'totalVotes',
     outputs: [
       {
         internalType: 'uint256',
@@ -175,21 +288,27 @@ const contractAbi = [
     type: 'function',
   },
   {
-    inputs: [],
-    name: 'votingStart',
-    outputs: [
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'option',
+        type: 'uint256',
+      },
+    ],
+    name: 'vote',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
       {
         internalType: 'uint256',
         name: '',
         type: 'uint256',
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'yesVotes',
+    name: 'votes',
     outputs: [
       {
         internalType: 'uint256',

@@ -74,6 +74,7 @@ contract RegularPoll {
     address public admin;
     address public creator;
     string public question;
+    string public pollDescription;
     mapping(uint256 => uint256) public votes;
     mapping(address => bool) public hasVoted;
     uint256 public totalVotes;
@@ -83,9 +84,10 @@ contract RegularPoll {
 
     event Voted(address indexed voter, uint256 option);
     event PollClosed();
-    event PollCreated(string newQuestion, uint256 newDuration, uint256 newNumOptions);
+    event PollCreated(string newQuestion, string newPollDescription, uint256 newDuration, uint256 newNumOptions);
 
     uint256 constant public MAX_QUESTION_LENGTH = 2000;
+    uint256 constant public MAX_DESCRIPTION_LENGTH = 500;
 
     modifier onlyAdmin() {
         require(msg.sender == admin, "Only the admin can execute this");
@@ -110,24 +112,26 @@ contract RegularPoll {
 
     constructor() {
         admin = msg.sender;
-        creator = address(0); 
+        creator = address(0); // Set the initial creator to an address that doesn't exist
     }
 
     function setCreator(address _creator) external onlyAdmin {
         creator = _creator;
     }
 
-    function createPoll(string memory _question, uint256 _durationInMinutes, uint256 _numOptions) external onlyCreator {
+    function createPoll(string memory _question, string memory _pollDescription, uint256 _durationInMinutes, uint256 _numOptions) external onlyCreator {
         require(bytes(_question).length <= MAX_QUESTION_LENGTH, "Question exceeds maximum character limit");
+        require(bytes(_pollDescription).length <= MAX_DESCRIPTION_LENGTH, "Poll description exceeds maximum character limit");
         require(_numOptions > 0, "Number of options must be greater than 0");
 
         question = _question;
+        pollDescription = _pollDescription;
         isOpen = true;
         totalVotes = 0;
         pollEndTime = block.timestamp + (_durationInMinutes * 1 minutes);
         numOptions = _numOptions;
 
-        emit PollCreated(_question, _durationInMinutes, _numOptions);
+        emit PollCreated(_question, _pollDescription, _durationInMinutes, _numOptions);
     }
 
     function vote(uint256 option) external pollOpen {
@@ -147,12 +151,14 @@ contract RegularPoll {
         emit PollClosed();
     }
 
-    function resetPoll(string memory _question, uint256 _durationInMinutes, uint256 _numOptions) external onlyOwner {
+    function resetPoll(string memory _question, string memory _pollDescription, uint256 _durationInMinutes, uint256 _numOptions) external onlyOwner {
         require(!isOpen, "Cannot reset the poll while it's open");
         require(bytes(_question).length <= MAX_QUESTION_LENGTH, "Question exceeds maximum character limit");
+        require(bytes(_pollDescription).length <= MAX_DESCRIPTION_LENGTH, "Poll description exceeds maximum character limit");
         require(_numOptions > 0, "Number of options must be greater than 0");
 
         question = _question;
+        pollDescription = _pollDescription;
         isOpen = true;
         totalVotes = 0;
         pollEndTime = block.timestamp + (_durationInMinutes * 1 minutes);
