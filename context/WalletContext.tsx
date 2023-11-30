@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ethers } from 'ethers';
 
-// Define the context type
 interface WalletContextType {
   provider: ethers.providers.Web3Provider | null;
   account: string | null;
@@ -23,7 +22,6 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const [account, setAccount] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  // ... include all your functions like checkIfWalletIsConnected, handleAccountsChanged, etc.
   const checkIfWalletIsConnected = async () => {
     if (window.ethereum) {
       try {
