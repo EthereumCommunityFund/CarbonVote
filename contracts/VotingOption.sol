@@ -3,13 +3,13 @@ import "./VoteContract.sol";
 
 contract VotingOption {
     address public mainContract;
-    string public name;
+    bytes32  name;
     uint256 public endTime;
     uint256 public pollIndex; // Added to track the poll index
 
     event VoteCasted(address voter);
 
-    constructor(address _mainContract, string memory _name, uint256 _endTime, uint256 _pollIndex) {
+    constructor(address _mainContract,  bytes32 _name, uint256 _endTime, uint256 _pollIndex) {
         mainContract = _mainContract;
         name = _name;
         endTime = _endTime;
