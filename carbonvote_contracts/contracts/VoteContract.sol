@@ -17,25 +17,30 @@ contract VotingContract {
 
 
     Poll[] public polls;
+function createPoll(
+    bytes32 _description, 
+    uint256 _duration, 
+    bytes32[] memory _optionNames,
+    PollType _pollType,
+    bytes32 _poll_metadata
+) public {
+    // Add a new Poll to the polls array and get its reference
+    polls.push();
+    Poll storage newPoll = polls[polls.length - 1];
 
-    function createPoll(
-        bytes32 _description, 
-        uint256 _duration, 
-        bytes32[] memory _optionNames,
-        PollType _pollType,
-        bytes32 _poll_metadata
-    ) public {
-        Poll storage p = polls.push();
-        p.description = _description;
-        p.endTime = block.timestamp + _duration;
-        p.poll_type = _pollType;
-        p.poll_metadata = _poll_metadata;
+    // Set the properties of the new Poll
+    newPoll.description = _description;
+    newPoll.endTime = block.timestamp + _duration;
+    newPoll.poll_type = _pollType;
+    newPoll.poll_metadata = _poll_metadata;
 
-        for (uint256 i = 0; i < _optionNames.length; i++) {
-            VotingOption option = new VotingOption(address(this), _optionNames[i], p.endTime, i);
-            p.options.push(address(option));
-        }
+    // Initialize the options array within the Poll
+    for (uint256 i = 0; i < _optionNames.length; i++) {
+        VotingOption option = new VotingOption(address(this), _optionNames[i], newPoll.endTime, i);
+        newPoll.options.push(address(option));
     }
+}
+
 
     function vote(uint256 _pollIndex, uint256 _optionIndex) external {
         Poll storage poll = polls[_pollIndex];
@@ -52,5 +57,23 @@ contract VotingContract {
         require(!polls[_pollIndex].hasVoted[voter], "Already voted in this poll");
         polls[_pollIndex].hasVoted[voter] = true;
     }
+    
+    function getPoll(uint256 _pollIndex) public view returns (
+    bytes32 description, 
+    address[] memory options, 
+    uint256 endTime, 
+    PollType pollType, 
+    bytes32 pollMetadata
+) {
+    Poll storage poll = polls[_pollIndex];
+    return (
+        poll.description, 
+        poll.options, 
+        poll.endTime, 
+        poll.poll_type, 
+        poll.poll_metadata
+    );
+}
+
 }
 
