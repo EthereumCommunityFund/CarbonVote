@@ -79,6 +79,10 @@ contract VotingContract {
                 uint256 current_option_index = polls[_pollIndex].voterChoice[
                     voter
                 ];
+                VotingOption option = VotingOption(
+                    payable(polls[_pollIndex].options[current_option_index])
+                );
+                option.removeVote(voter);
                 emit VoteRemoved(voter, _pollIndex, current_option_index);
                 emit VoteChanged(voter, _pollIndex, _optionIndex);
             }
