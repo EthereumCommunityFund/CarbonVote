@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "compile-contracts":  "cd carbonvote_contracts && npx hardhat compile",
+    "test-contracts": "cd carbonvote_contracts && npx hardhat test"
   },
   "dependencies": {
     "@pcd/email-pcd": "^0.3.0",

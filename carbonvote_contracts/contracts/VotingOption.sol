@@ -23,7 +23,6 @@ contract VotingOption {
 
     function castVote() public {
         require(block.timestamp < endTime, "Poll has ended");
-        require(msg.sender == tx.origin, "Invalid sender");
         VotingContract(mainContract).recordVote(msg.sender, pollIndex);
         emit VoteCasted(msg.sender);
     }
