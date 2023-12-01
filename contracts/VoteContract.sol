@@ -4,29 +4,32 @@ pragma solidity ^0.8.0;
 
 contract VotingContract {
 
-        enum PollType { EthCount } 
+    enum PollType { EthCount } 
 
     struct Poll {
-        string description;
+        bytes32 description;
         address[] options;
         uint256 endTime;
         mapping(address => bool) hasVoted;
         PollType poll_type;
+        bytes32 poll_metadata;
     }
 
 
     Poll[] public polls;
 
     function createPoll(
-        string memory _description, 
+        bytes32 _description, 
         uint256 _duration, 
-        string[] memory _optionNames,
-         PollType _pollType
+        bytes32[] memory _optionNames,
+        PollType _pollType,
+        bytes32 _poll_metadata
     ) public {
         Poll storage p = polls.push();
         p.description = _description;
         p.endTime = block.timestamp + _duration;
         p.poll_type = _pollType;
+        p.poll_metadata = _poll_metadata;
 
         for (uint256 i = 0; i < _optionNames.length; i++) {
             VotingOption option = new VotingOption(address(this), _optionNames[i], p.endTime, i);
