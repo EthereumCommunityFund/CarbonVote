@@ -66,4 +66,24 @@ contract VotingOption {
         delete voterIndex[voter];
         hasVoted[voter] = false;
     }
+
+    function removeVote(address voter) public {
+        require(msg.sender == mainContract, "You don't have access");
+        require(hasVoted[voter], "No vote to remove");
+
+        // if it only has one
+        uint256 index = voterIndex[voter];
+        require(index < voters.length, "Voter not found");
+
+        uint256 lastIndex = voters.length - 1;
+        if (index != lastIndex) {
+            address lastVoter = voters[lastIndex];
+            voters[index] = lastVoter;
+            voterIndex[lastVoter] = index;
+        }
+
+        voters.pop();
+        delete voterIndex[voter];
+        hasVoted[voter] = false;
+    }
 }
