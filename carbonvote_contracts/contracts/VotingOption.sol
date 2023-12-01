@@ -3,17 +3,25 @@ import "./VoteContract.sol";
 
 contract VotingOption {
     address public mainContract;
-    bytes32  name;
+    bytes32 name;
     uint256 public endTime;
-    uint256 public pollIndex; // Added to track the poll index
+    uint256 public pollIndex;
+    uint256 public option_index;
 
-    event VoteCasted(address voter);
+    // event VoteCasted(address voter);
 
-    constructor(address _mainContract,  bytes32 _name, uint256 _endTime, uint256 _pollIndex) {
+    constructor(
+        address _mainContract,
+        bytes32 _name,
+        uint256 _endTime,
+        uint256 _pollIndex,
+        uint256 _option_index
+    ) {
         mainContract = _mainContract;
         name = _name;
         endTime = _endTime;
         pollIndex = _pollIndex;
+        option_index = _option_index;
     }
 
     receive() external payable {
@@ -23,7 +31,11 @@ contract VotingOption {
 
     function castVote() public {
         require(block.timestamp < endTime, "Poll has ended");
-        VotingContract(mainContract).recordVote(msg.sender, pollIndex);
-        emit VoteCasted(msg.sender);
+        VotingContract(mainContract).recordVote(
+            msg.sender,
+            pollIndex,
+            option_index
+        );
+        // emit VoteCasted(msg.sender);
     }
 }
