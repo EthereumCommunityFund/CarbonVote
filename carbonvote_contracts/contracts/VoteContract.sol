@@ -15,7 +15,6 @@ contract VotingContract {
         bytes32 poll_metadata;
     }
 
-
     Poll[] public polls;
 function createPoll(
     bytes32 _description, 
