@@ -1,11 +1,18 @@
-import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox";
+require('dotenv').config({ path: './.env.local' });
 
-const config: HardhatUserConfig = {
-  solidity: "0.8.19",
-  paths: {
-    artifacts: '../artifacts'
+require('@nomiclabs/hardhat-ethers');
+
+const { GOERLI_API_URL, PRIVATE_KEY } = process.env;
+
+/** @type import('hardhat/config').HardhatUserConfig */
+module.exports = {
+  solidity: '0.8.19',
+  defaultNetwork: 'goerli',
+  networks: {
+    hardhat: {},
+    goerli: {
+      url: GOERLI_API_URL, // Your Goerli API URL
+      accounts: [`0x${PRIVATE_KEY}`],
+    },
   },
 };
-
-export default config;

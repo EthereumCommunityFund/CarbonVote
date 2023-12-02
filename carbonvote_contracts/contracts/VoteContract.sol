@@ -108,6 +108,7 @@ contract VotingContract {
         public
         view
         returns (
+            bytes32 name,
             bytes32 description,
             address[] memory options,
             uint256 endTime,
@@ -117,6 +118,7 @@ contract VotingContract {
     {
         Poll storage poll = polls[_pollIndex];
         return (
+            poll.name,
             poll.description,
             poll.options,
             poll.endTime,
