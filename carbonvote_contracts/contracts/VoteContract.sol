@@ -13,6 +13,7 @@ contract VotingContract {
 
     struct Poll {
         bytes32 description;
+        bytes32 name;
         address[] options;
         uint256 endTime;
         mapping(address => bool) hasVoted;
@@ -25,6 +26,7 @@ contract VotingContract {
     Poll[] public polls;
 
     function createPoll(
+        bytes32 _name,
         bytes32 _description,
         uint256 _duration,
         bytes32[] memory _optionNames,
@@ -32,11 +34,13 @@ contract VotingContract {
         bytes32 _poll_metadata
     ) public {
         // Add a new Poll to the polls array and get its reference
+
         polls.push();
         Poll storage newPoll = polls[polls.length - 1];
         uint poll_index = polls.length - 1;
         // Set the properties of the new Poll
         newPoll.description = _description;
+        newPoll.name = _name;
         newPoll.endTime = block.timestamp + _duration;
         newPoll.poll_type = _pollType;
         newPoll.poll_metadata = _poll_metadata;
@@ -79,6 +83,10 @@ contract VotingContract {
                 uint256 current_option_index = polls[_pollIndex].voterChoice[
                     voter
                 ];
+                VotingOption option = VotingOption(
+                    payable(polls[_pollIndex].options[current_option_index])
+                );
+                option.removeVote(voter);
                 emit VoteRemoved(voter, _pollIndex, current_option_index);
                 emit VoteChanged(voter, _pollIndex, _optionIndex);
             }
@@ -99,6 +107,7 @@ contract VotingContract {
         public
         view
         returns (
+            bytes32 name,
             bytes32 description,
             address[] memory options,
             uint256 endTime,
@@ -108,6 +117,7 @@ contract VotingContract {
     {
         Poll storage poll = polls[_pollIndex];
         return (
+            poll.name,
             poll.description,
             poll.options,
             poll.endTime,

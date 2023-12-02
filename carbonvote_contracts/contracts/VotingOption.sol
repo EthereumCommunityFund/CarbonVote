@@ -7,6 +7,9 @@ contract VotingOption {
     uint256 public endTime;
     uint256 public pollIndex;
     uint256 public option_index;
+    address[] public voters;
+    mapping(address => uint256) private voterIndex;
+    mapping(address => bool) private hasVoted;
 
     // event VoteCasted(address voter);
 
@@ -36,6 +39,31 @@ contract VotingOption {
             pollIndex,
             option_index
         );
-        // emit VoteCasted(msg.sender);
+
+        if (!hasVoted[msg.sender]) {
+            voters.push(msg.sender);
+            voterIndex[msg.sender] = voters.length - 1;
+        }
+        hasVoted[msg.sender] = true;
+    }
+
+    function removeVote(address voter) public {
+        require(msg.sender == mainContract, "You don't have access");
+        require(hasVoted[voter], "No vote to remove");
+
+        // if it only has one
+        uint256 index = voterIndex[voter];
+        require(index < voters.length, "Voter not found");
+
+        uint256 lastIndex = voters.length - 1;
+        if (index != lastIndex) {
+            address lastVoter = voters[lastIndex];
+            voters[index] = lastVoter;
+            voterIndex[lastVoter] = index;
+        }
+
+        voters.pop();
+        delete voterIndex[voter];
+        hasVoted[voter] = false;
     }
 }
