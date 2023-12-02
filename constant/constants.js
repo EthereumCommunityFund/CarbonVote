@@ -80,6 +80,11 @@ const contractAbi = [
     inputs: [
       {
         internalType: 'bytes32',
+        name: '_name',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes32',
         name: '_description',
         type: 'bytes32',
       },
@@ -119,6 +124,11 @@ const contractAbi = [
     ],
     name: 'getPoll',
     outputs: [
+      {
+        internalType: 'bytes32',
+        name: 'name',
+        type: 'bytes32',
+      },
       {
         internalType: 'bytes32',
         name: 'description',
@@ -161,6 +171,11 @@ const contractAbi = [
       {
         internalType: 'bytes32',
         name: 'description',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'name',
         type: 'bytes32',
       },
       {
