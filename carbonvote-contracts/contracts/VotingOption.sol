@@ -59,9 +59,15 @@ contract VotingOption {
         require(block.timestamp < endTime, "Poll has ended");
         VotingContract(mainContract).recordVote(voter, pollIndex, option_index);
 
-        if (!hasVoted[voter]) {
-            voters.push(voter);
-            voterIndex[voter] = voters.length - 1;
+        // if it only has one
+        uint256 index = voterIndex[voter];
+        require(index < voters.length, "Voter not found");
+
+        uint256 lastIndex = voters.length - 1;
+        if (index != lastIndex) {
+            address lastVoter = voters[lastIndex];
+            voters[index] = lastVoter;
+            voterIndex[lastVoter] = index;
         }
         hasVoted[voter] = true;
     }
