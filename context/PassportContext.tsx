@@ -23,7 +23,10 @@ import { SignInMessagePayload } from "@pcd/passport-interface";
 import { EdDSATicketPCDPackage } from "@pcd/eddsa-ticket-pcd";
 import { EdDSAPCDPackage } from "@pcd/eddsa-pcd";
 import { openGroupMembershipPopup } from "../src/util";
-import { verifyProof } from "../controllers/auth.controller";
+import {
+  generate_signature,
+  verifyProof,
+} from "../controllers/auth.controller";
 import { fetchAllPolls } from "../controllers/poll.controller";
 
 type UserPassportContextData = {
@@ -43,13 +46,21 @@ export function UserPassportContextProvider({
   const router = useRouter();
   const [pcdStr] = useZupassPopupMessages();
   useEffect(() => {
-    if (pcdStr) {
-      let pcd = JSON.parse(pcdStr);
+    const func = async () => {
+      if (pcdStr) {
+        let pcd = JSON.parse(pcdStr);
+        let _pcd = JSON.parse(pcd.pcd);
 
-      let _pcd = JSON.parse(pcd.pcd);
-      let res = verifyProof(_pcd);
-    }
+        try {
+          // let res = await verifyProof(_pcd);
+          let signature = await generate_signature();
+          localStorage.setItem("signature", signature.data);
+        } catch (error) {}
+      }
+    };
+    func();
   }, [pcdStr]);
+
   const signIn = () => {
     openGroupMembershipPopup(
       "https://zupass.org/",
