@@ -12,7 +12,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     const isValid = await verify(pcd);
 
-
     if (isValid) {
         const token = jwt.sign({ sessionData: 'sign_in_token' }, process.env.JWT_SECRET || 'default_secret', { expiresIn: '10h' });
         res.setHeader('Set-Cookie', `token=${token}; HttpOnly; Path=/; Max-Age=${10 * 60 * 60}`);
