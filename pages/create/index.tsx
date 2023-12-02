@@ -39,9 +39,10 @@ const CreatePollPage = () => {
     const durationInSeconds = convertToMinutes(timeLimit) * 60;
     const currentTimeInSeconds = Math.floor(Date.now() / 1000);
     const endTimeTimestamp = currentTimeInSeconds + durationInSeconds;
+    console.log(durationInSeconds);
     if (durationInSeconds <= 0) {
       console.error('Invalid duration');
-      return;
+      // return;
     }
 
     const formattedTitle = ethers.utils.formatBytes32String(motionTitle);

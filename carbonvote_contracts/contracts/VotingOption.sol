@@ -3,7 +3,7 @@ import "./VoteContract.sol";
 
 contract VotingOption {
     address public mainContract;
-    bytes32 name;
+    string name;
     uint256 public endTime;
     uint256 public pollIndex;
     uint256 public option_index;
@@ -15,7 +15,7 @@ contract VotingOption {
 
     constructor(
         address _mainContract,
-        bytes32 _name,
+        string memory _name,
         uint256 _endTime,
         uint256 _pollIndex,
         uint256 _option_index
