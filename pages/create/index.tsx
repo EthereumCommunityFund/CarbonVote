@@ -1,44 +1,94 @@
-import { ArrowLeftIcon, PlusCirceIcon, PlusIcon, StopCircleIcon, ThumbDownIcon, ThumbUpIcon } from "@/components/icons";
-import { XMarkIcon } from "@/components/icons/xmark";
-import { CredentialForm } from "@/components/templates/CredentialForm";
-import Button from "@/components/ui/buttons/Button";
-import CheckerButton from "@/components/ui/buttons/CheckerButton";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
-import TextEditor from "@/components/ui/TextEditor";
-import { useRouter } from "next/router";
-import { ChangeEvent, useState } from "react";
-
+import { ArrowLeftIcon, PlusCirceIcon, PlusIcon, StopCircleIcon, ThumbDownIcon, ThumbUpIcon } from '@/components/icons';
+import { XMarkIcon } from '@/components/icons/xmark';
+import { CredentialForm } from '@/components/templates/CredentialForm';
+import Button from '@/components/ui/buttons/Button';
+import CheckerButton from '@/components/ui/buttons/CheckerButton';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
+import TextEditor from '@/components/ui/TextEditor';
+import { useRouter } from 'next/router';
+import { ChangeEvent, useState } from 'react';
+import { useEffect } from 'react';
+import { ethers, Contract } from 'ethers';
+import { contractAbi, contractAddress } from '@/constant/constants';
+import { convertToMinutes } from '@/utils';
 const CreatePollPage = () => {
+  const [pollContract, setPollContract] = useState<Contract | null>(null);
+
+  useEffect(() => {
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+      setPollContract(contract);
+    }
+  }, []);
   const router = useRouter();
   const [motionTitle, setMotionTitle] = useState<string>();
   const [motionDescription, setMotionDescription] = useState<string>('');
   const [timeLimit, setTimeLimit] = useState<string>();
   const [votingMethod, setVotingMethod] = useState<'ethholding' | 'voting1' | 'voting2'>('ethholding');
 
+  const createNewPoll = async () => {
+    if (!motionTitle || !motionDescription || !timeLimit) {
+      console.error('All fields are required');
+      return;
+    }
+    const durationInSeconds = convertToMinutes(timeLimit) * 60;
+    const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+    const endTimeTimestamp = currentTimeInSeconds + durationInSeconds;
+    if (durationInSeconds <= 0) {
+      console.error('Invalid duration');
+      return;
+    }
+
+    const formattedTitle = ethers.utils.formatBytes32String(motionTitle);
+    const formattedDescription = ethers.utils.formatBytes32String(motionDescription);
+
+    const optionNames = ['Yes', 'No'].map(ethers.utils.formatBytes32String);
+    const pollMetadata = ethers.utils.formatBytes32String('arbitrary data');
+    console.log('Formatted Title:', formattedTitle);
+    console.log('Formatted Description:', formattedDescription);
+    console.log('Duration (seconds):', endTimeTimestamp);
+    console.log('Option Names:', optionNames);
+    console.log('Poll Metadata:', pollMetadata);
+
+    try {
+      if (pollContract) {
+        const tx = await pollContract.createPoll(formattedTitle, formattedDescription, endTimeTimestamp, optionNames, pollMetadata);
+        await tx.wait();
+        console.log('Poll created successfully');
+      }
+    } catch (error) {
+      console.error('Error creating poll:', error);
+    }
+  };
+
   const handleTitleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setMotionTitle(event.target.value);
-  }
+  };
   const handleDescriptionChange = (value: string) => {
     setMotionDescription(value);
-  }
+  };
   const handleTimeLimitChange = (event: ChangeEvent<HTMLInputElement>) => {
     setTimeLimit(event.target.value);
-  }
+  };
   const handleVotingSelect = (e: any) => {
     console.log(e.target.value, 'voting method: ');
     setVotingMethod(e.target.value);
-  }
+  };
 
   const handleBack = () => {
     router.push('/');
-  }
+  };
 
   return (
-    <div className="flex gap-20 px-20 pt-5 text-black w-full justify-center h-[800px] overflow-y-auto">
+    <div className="flex gap-20 px-20 pt-5 text-black w-full justify-center h-[600px] overflow-y-auto">
       <div className="flex flex-col gap-2.5">
         <div>
-          <Button className="rounded-full" leftIcon={ArrowLeftIcon} onClick={handleBack}>Back</Button>
+          <Button className="rounded-full" leftIcon={ArrowLeftIcon} onClick={handleBack}>
+            Back
+          </Button>
         </div>
         <div className="bg-white flex flex-col gap-2.5 rounded-2xl p-5 ">
           <Label className="text-2xl">Create Poll</Label>
@@ -46,8 +96,7 @@ const CreatePollPage = () => {
             <Label className="text-black/60 text-lg">Motion Title: </Label>
             <Input value={motionTitle} onChange={handleTitleInputChange} placeholder={'Motion Title'} />
           </div>
-          <div className="flex justify-end pb-5 border-b border-black/30">
-          </div>
+          <div className="flex justify-end pb-5 border-b border-black/30"></div>
           <div className="flex flex-col gap-2.5">
             <Label className="text-black/60 text-lg font-bold">Motion Description: </Label>
             <TextEditor value={motionDescription} onChange={handleDescriptionChange} />
@@ -61,7 +110,9 @@ const CreatePollPage = () => {
             <CheckerButton />
             <CheckerButton />
             <div className="flex justify-end">
-              <Button className="rounded-full" leftIcon={PlusIcon}>Add Option</Button>
+              <Button className="rounded-full" leftIcon={PlusIcon}>
+                Add Option
+              </Button>
             </div>
           </div>
           <div className="flex flex-col gap-2">
@@ -90,17 +141,22 @@ const CreatePollPage = () => {
               </select>
             </div>
           </div>
-          {votingMethod === 'ethholding' ?
-            <></> :
+          {votingMethod === 'ethholding' ? (
+            <></>
+          ) : (
             <div className="flex flex-col gap-2">
               <Label className="text-2xl">Access Rules</Label>
               <CredentialForm />
             </div>
-          }
+          )}
         </div>
         <div className="flex gap-2.5 justify-end">
-          <Button className="rounded-full" leftIcon={XMarkIcon}>Discard</Button>
-          <Button className="rounded-full" leftIcon={PlusCirceIcon}>Create Poll</Button>
+          <Button className="rounded-full" leftIcon={XMarkIcon}>
+            Discard
+          </Button>
+          <Button className="rounded-full" leftIcon={PlusCirceIcon} onClick={createNewPoll}>
+            Create Poll
+          </Button>
         </div>
       </div>
       <div className="flex flex-col gap-10 w-96">
@@ -108,12 +164,10 @@ const CreatePollPage = () => {
           <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
             <Label className="text-2xl">Details</Label>
           </div>
-          <div className="flex flex-col gap-2.5 pl-5 pb-5">
-          </div>
+          <div className="flex flex-col gap-2.5 pl-5 pb-5"></div>
         </div>
       </div>
-    </div >
-  )
-}
-
+    </div>
+  );
+};
 export default CreatePollPage;
