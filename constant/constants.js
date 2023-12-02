@@ -1,4 +1,4 @@
-const contractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+const contractAddress = '0x14E7DdF1409A2FD27E9b74CEA90F171F344f8802';
 
 const contractAbi = [
   {
@@ -80,11 +80,6 @@ const contractAbi = [
     inputs: [
       {
         internalType: 'bytes32',
-        name: '_name',
-        type: 'bytes32',
-      },
-      {
-        internalType: 'bytes32',
         name: '_description',
         type: 'bytes32',
       },
@@ -124,11 +119,6 @@ const contractAbi = [
     ],
     name: 'getPoll',
     outputs: [
-      {
-        internalType: 'bytes32',
-        name: 'name',
-        type: 'bytes32',
-      },
       {
         internalType: 'bytes32',
         name: 'description',
@@ -171,11 +161,6 @@ const contractAbi = [
       {
         internalType: 'bytes32',
         name: 'description',
-        type: 'bytes32',
-      },
-      {
-        internalType: 'bytes32',
-        name: 'name',
         type: 'bytes32',
       },
       {

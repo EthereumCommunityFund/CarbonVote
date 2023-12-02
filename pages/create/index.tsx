@@ -10,13 +10,11 @@ import { useRouter } from 'next/router';
 import { ChangeEvent, useState } from 'react';
 import { useEffect } from 'react';
 import { ethers, Contract } from 'ethers';
+import { contractAbi, contractAddress } from '@/constant/constants';
 import { convertToMinutes } from '@/utils';
-import VotingContract from '../../carbonvote_contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
-
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
-  const contractAbi = VotingContract.abi;
-  const contractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+
   useEffect(() => {
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -46,7 +44,6 @@ const CreatePollPage = () => {
 
     const formattedTitle = ethers.utils.formatBytes32String(motionTitle);
     const formattedDescription = ethers.utils.formatBytes32String(motionDescription);
-    const pollType = 0;
     const optionNames = ['Yes', 'No'].map(ethers.utils.formatBytes32String);
     const pollMetadata = ethers.utils.formatBytes32String('arbitrary data');
     console.log('Formatted Title:', formattedTitle);
@@ -57,7 +54,7 @@ const CreatePollPage = () => {
 
     try {
       if (pollContract) {
-        const tx = await pollContract.createPoll(formattedTitle, formattedDescription, endTimeTimestamp, optionNames, pollType, pollMetadata);
+        const tx = await pollContract.createPoll(formattedTitle, formattedDescription, endTimeTimestamp, optionNames, pollMetadata);
         await tx.wait();
         console.log('Poll created successfully');
       }
