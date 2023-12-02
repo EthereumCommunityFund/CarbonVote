@@ -51,7 +51,6 @@ contract VotingOption {
         require(msg.sender == mainContract, "You don't have access");
         require(hasVoted[voter], "No vote to remove");
 
-        // if it only has one
         uint256 index = voterIndex[voter];
         require(index < voters.length, "Voter not found");
 
