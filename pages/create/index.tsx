@@ -44,6 +44,7 @@ const CreatePollPage = () => {
 
     const formattedTitle = ethers.utils.formatBytes32String(motionTitle);
     const formattedDescription = ethers.utils.formatBytes32String(motionDescription);
+    const pollType = 0;
     const optionNames = ['Yes', 'No'].map(ethers.utils.formatBytes32String);
     const pollMetadata = ethers.utils.formatBytes32String('arbitrary data');
     console.log('Formatted Title:', formattedTitle);
@@ -54,7 +55,7 @@ const CreatePollPage = () => {
 
     try {
       if (pollContract) {
-        const tx = await pollContract.createPoll(formattedTitle, formattedDescription, endTimeTimestamp, optionNames, pollMetadata);
+        const tx = await pollContract.createPoll(formattedTitle, formattedDescription, endTimeTimestamp, pollType, optionNames, pollMetadata);
         await tx.wait();
         console.log('Poll created successfully');
       }
