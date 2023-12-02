@@ -3,6 +3,7 @@ import "./VotingOption.sol";
 pragma solidity ^0.8.0;
 
 contract VotingContract {
+    address signer_public_key = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
     enum PollType {
         EthCount
     }
@@ -122,5 +123,70 @@ contract VotingContract {
             poll.poll_type,
             poll.poll_metadata
         );
+    }
+
+    function getMessageHash(
+        string memory _message
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_message));
+    }
+
+    //  function verifyServerSignature(bytes32 messageHash, bytes memory signature) public view returns (bool, address) {
+    //     address recoveredAddress = recoverSigner(messageHash, signature);
+    //     return (recoveredAddress == signer_public_key, recoveredAddress);
+    // }
+
+    // function recoverSigner(bytes32 messageHash, bytes memory signature) internal pure returns (address) {
+    //     (bytes32 r, bytes32 s, uint8 v) = splitSignature(signature);
+    //     return ecrecover(messageHash, v, r, s);
+    // }
+    // function splitSignature(bytes memory _sig) public pure returns (bytes32 r, bytes32 s, uint8 v) {
+    //     require(_sig.length == 65, "Invalid signature length");
+    //     assembly {
+    //         r := mload(add(_sig, 32))
+    //         s := mload(add(_sig, 64))
+    //         v := byte(0, mload(add(_sig, 96)))
+    //     }
+    // }
+
+    function verifyServerSignature(
+        string memory message,
+        bytes memory signature
+    ) public view returns (bool, address) {
+        bytes32 messageHash = prefixedHash(message);
+        address recoveredAddress = recoverSigner(messageHash, signature);
+        return (recoveredAddress == signer_public_key, recoveredAddress);
+    }
+
+    function recoverSigner(
+        bytes32 messageHash,
+        bytes memory signature
+    ) internal pure returns (address) {
+        (bytes32 r, bytes32 s, uint8 v) = splitSignature(signature);
+        return ecrecover(messageHash, v, r, s);
+    }
+
+    function splitSignature(
+        bytes memory _sig
+    ) internal pure returns (bytes32 r, bytes32 s, uint8 v) {
+        require(_sig.length == 65, "Invalid signature length");
+        assembly {
+            r := mload(add(_sig, 32))
+            s := mload(add(_sig, 64))
+            v := byte(0, mload(add(_sig, 96)))
+        }
+    }
+
+    function prefixedHash(
+        string memory message
+    ) internal pure returns (bytes32) {
+        bytes32 messageHash = keccak256(abi.encodePacked(message));
+        return
+            keccak256(
+                abi.encodePacked(
+                    "\x19Ethereum Signed Message:\n32",
+                    messageHash
+                )
+            );
     }
 }
