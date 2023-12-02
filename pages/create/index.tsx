@@ -55,7 +55,7 @@ const CreatePollPage = () => {
     console.log(durationInSeconds);
     if (durationInSeconds <= 0) {
       console.error("Invalid duration");
-      return;
+      // return;
     }
 
     const formattedTitle = ethers.utils.formatBytes32String(motionTitle);
