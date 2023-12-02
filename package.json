@@ -7,8 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "go": "npm run compile-contracts && npm run dev",
-    "compile-contracts": "cd carbonvote_contracts && npx hardhat compile",
+    "deploy_contracts": "cd carbonvote_contracts && npx hardhat run --network hardhat scripts/deploy.ts",
+    "start-node": "cd carbonvote_contracts && npx hardhat node",
+    "go": " npm run deploy_contracts && npm run dev",
     "test-contracts": "cd carbonvote_contracts && npx hardhat test"
   },
   "dependencies": {
