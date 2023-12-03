@@ -2,15 +2,61 @@ import { useRouter } from 'next/router';
 
 import { Label } from '@/components/ui/Label';
 import { useUserPassportContext } from '../context/PassportContext';
-import { polls } from '@/constant/mockPolls';
+import { mockpolls } from '@/constant/mockPolls';
 import { PollType } from '@/types';
 import { PollCardTemplate } from '@/components/templates/PollCard';
 import Button from '@/components/ui/buttons/Button';
 import { PlusCirceIcon } from '@/components/icons';
+import { useEffect, useState } from 'react';
+import { Contract, ethers } from 'ethers';
+import VotingContract from './../carbonvote_contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
+import { contract_addresses } from './../carbonvote_contracts/artifacts/deployedAddresses.json';
+
+interface Poll {
+  name: string;
+  description: string;
+  options: string[];
+  endTime: number;
+  pollType: number;
+  pollMetadata: string;
+}
 
 export default function Home() {
   const router = useRouter();
-  const pollList: PollType[] = polls;
+  const pollList: PollType[] = mockpolls;
+  const [polls, setPolls] = useState<Poll[]>([]);
+  const contractAbi = VotingContract.abi;
+  const contractAddress = contract_addresses.VotingContract;
+
+  useEffect(() => {
+    const fetchPolls = async () => {
+      if (window.ethereum) {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const contract = new ethers.Contract(contractAddress, contractAbi, provider);
+
+        try {
+          // Get all polls at once
+          // const { names, descriptions, options, endTimes, pollTypes, pollMetadatas } = await contract.getAllPolls();
+          // const pollsData = names.map((name: any, index: string | number) => ({
+          //   name: name,
+          //   description: descriptions[index],
+          //   options: options[index],
+          //   endTime: endTimes[index],
+          //   pollType: pollTypes[index],
+          //   pollMetadata: pollMetadatas[index],
+          // }));
+          const pollsData = await contract.getAllPolls();
+          console.log(pollsData, 'pollsData');
+          setPolls(pollsData);
+        } catch (error) {
+          console.error('Error fetching polls:', error);
+        }
+      }
+    };
+
+    fetchPolls();
+    console.log(polls, 'polls');
+  }, []);
 
   const handleCreatePoll = () => {
     router.push(`/create`);
