@@ -19,11 +19,12 @@ import { useEffect } from "react";
 import { ethers, Contract } from "ethers";
 import { convertToMinutes } from "@/utils";
 import VotingContract from "../../carbonvote_contracts/artifacts/contracts/VoteContract.sol/VotingContract.json";
+import { contract_addresses } from "../../carbonvote_contracts/artifacts/deployedAddresses.json";
 
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
   const contractAbi = VotingContract.abi;
-  const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+  const contractAddress = contract_addresses.VotingContract;
   useEffect(() => {
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -58,12 +59,11 @@ const CreatePollPage = () => {
       // return;
     }
 
-    const formattedTitle = ethers.utils.formatBytes32String(motionTitle);
-    const formattedDescription =
-      ethers.utils.formatBytes32String(motionDescription);
+    const formattedTitle = motionTitle;
+    const formattedDescription = motionDescription;
     const pollType = 0;
-    const optionNames = ["Yes", "No"].map(ethers.utils.formatBytes32String);
-    const pollMetadata = ethers.utils.formatBytes32String("arbitrary data");
+    const optionNames = ["Yes", "No"];
+    const pollMetadata = "arbitrary data";
     console.log("Formatted Title:", formattedTitle);
     console.log("Formatted Description:", formattedDescription);
     console.log("Duration (seconds):", endTimeTimestamp);
