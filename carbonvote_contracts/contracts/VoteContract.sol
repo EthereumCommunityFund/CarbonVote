@@ -1,8 +1,9 @@
 pragma solidity ^0.8.0;
 import "./VotingOption.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract VotingContract is Initializable {
+contract VotingContract is Initializable, OwnableUpgradeable {
     address signer_public_key;
     enum PollType {
         EthCount
@@ -13,6 +14,7 @@ contract VotingContract is Initializable {
     event VoteCasted(address voter, uint256 pollIndex, uint256 optionIndex);
 
     function initialize() public initializer {
+        __Ownable_init(msg.sender);
         signer_public_key = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
     }
 
@@ -24,7 +26,7 @@ contract VotingContract is Initializable {
         mapping(address => bool) hasVoted;
         PollType poll_type;
         string poll_metadata;
-        mapping(address => uint256) voterChoice; // New mapping to store voter's choice
+        mapping(address => uint256) voterChoice;
         mapping(address => bool) isOption;
     }
 
@@ -131,29 +133,51 @@ contract VotingContract is Initializable {
         );
     }
 
+    function getAllPolls()
+        public
+        view
+        returns (
+            string[] memory names,
+            string[] memory descriptions,
+            address[][] memory options,
+            uint256[] memory endTimes,
+            PollType[] memory pollTypes,
+            string[] memory pollMetadatas
+        )
+    {
+        uint256 pollCount = polls.length;
+        names = new string[](pollCount);
+        descriptions = new string[](pollCount);
+        options = new address[][](pollCount);
+        endTimes = new uint256[](pollCount);
+        pollTypes = new PollType[](pollCount);
+        pollMetadatas = new string[](pollCount);
+
+        for (uint256 i = 0; i < pollCount; i++) {
+            Poll storage poll = polls[i];
+            names[i] = poll.name;
+            descriptions[i] = poll.description;
+            options[i] = poll.options;
+            endTimes[i] = poll.endTime;
+            pollTypes[i] = poll.poll_type;
+            pollMetadatas[i] = poll.poll_metadata;
+        }
+
+        return (
+            names,
+            descriptions,
+            options,
+            endTimes,
+            pollTypes,
+            pollMetadatas
+        );
+    }
+
     function getMessageHash(
         string memory _message
     ) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(_message));
     }
-
-    //  function verifyServerSignature(bytes32 messageHash, bytes memory signature) public view returns (bool, address) {
-    //     address recoveredAddress = recoverSigner(messageHash, signature);
-    //     return (recoveredAddress == signer_public_key, recoveredAddress);
-    // }
-
-    // function recoverSigner(bytes32 messageHash, bytes memory signature) internal pure returns (address) {
-    //     (bytes32 r, bytes32 s, uint8 v) = splitSignature(signature);
-    //     return ecrecover(messageHash, v, r, s);
-    // }
-    // function splitSignature(bytes memory _sig) public pure returns (bytes32 r, bytes32 s, uint8 v) {
-    //     require(_sig.length == 65, "Invalid signature length");
-    //     assembly {
-    //         r := mload(add(_sig, 32))
-    //         s := mload(add(_sig, 64))
-    //         v := byte(0, mload(add(_sig, 96)))
-    //     }
-    // }
 
     function verifyServerSignature(
         string memory message,

@@ -19,6 +19,9 @@ async function main() {
   }
 
   fs.writeFileSync(path.join(artifactsDir, 'deployedAddresses.json'), JSON.stringify(addresses, null, 2));
+
+
+  console.log(votingContract, await votingContract.owner());
 }
 
 main().catch(error => {
