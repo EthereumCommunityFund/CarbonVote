@@ -1,25 +1,18 @@
-import {
-  ArrowLeftIcon,
-  PlusCirceIcon,
-  PlusIcon,
-  StopCircleIcon,
-  ThumbDownIcon,
-  ThumbUpIcon,
-} from "@/components/icons";
-import { XMarkIcon } from "@/components/icons/xmark";
-import { CredentialForm } from "@/components/templates/CredentialForm";
-import Button from "@/components/ui/buttons/Button";
-import CheckerButton from "@/components/ui/buttons/CheckerButton";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
-import TextEditor from "@/components/ui/TextEditor";
-import { useRouter } from "next/router";
-import { ChangeEvent, useState } from "react";
-import { useEffect } from "react";
-import { ethers, Contract } from "ethers";
-import { convertToMinutes } from "@/utils";
-import VotingContract from "../../carbonvote_contracts/artifacts/contracts/VoteContract.sol/VotingContract.json";
-import { contract_addresses } from "../../carbonvote_contracts/artifacts/deployedAddresses.json";
+import { ArrowLeftIcon, PlusCirceIcon, PlusIcon, StopCircleIcon, ThumbDownIcon, ThumbUpIcon } from '@/components/icons';
+import { XMarkIcon } from '@/components/icons/xmark';
+import { CredentialForm } from '@/components/templates/CredentialForm';
+import Button from '@/components/ui/buttons/Button';
+import CheckerButton from '@/components/ui/buttons/CheckerButton';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
+import TextEditor from '@/components/ui/TextEditor';
+import { useRouter } from 'next/router';
+import { ChangeEvent, useState } from 'react';
+import { useEffect } from 'react';
+import { Contract, ethers } from 'ethers';
+import { convertToMinutes } from '@/utils';
+import VotingContract from '../../carbonvote_contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
+import { contract_addresses } from '../../carbonvote_contracts/artifacts/deployedAddresses.json';
 
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
@@ -29,25 +22,19 @@ const CreatePollPage = () => {
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      const contract = new ethers.Contract(
-        contractAddress,
-        contractAbi,
-        signer
-      );
+      const contract = new ethers.Contract(contractAddress, contractAbi, signer);
       setPollContract(contract);
     }
   }, []);
   const router = useRouter();
   const [motionTitle, setMotionTitle] = useState<string>();
-  const [motionDescription, setMotionDescription] = useState<string>("");
+  const [motionDescription, setMotionDescription] = useState<string>('');
   const [timeLimit, setTimeLimit] = useState<string>();
-  const [votingMethod, setVotingMethod] = useState<
-    "ethholding" | "voting1" | "voting2"
-  >("ethholding");
+  const [votingMethod, setVotingMethod] = useState<'ethholding' | 'voting1' | 'voting2'>('ethholding');
 
   const createNewPoll = async () => {
     if (!motionTitle || !motionDescription || !timeLimit) {
-      console.error("All fields are required");
+      console.error('All fields are required');
       return;
     }
     const durationInSeconds = convertToMinutes(timeLimit) * 60;
@@ -55,36 +42,29 @@ const CreatePollPage = () => {
     const endTimeTimestamp = currentTimeInSeconds + durationInSeconds;
     console.log(durationInSeconds);
     if (durationInSeconds <= 0) {
-      console.error("Invalid duration");
+      console.error('Invalid duration');
       // return;
     }
 
     const formattedTitle = motionTitle;
     const formattedDescription = motionDescription;
     const pollType = 0;
-    const optionNames = ["Yes", "No"];
-    const pollMetadata = "arbitrary data";
-    console.log("Formatted Title:", formattedTitle);
-    console.log("Formatted Description:", formattedDescription);
-    console.log("Duration (seconds):", endTimeTimestamp);
-    console.log("Option Names:", optionNames);
-    console.log("Poll Metadata:", pollMetadata);
+    const optionNames = ['Yes', 'No'];
+    const pollMetadata = 'arbitrary data';
+    console.log('Formatted Title:', formattedTitle);
+    console.log('Formatted Description:', formattedDescription);
+    console.log('Duration (seconds):', endTimeTimestamp);
+    console.log('Option Names:', optionNames);
+    console.log('Poll Metadata:', pollMetadata);
 
     try {
       if (pollContract) {
-        const tx = await pollContract.createPoll(
-          formattedTitle,
-          formattedDescription,
-          endTimeTimestamp,
-          optionNames,
-          pollType,
-          pollMetadata
-        );
+        const tx = await pollContract.createPoll(formattedTitle, formattedDescription, endTimeTimestamp, optionNames, pollType, pollMetadata);
         await tx.wait();
-        console.log("Poll created successfully");
+        console.log('Poll created successfully');
       }
     } catch (error) {
-      console.error("Error creating poll:", error);
+      console.error('Error creating poll:', error);
     }
   };
 
@@ -98,23 +78,19 @@ const CreatePollPage = () => {
     setTimeLimit(event.target.value);
   };
   const handleVotingSelect = (e: any) => {
-    console.log(e.target.value, "voting method: ");
+    console.log(e.target.value, 'voting method: ');
     setVotingMethod(e.target.value);
   };
 
   const handleBack = () => {
-    router.push("/");
+    router.push('/');
   };
 
   return (
     <div className="flex gap-20 px-20 pt-5 text-black w-full justify-center h-[600px] overflow-y-auto">
       <div className="flex flex-col gap-2.5">
         <div>
-          <Button
-            className="rounded-full"
-            leftIcon={ArrowLeftIcon}
-            onClick={handleBack}
-          >
+          <Button className="rounded-full" leftIcon={ArrowLeftIcon} onClick={handleBack}>
             Back
           </Button>
         </div>
@@ -122,21 +98,12 @@ const CreatePollPage = () => {
           <Label className="text-2xl">Create Poll</Label>
           <div className="flex flex-col gap-1">
             <Label className="text-black/60 text-lg">Motion Title: </Label>
-            <Input
-              value={motionTitle}
-              onChange={handleTitleInputChange}
-              placeholder={"Motion Title"}
-            />
+            <Input value={motionTitle} onChange={handleTitleInputChange} placeholder={'Motion Title'} />
           </div>
           <div className="flex justify-end pb-5 border-b border-black/30"></div>
           <div className="flex flex-col gap-2.5">
-            <Label className="text-black/60 text-lg font-bold">
-              Motion Description:{" "}
-            </Label>
-            <TextEditor
-              value={motionDescription}
-              onChange={handleDescriptionChange}
-            />
+            <Label className="text-black/60 text-lg font-bold">Motion Description: </Label>
+            <TextEditor value={motionDescription} onChange={handleDescriptionChange} />
           </div>
           <div className="flex flex-col gap-1">
             <div className="flex gap-2 items-center">
@@ -154,11 +121,7 @@ const CreatePollPage = () => {
           </div>
           <div className="flex flex-col gap-2">
             <Label className="text-2xl">Time Limit</Label>
-            <Input
-              value={timeLimit}
-              onChange={handleTimeLimitChange}
-              placeholder={"Time Input"}
-            ></Input>
+            <Input value={timeLimit} onChange={handleTimeLimitChange} placeholder={'Time Input'}></Input>
           </div>
           <div className="flex flex-col gap-2">
             <Label className="text-2xl">Voting Method</Label>
@@ -170,28 +133,19 @@ const CreatePollPage = () => {
                 className="flex w-full text-black outline-none rounded-lg py-2.5 pr-3 pl-2.5 bg-inputField gap-2.5 items-center border border-white/10 border-opacity-10"
                 title="Voting Method"
               >
-                <option
-                  className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                  value="ethholding"
-                >
+                <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="ethholding">
                   EthHolding
                 </option>
-                <option
-                  className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                  value="voting1"
-                >
+                <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="voting1">
                   Voting 1
                 </option>
-                <option
-                  className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                  value="voting2"
-                >
+                <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="voting2">
                   Voting 2
                 </option>
               </select>
             </div>
           </div>
-          {votingMethod === "ethholding" ? (
+          {votingMethod === 'ethholding' ? (
             <></>
           ) : (
             <div className="flex flex-col gap-2">
@@ -204,11 +158,7 @@ const CreatePollPage = () => {
           <Button className="rounded-full" leftIcon={XMarkIcon}>
             Discard
           </Button>
-          <Button
-            className="rounded-full"
-            leftIcon={PlusCirceIcon}
-            onClick={createNewPoll}
-          >
+          <Button className="rounded-full" leftIcon={PlusCirceIcon} onClick={createNewPoll}>
             Create Poll
           </Button>
         </div>

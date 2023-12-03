@@ -1,12 +1,25 @@
-import { ArrowLeftIcon, StopCircleIcon, ThumbDownIcon, ThumbUpIcon } from "@/components/icons";
-import { ClockIcon } from "@/components/icons/clock";
-import Button from "@/components/ui/buttons/Button";
-import CheckerButton from "@/components/ui/buttons/CheckerButton";
-import CountdownTimer from "@/components/ui/CountDownTimer";
-import HtmlString from "@/components/ui/Html";
-import { Label } from "@/components/ui/Label";
-import { PollType } from "@/types";
-import { useRouter } from "next/router";
+import { ArrowLeftIcon, StopCircleIcon, ThumbDownIcon, ThumbUpIcon } from '@/components/icons';
+import { ClockIcon } from '@/components/icons/clock';
+import Button from '@/components/ui/buttons/Button';
+import CheckerButton from '@/components/ui/buttons/CheckerButton';
+import CountdownTimer from '@/components/ui/CountDownTimer';
+import HtmlString from '@/components/ui/Html';
+import { Label } from '@/components/ui/Label';
+import { PollType } from '@/types';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { Contract, ethers } from 'ethers';
+import VotingContract from '../../carbonvote_contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
+import { contract_addresses } from '../../carbonvote_contracts/artifacts/deployedAddresses.json';
+
+interface Poll {
+  name: string;
+  description: string;
+  options: string[];
+  endTime: number;
+  pollType: number;
+  pollMetadata: string;
+}
 
 const PollPage = () => {
   const router = useRouter();
@@ -18,37 +31,56 @@ const PollPage = () => {
     startDate: '23423',
     endDate: '23423',
     isLive: true,
-    topic: "ZK",
-    subTopic: "ZKML",
-    isZuPassRequired: false
-  }
+    topic: 'ZK',
+    subTopic: 'ZKML',
+    isZuPassRequired: false,
+  };
 
   const handleBack = () => {
     router.push('/');
-  }
+  };
+  const [poll, setPoll] = useState<Poll[]>([]);
+  const contractAbi = VotingContract.abi;
+  const contractAddress = contract_addresses.VotingContract;
+
+  // useEffect(() => {
+  //   const fetchPoll = async () => {
+  //     if (window.ethereum) {
+  //       const provider = new ethers.providers.Web3Provider(window.ethereum);
+  //       const contract = new ethers.Contract(contractAddress, contractAbi, provider);
+
+  //       try {
+  //         const pollData = await contract.getPoll();
+  //         console.log(pollData);
+  //         setPoll(pollData);
+  //       } catch (error) {
+  //         console.error('Error fetching polls:', error);
+  //       }
+  //     }
+  //   };
+
+  //   fetchPoll();
+  // }, []);
 
   return (
     <div className="flex gap-20 px-20 pt-5 text-black w-full justify-center">
       <div className="flex flex-col gap-2.5">
         <div>
-          <Button className="rounded-full" leftIcon={ArrowLeftIcon} onClick={handleBack}>Back</Button>
+          <Button className="rounded-full" leftIcon={ArrowLeftIcon} onClick={handleBack}>
+            Back
+          </Button>
         </div>
         <div className="bg-white flex flex-col gap-2.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
-            <div className="bg-[#F84A4A20] px-2.5 rounded-lg items-center">
-              {mockPoll.isLive ?
-                <Label className="text-[#F84A4A]">Live</Label> :
-                <Label className="text-white/70">Ended</Label>
-              }
-            </div>
-            {
-              mockPoll.isLive ?
-                <div className="flex gap-2">
-                  <ClockIcon />
-                  <CountdownTimer targetDate={new Date('2023-12-25T00:00:00')} />
-                </div> :
-                <></>
-            }
+            <div className="bg-[#F84A4A20] px-2.5 rounded-lg items-center">{mockPoll.isLive ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-white/70">Ended</Label>}</div>
+            {mockPoll.isLive ? (
+              <div className="flex gap-2">
+                <ClockIcon />
+                <CountdownTimer targetDate={new Date('2023-12-25T00:00:00')} />
+              </div>
+            ) : (
+              <></>
+            )}
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-black/60 text-lg">Motion: </Label>
@@ -64,7 +96,9 @@ const PollPage = () => {
         </div>
         <div className="bg-white/40 p-2.5 flex flex-col gap-3.5">
           <Label className="text-2xl">Vote on Poll</Label>
-          <Label>This vote requires a <Label className="font-bold">zero-value transaction</Label> from your wallet</Label>
+          <Label>
+            This vote requires a <Label className="font-bold">zero-value transaction</Label> from your wallet
+          </Label>
           <div className="flex flex-col gap-2.5">
             <CheckerButton />
             <CheckerButton />
@@ -85,8 +119,8 @@ const PollPage = () => {
           </div>
         </div>
       </div>
-    </div >
-  )
-}
+    </div>
+  );
+};
 
 export default PollPage;
