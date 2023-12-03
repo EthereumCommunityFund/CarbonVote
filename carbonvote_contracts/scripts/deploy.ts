@@ -9,12 +9,10 @@ async function main() {
 
   console.log('VotingContract deployed to:', votingContract.target);
 
-  // Write the address to a file in the artifacts folder
   const addresses = {
     contract_addresses: { VotingContract: votingContract.target }
   };
 
-  // Ensure the artifacts directory exists
   const artifactsDir = path.join(__dirname, '../artifacts');
   if (!fs.existsSync(artifactsDir)) {
     fs.mkdirSync(artifactsDir);
