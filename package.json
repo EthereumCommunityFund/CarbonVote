@@ -10,6 +10,7 @@
     "deploy_contracts": "cd carbonvote_contracts && npx hardhat run --network hardhat scripts/deploy.ts",
     "start-node": "cd carbonvote_contracts && npx hardhat node",
     "go": " npm run deploy_contracts && npm run dev",
+    "update-install": "npm  install && cd carbonvote_contracts npm install",
     "test-contracts": "cd carbonvote_contracts && npx hardhat test"
   },
   "dependencies": {
