@@ -1,6 +1,6 @@
-import { PollType } from "@/types";
+import { PollType } from '@/types';
 
-export const polls: PollType[] = [
+export const mockpolls: PollType[] = [
   {
     id: 'poll1',
     title: 'Poll1',
@@ -61,4 +61,4 @@ export const polls: PollType[] = [
     isZuPassRequired: true,
     description: 'Description',
   },
-]
+];
