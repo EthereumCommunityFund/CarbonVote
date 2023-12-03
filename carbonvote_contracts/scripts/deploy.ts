@@ -1,22 +1,29 @@
-// Import ethers from Hardhat package
-const { ethers } = require('hardhat');
+const fs = require('fs');
+const path = require('path');
+const { ethers, upgrades } = require('hardhat');
 
 async function main() {
-  // Retrieve the contract factory
   const VotingContract = await ethers.getContractFactory('VotingContract');
+  const votingContract = await upgrades.deployProxy(VotingContract, { initializer: "initialize" });
+  await votingContract.waitForDeployment();
 
-  // Deploy the contract
-  const votingContract = await VotingContract.deploy();
-  await votingContract.deployed();
+  console.log('VotingContract deployed to:', votingContract.target);
 
-  console.log('VotingContract deployed to:', votingContract.address);
+  // Write the address to a file in the artifacts folder
+  const addresses = {
+    contract_addresses: { VotingContract: votingContract.target }
+  };
+
+  // Ensure the artifacts directory exists
+  const artifactsDir = path.join(__dirname, '../artifacts');
+  if (!fs.existsSync(artifactsDir)) {
+    fs.mkdirSync(artifactsDir);
+  }
+
+  fs.writeFileSync(path.join(artifactsDir, 'deployedAddresses.json'), JSON.stringify(addresses, null, 2));
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+main().catch(error => {
+  console.error(error);
+  process.exit(1);
+});
