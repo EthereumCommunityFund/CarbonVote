@@ -9,8 +9,6 @@ import { PollType } from '@/types';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { Contract, ethers } from 'ethers';
-import VotingContract from '../../carbonvote_contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
-import { contract_addresses } from '../../carbonvote_contracts/artifacts/deployedAddresses.json';
 
 interface Poll {
   name: string;
@@ -40,8 +38,6 @@ const PollPage = () => {
     router.push('/');
   };
   const [poll, setPoll] = useState<Poll[]>([]);
-  const contractAbi = VotingContract.abi;
-  const contractAddress = contract_addresses.VotingContract;
 
   // useEffect(() => {
   //   const fetchPoll = async () => {
@@ -91,7 +87,7 @@ const PollPage = () => {
           </div>
           <div className="flex flex-col gap-2.5">
             <Label className="text-black/60 text-lg font-bold">Description: </Label>
-            <HtmlString htmlString={mockPoll.description} />
+            {/* <HtmlString htmlString={mockPoll.description} /> */}
           </div>
         </div>
         <div className="bg-white/40 p-2.5 flex flex-col gap-3.5">

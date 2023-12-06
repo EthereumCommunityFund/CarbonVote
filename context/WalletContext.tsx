@@ -1,14 +1,8 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
-import { ethers } from "ethers";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { ethers } from 'ethers';
 
 interface WalletContextType {
-  provider: ethers.providers.Web3Provider | null;
+  provider: ethers.Provider | null;
   account: string | null;
   isConnected: boolean;
   connectToMetamask: () => Promise<void>;
@@ -44,24 +38,21 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         console.error(err);
       }
     } else {
-      console.error("MetaMask is not detected in the browser");
+      console.error('MetaMask is not detected in the browser');
     }
   };
 
   useEffect(() => {
     checkIfWalletIsConnected();
-    window.ethereum?.on?.("accountsChanged", handleAccountsChanged);
+    window.ethereum?.on?.('accountsChanged', handleAccountsChanged);
     return () => {
-      window.ethereum?.removeListener?.(
-        "accountsChanged",
-        handleAccountsChanged
-      );
+      window.ethereum?.removeListener?.('accountsChanged', handleAccountsChanged);
     };
   }, []);
 
   const handleAccountsChanged = (accounts: string[]) => {
     if (accounts.length === 0) {
-      console.log("Please connect to MetaMask.");
+      console.log('Please connect to MetaMask.');
       setAccount(null);
       setIsConnected(false);
     } else if (accounts[0] !== account) {
@@ -74,7 +65,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     let provider;
     let signer = null;
     if (window.ethereum == null) {
-      console.log("MetaMask not installed; using read-only defaults");
+      console.log('MetaMask not installed; using read-only defaults');
       // provider = ethers.getDefaultProvider();
     } else {
       provider = new ethers.BrowserProvider(window.ethereum as any);
@@ -82,20 +73,14 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     }
   };
   // Provide the context
-  return (
-    <WalletContext.Provider
-      value={{ provider, account, isConnected, connectToMetamask }}
-    >
-      {children}
-    </WalletContext.Provider>
-  );
+  return <WalletContext.Provider value={{ provider, account, isConnected, connectToMetamask }}>{children}</WalletContext.Provider>;
 };
 
 // Custom hook to use the wallet context
 export const useWallet = () => {
   const context = useContext(WalletContext);
   if (!context) {
-    throw new Error("useWallet must be used within a WalletProvider");
+    throw new Error('useWallet must be used within a WalletProvider');
   }
   return context;
 };
