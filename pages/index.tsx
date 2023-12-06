@@ -38,21 +38,21 @@ export default function Home() {
 
         try {
           // Get all polls at once
-          // const { names, descriptions, options, endTimes, pollTypes, pollMetadatas } = await contract.getAllPolls();
-          // const pollsData = names.map((name: any, index: string | number) => ({
-          //   name: name,
-          //   description: descriptions[index],
-          //   options: options[index],
-          //   endTime: endTimes[index],
-          //   pollType: pollTypes[index],
-          //   pollMetadata: pollMetadatas[index],
-          // }));
+          const { names, descriptions, options, endTimes, pollTypes, pollMetadatas } = await contract.getAllPolls();
+          const pollsData = names.map((name: any, index: string | number) => ({
+            name: name,
+            description: descriptions[index],
+            options: options[index],
+            endTime: endTimes[index],
+            pollType: pollTypes[index],
+            pollMetadata: pollMetadatas[index],
+          }));
           console.log(
             VotingContract.abi
             // await contract.
           );
           console.log(contract);
-          const pollsData = await contract.getAllPolls();
+          // const pollsData = await contract.getAllPolls();
           console.log(pollsData, 'pollsData');
           setPolls(pollsData);
         } catch (error) {
@@ -84,19 +84,22 @@ export default function Home() {
           </Button>
         </div>
         <div className="flex flex-col gap-2.5 h-[250px] overflow-y-auto">
-          {pollList.map((poll) => {
+          {polls.map((poll, index) => {
             return (
               <PollCardTemplate
-                key={poll.id}
-                id={poll.id}
-                title={poll.title}
-                creator={poll.creator}
-                startDate={poll.startDate}
-                endDate={poll.endDate}
-                isLive={poll.isLive}
-                topic={poll.topic}
-                subTopic={poll.subTopic}
-                isZuPassRequired={poll.isZuPassRequired}
+                key={index}
+                id={`${index}`} // Assuming you don't have a unique ID, you can use the index or a better unique identifier
+                title={poll.name}
+                creator={'Creator Name'} // Replace with actual creator if available
+                description={poll.description}
+                endDate={new Date(Number(poll.endTime) * 1000)}
+                isLive={Date.now() < Number(poll.endTime) * 1000}
+                options={poll.options}
+                pollMetadata={poll.pollMetadata}
+                startDate={''}
+                topic={''}
+                subTopic={''}
+                isZuPassRequired={false}
               />
             );
           })}
