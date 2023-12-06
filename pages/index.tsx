@@ -1,16 +1,16 @@
-import { useRouter } from 'next/router';
+import { useRouter } from "next/router";
 
-import { Label } from '@/components/ui/Label';
-import { useUserPassportContext } from '../context/PassportContext';
-import { mockpolls } from '@/constant/mockPolls';
-import { PollType } from '@/types';
-import { PollCardTemplate } from '@/components/templates/PollCard';
-import Button from '@/components/ui/buttons/Button';
-import { PlusCirceIcon } from '@/components/icons';
-import { useEffect, useState } from 'react';
-import { Contract, ethers } from 'ethers';
-import VotingContract from './../carbonvote_contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
-import { contract_addresses } from './../carbonvote_contracts/artifacts/deployedAddresses.json';
+import { Label } from "@/components/ui/Label";
+import { useUserPassportContext } from "../context/PassportContext";
+import { mockpolls } from "@/constant/mockPolls";
+import { PollType } from "@/types";
+import { PollCardTemplate } from "@/components/templates/PollCard";
+import Button from "@/components/ui/buttons/Button";
+import { PlusCirceIcon } from "@/components/icons";
+import { useEffect, useState } from "react";
+import { ethers } from "ethers";
+import VotingContract from "./../carbonvote_contracts/artifacts/contracts/VoteContract.sol/VotingContract.json";
+import { contract_addresses } from "./../carbonvote_contracts/artifacts/deployedAddresses.json";
 
 interface Poll {
   name: string;
@@ -31,8 +31,14 @@ export default function Home() {
   useEffect(() => {
     const fetchPolls = async () => {
       if (window.ethereum) {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const contract = new ethers.Contract(contractAddress, contractAbi, provider);
+        let provider = new ethers.BrowserProvider(window.ethereum as any);
+        let signer = await provider.getSigner();
+
+        const contract = new ethers.Contract(
+          contractAddress,
+          contractAbi,
+          signer
+        );
 
         try {
           // Get all polls at once
@@ -45,17 +51,22 @@ export default function Home() {
           //   pollType: pollTypes[index],
           //   pollMetadata: pollMetadatas[index],
           // }));
+          console.log(
+            VotingContract.abi
+            // await contract.
+          );
+          console.log(contract);
           const pollsData = await contract.getAllPolls();
-          console.log(pollsData, 'pollsData');
+          console.log(pollsData, "pollsData");
           setPolls(pollsData);
         } catch (error) {
-          console.error('Error fetching polls:', error);
+          console.error("Error fetching polls:", error);
         }
       }
     };
 
     fetchPolls();
-    console.log(polls, 'polls');
+    console.log(polls, "polls");
   }, []);
 
   const handleCreatePoll = () => {
@@ -67,12 +78,18 @@ export default function Home() {
       <div className="flex gap-3 pt-5 px-5 bg-gradient-to-r from-red-400 to-white rounded-lg justify-center">
         <div className="flex flex-col gap-2.5 py-10 font-share-tech-mono lg:w-2/3">
           <Label className="text-[39px]">Carbonvote V 2.0</Label>
-          <Label className="lg:text-[69px] md:text-[59px]">Empowering Consensus for a Sustainable Future.</Label>
+          <Label className="lg:text-[69px] md:text-[59px]">
+            Empowering Consensus for a Sustainable Future.
+          </Label>
         </div>
       </div>
       <div className="px-[273px] flex flex-col gap-[30px]">
         <div className="flex justify-end">
-          <Button className="rounded-full" leftIcon={PlusCirceIcon} onClick={handleCreatePoll}>
+          <Button
+            className="rounded-full"
+            leftIcon={PlusCirceIcon}
+            onClick={handleCreatePoll}
+          >
             Create a Poll
           </Button>
         </div>
