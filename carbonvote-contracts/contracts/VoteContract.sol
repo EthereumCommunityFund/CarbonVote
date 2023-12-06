@@ -64,10 +64,40 @@ contract VotingContract {
         }
     }
 
-    function vote(uint256 _pollIndex, uint256 _optionIndex) external {
+    function vote(
+        uint256 _pollIndex,
+        uint256 _optionIndex,
+        bytes memory signature,
+        string memory message
+    ) external {
+        // Verify the signature
+        (bool verified, ) = verifyServerSignature(message, signature);
+        require(verified, "Signature verification failed");
         Poll storage poll = polls[_pollIndex];
         VotingOption option = VotingOption(payable(poll.options[_optionIndex]));
         option.castVote();
+    }
+
+    function verifyAndRecordVote(
+        address voter,
+        uint256 _pollIndex,
+        uint256 _optionIndex,
+        bytes memory signature,
+        string memory message
+    ) external {
+        // Verify the signature first
+        (bool verified, address recoveredAddress) = verifyServerSignature(
+            message,
+            signature
+        );
+        require(verified, "Signature verification failed");
+        require(
+            recoveredAddress == voter,
+            "Recovered address does not match the sender"
+        );
+
+        // Then record the vote
+        recordVote(voter, _pollIndex, _optionIndex);
     }
 
     function recordVote(

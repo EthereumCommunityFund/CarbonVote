@@ -5,12 +5,40 @@ const { ethers } = require('hardhat');
 async function main() {
 
   const votingContract = await ethers.deployContract("VotingContract");
-  console.log(votingContract)
+  // console.log(votingContract)
 
   await votingContract.waitForDeployment();
 
+
+
   console.log('VotingContract deployed to:', votingContract.target);
 
+  await votingContract.createPoll(
+    "formattedTitle",
+    "formattedDescription",
+    1,
+    ["daf"],
+    0,
+    "da"
+  );
+
+  await votingContract.createPoll(
+    "formattedTitle",
+    "formattedDescription",
+    1,
+    ["daf"],
+    0,
+    "da"
+  );
+
+  await votingContract.createPoll(
+    "formattedTitle",
+    "formattedDescription",
+    1,
+    ["daf"],
+    0,
+    "da"
+  );
   const addresses = {
     contract_addresses: { VotingContract: votingContract.target }
   };
