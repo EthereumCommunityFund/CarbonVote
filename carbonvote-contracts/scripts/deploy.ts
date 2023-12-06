@@ -1,10 +1,16 @@
 const fs = require('fs');
 const path = require('path');
-const { ethers, upgrades } = require('hardhat');
+const { ethers } = require('hardhat');
 
 async function main() {
   const VotingContract = await ethers.getContractFactory('VotingContract');
-  const votingContract = await upgrades.deployProxy(VotingContract, { initializer: "initialize" });
+
+
+
+  const votingContract = await ethers.deployContract("VotingContract");
+
+  console.log(votingContract)
+
   await votingContract.waitForDeployment();
 
   console.log('VotingContract deployed to:', votingContract.target);
@@ -13,6 +19,7 @@ async function main() {
     contract_addresses: { VotingContract: votingContract.target }
   };
 
+  console.log(await votingContract.getAllPolls());
   const artifactsDir = path.join(__dirname, '../artifacts');
   if (!fs.existsSync(artifactsDir)) {
     fs.mkdirSync(artifactsDir);
@@ -21,7 +28,7 @@ async function main() {
   fs.writeFileSync(path.join(artifactsDir, 'deployedAddresses.json'), JSON.stringify(addresses, null, 2));
 
 
-  console.log(votingContract, await votingContract.owner());
+  // console.log(votingContract, await votingContract.owner());
 }
 
 main().catch(error => {
