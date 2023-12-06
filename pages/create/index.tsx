@@ -66,9 +66,17 @@ const CreatePollPage = () => {
           title: 'Poll created successfully',
         });
         console.log('Poll created successfully');
+        setTimeout(() => {
+          router.push('/');
+        }, 5000);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating poll:', error);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   };
 
