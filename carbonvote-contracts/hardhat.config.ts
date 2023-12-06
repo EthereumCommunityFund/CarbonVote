@@ -6,7 +6,7 @@ const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   networks: {
     hardhat: {
-      chainId: 31337,
+      chainId: 1337,
     },
     // goerli: {
     //   url: GOERLI_API_URL,
