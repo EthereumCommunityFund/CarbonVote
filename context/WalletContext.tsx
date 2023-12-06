@@ -71,15 +71,14 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   };
 
   const connectToMetamask = async () => {
-    if (window.ethereum && window.ethereum.request) {
-      try {
-        await window.ethereum.request({ method: "eth_requestAccounts" });
-        checkIfWalletIsConnected();
-      } catch (err) {
-        console.error("Error connecting to MetaMask:", err);
-      }
+    let provider;
+    let signer = null;
+    if (window.ethereum == null) {
+      console.log("MetaMask not installed; using read-only defaults");
+      // provider = ethers.getDefaultProvider();
     } else {
-      console.error("MetaMask is not detected in the browser");
+      provider = new ethers.BrowserProvider(window.ethereum as any);
+      signer = await provider.getSigner();
     }
   };
   // Provide the context

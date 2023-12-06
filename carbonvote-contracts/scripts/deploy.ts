@@ -3,12 +3,8 @@ const path = require('path');
 const { ethers } = require('hardhat');
 
 async function main() {
-  const VotingContract = await ethers.getContractFactory('VotingContract');
-
-
 
   const votingContract = await ethers.deployContract("VotingContract");
-
   console.log(votingContract)
 
   await votingContract.waitForDeployment();

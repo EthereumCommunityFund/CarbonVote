@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy_contracts": "cd carbonvote-contracts && npx hardhat run --network hardhat scripts/deploy.ts",
+    "deploy_contracts": "cd carbonvote-contracts && npx hardhat run --network localhost scripts/deploy.ts",
     "start-node": "cd carbonvote-contracts && npx hardhat node",
     "go": " npm run deploy_contracts && npm run dev",
     "update-install": "npm  install && cd hardhat npm install",
