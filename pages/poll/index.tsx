@@ -9,54 +9,63 @@ import { PollType } from '@/types';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { Contract, ethers } from 'ethers';
+import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
+import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
 
 interface Poll {
+  id: string;
   name: string;
+  startDate: string | Date;
+  endDate: string | Date;
+  isLive: boolean;
+  creator: string;
+  topic: string;
+  subTopic: string;
+  isZuPassRequired: boolean;
   description: string;
   options: string[];
-  endTime: number;
-  pollType: number;
   pollMetadata: string;
 }
 
 const PollPage = () => {
   const router = useRouter();
-  const mockPoll: PollType = {
-    id: '3333',
-    creator: 'QJ',
-    title: 'The ice age should not be extended without at least some decrease in block rewards.',
-    description: 'Description',
-    startDate: '23423',
-    endDate: '23423',
-    isLive: true,
-    topic: 'ZK',
-    subTopic: 'ZKML',
-    isZuPassRequired: false,
-  };
+  const { id } = router.query;
 
   const handleBack = () => {
     router.push('/');
   };
-  const [poll, setPoll] = useState<Poll[]>([]);
+  const [poll, setPoll] = useState<Poll>();
+  const contractAbi = VotingContract.abi;
+  const contractAddress = contract_addresses.VotingContract;
 
-  // useEffect(() => {
-  //   const fetchPoll = async () => {
-  //     if (window.ethereum) {
-  //       const provider = new ethers.providers.Web3Provider(window.ethereum);
-  //       const contract = new ethers.Contract(contractAddress, contractAbi, provider);
+  useEffect(() => {
+    const fetchPoll = async () => {
+      if (window.ethereum && id) {
+        let provider = new ethers.BrowserProvider(window.ethereum as any);
+        let signer = await provider.getSigner();
 
-  //       try {
-  //         const pollData = await contract.getPoll();
-  //         console.log(pollData);
-  //         setPoll(pollData);
-  //       } catch (error) {
-  //         console.error('Error fetching polls:', error);
-  //       }
-  //     }
-  //   };
+        const contract = new ethers.Contract(contractAddress, contractAbi, signer);
 
-  //   fetchPoll();
-  // }, []);
+        try {
+          const pollData = await contract.getPoll(id);
+          console.log(contract);
+          console.log(pollData, 'pollData');
+          setPoll(pollData);
+        } catch (error) {
+          console.error('Error fetching poll:', error);
+        }
+      }
+    };
+
+    fetchPoll();
+    console.log(poll, 'poll');
+    console.log(id, 'id');
+    console.log(poll?.name, 'poll?.title');
+  }, []);
+
+  if (!poll) {
+    return <div>Loading...</div>; // Add loading state handling
+  }
 
   return (
     <div className="flex gap-20 px-20 pt-5 text-black w-full justify-center">
@@ -68,8 +77,8 @@ const PollPage = () => {
         </div>
         <div className="bg-white flex flex-col gap-2.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
-            <div className="bg-[#F84A4A20] px-2.5 rounded-lg items-center">{mockPoll.isLive ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-white/70">Ended</Label>}</div>
-            {mockPoll.isLive ? (
+            <div className="bg-[#F84A4A20] px-2.5 rounded-lg items-center">{poll?.isLive ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-white/70">Ended</Label>}</div>
+            {poll?.isLive ? (
               <div className="flex gap-2">
                 <ClockIcon />
                 <CountdownTimer targetDate={new Date('2023-12-25T00:00:00')} />
@@ -80,14 +89,12 @@ const PollPage = () => {
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-black/60 text-lg">Motion: </Label>
-            <Label className="text-2xl">{mockPoll.title}</Label>
+            <Label className="text-2xl">{poll?.name}</Label>
           </div>
-          <div className="flex justify-end pb-5 border-b border-black/30">
-            <Label>by: {mockPoll.creator}</Label>
-          </div>
+          <div className="flex justify-end pb-5 border-b border-black/30">{/* <Label>by: {mockPoll.creator}</Label> */}</div>
           <div className="flex flex-col gap-2.5">
             <Label className="text-black/60 text-lg font-bold">Description: </Label>
-            {/* <HtmlString htmlString={mockPoll.description} /> */}
+            <span dangerouslySetInnerHTML={{ __html: poll?.description }} />
           </div>
         </div>
         <div className="bg-white/40 p-2.5 flex flex-col gap-3.5">
@@ -107,12 +114,12 @@ const PollPage = () => {
           <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
             <Label className="text-2xl">Details</Label>
           </div>
-          <div className="flex flex-col gap-2.5 pl-5 pb-5">
-            <Label>Voting Method: {mockPoll.creator}</Label>
-            <Label>Start Date: {mockPoll.startDate as string}</Label>
+          {/* <div className="flex flex-col gap-2.5 pl-5 pb-5">
+            <Label>Voting Method: {poll.creator}</Label>
+            <Label>Start Date: {poll.startDate as string}</Label>
             <Label>End Date: {mockPoll.endDate as string}</Label>
             <Label>Requirements: {mockPoll.startDate as string}</Label>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
