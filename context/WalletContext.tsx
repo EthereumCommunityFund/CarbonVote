@@ -1,5 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ethers } from 'ethers';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { ethers } from "ethers";
 
 interface WalletContextType {
   provider: ethers.Provider | null;
@@ -55,7 +61,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   useEffect(() => {
     const ethereumWindow = window as EthereumWindow;
     ethereumWindow.ethereum?.on('accountsChanged', handleAccountsChanged);
-  
+
     return () => {
       ethereumWindow.ethereum?.removeListener('accountsChanged', handleAccountsChanged);
     };
@@ -70,7 +76,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   }, [account]);*/
 
 
-  
+
 
   const handleAccountsChanged = (accounts: string[]) => {
     if (accounts.length === 0) {
@@ -118,14 +124,20 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   };
 
   // Provide the context
-  return <WalletContext.Provider value={{ provider, account, isConnected, connectToMetamask }}>{children}</WalletContext.Provider>;
+  return (
+    <WalletContext.Provider
+      value={{ provider, account, isConnected, connectToMetamask }}
+    >
+      {children}
+    </WalletContext.Provider>
+  );
 };
 
 // Custom hook to use the wallet context
 export const useWallet = () => {
   const context = useContext(WalletContext);
   if (!context) {
-    throw new Error('useWallet must be used within a WalletProvider');
+    throw new Error("useWallet must be used within a WalletProvider");
   }
   return context;
 };

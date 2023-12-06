@@ -70,13 +70,19 @@ export default function Home() {
       <div className="flex gap-3 pt-5 px-5 bg-gradient-to-r from-red-400 to-white rounded-lg justify-center">
         <div className="flex flex-col gap-2.5 py-10 font-share-tech-mono lg:w-2/3">
           <Label className="text-[39px]">Carbonvote V 2.0</Label>
-          <Label className="lg:text-[69px] md:text-[59px]">Empowering Consensus for a Sustainable Future.</Label>
+          <Label className="lg:text-[69px] md:text-[59px]">
+            Empowering Consensus for a Sustainable Future.
+          </Label>
         </div>
       </div>
       <div className="px-[273px] flex flex-col gap-[30px]">
         {isLoading ? <Spinner /> : <></>}
         <div className="flex justify-end">
-          <Button className="rounded-full" leftIcon={PlusCirceIcon} onClick={handleCreatePoll}>
+          <Button
+            className="rounded-full"
+            leftIcon={PlusCirceIcon}
+            onClick={handleCreatePoll}
+          >
             Create a Poll
           </Button>
         </div>
