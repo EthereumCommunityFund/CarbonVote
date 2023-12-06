@@ -1,10 +1,8 @@
 pragma solidity ^0.8.0;
 import "./VotingOption.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract VotingContract is Initializable, OwnableUpgradeable {
-    address signer_public_key;
+contract VotingContract {
+    address signer_public_key = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
     enum PollType {
         EthCount
     }
@@ -13,10 +11,10 @@ contract VotingContract is Initializable, OwnableUpgradeable {
     event VoteRemoved(address voter, uint256 pollIndex, uint256 optionIndex);
     event VoteCasted(address voter, uint256 pollIndex, uint256 optionIndex);
 
-    function initialize() public initializer {
-        __Ownable_init(msg.sender);
-        signer_public_key = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
-    }
+    // function initialize() public initializer {
+    //     __Ownable_init(msg.sender);
+    //     signer_public_key =
+    // }
 
     struct Poll {
         string description;
