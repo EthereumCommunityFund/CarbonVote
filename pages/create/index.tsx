@@ -18,8 +18,8 @@ import { ChangeEvent, useState } from "react";
 import { useEffect } from "react";
 import { Contract, ethers } from "ethers";
 import { convertToMinutes } from "@/utils";
-import VotingContract from "../../carbonvote_contracts/artifacts/contracts/VoteContract.sol/VotingContract.json";
-import { contract_addresses } from "../../carbonvote_contracts/artifacts/deployedAddresses.json";
+import VotingContract from "../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json";
+import { contract_addresses } from "../../carbonvote-contracts/artifacts/deployedAddresses.json";
 
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
