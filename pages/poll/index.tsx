@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { Contract, ethers } from 'ethers';
 import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
 import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
-
+import VotingOption from '../../carbonvote-contracts/artifacts/contracts/VotingOption.sol/VotingOption.json';
 interface Poll {
   id: string;
   name: string;
@@ -45,6 +45,34 @@ const PollPage = () => {
     );
     // setOptions(updatedOptions);
   };
+
+  console.log(poll?.options, 'options');
+  useEffect(() => {
+    const optionContractAbi = VotingOption.abi;
+    const optionNames: any[] = [];
+
+    const fetchVotingOption = async () => {
+      if (window.ethereum && id && poll && poll.options) {
+        let provider = new ethers.BrowserProvider(window.ethereum as any);
+        let signer = await provider.getSigner();
+
+        for (const address of poll.options) {
+          const contract = new ethers.Contract(address, optionContractAbi, signer);
+          console.log(contract, 'contract');
+
+          try {
+            const optionName = await contract.name();
+            optionNames.push(optionName);
+          } catch (error) {
+            console.error('Error fetching options:', error);
+          }
+        }
+        console.log(optionNames, 'optionNames');
+      }
+    };
+
+    fetchVotingOption();
+  }, [id, poll]); // Adding poll to the dependency array to re-run the effect when poll changes
 
   useEffect(() => {
     const fetchPoll = async () => {
