@@ -23,7 +23,7 @@ interface Poll {
   subTopic: string;
   isZuPassRequired: boolean;
   description: string;
-  optionNames: string[];
+  options: string[];
   pollMetadata: string;
 }
 
@@ -46,7 +46,7 @@ const PollPage = () => {
     // setOptions(updatedOptions);
   };
 
-  console.log(poll?.options, 'options');
+
   useEffect(() => {
     const optionContractAbi = VotingOption.abi;
     const optionNames: any[] = [];
