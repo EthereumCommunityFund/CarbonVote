@@ -92,7 +92,7 @@ export default function Home() {
                 title={poll.name}
                 creator={'Creator Name'} // Replace with actual creator if available
                 description={poll.description}
-                endDate={new Date(Number(poll.endTime) * 1000)}
+                endTime={new Date(Number(poll.endTime) * 1000)}
                 isLive={Date.now() < Number(poll.endTime) * 1000}
                 options={poll.options}
                 pollMetadata={poll.pollMetadata}
