@@ -5,7 +5,7 @@ import CheckerButton from '@/components/ui/buttons/CheckerButton';
 import CountdownTimer from '@/components/ui/CountDownTimer';
 import HtmlString from '@/components/ui/Html';
 import { Label } from '@/components/ui/Label';
-import { PollType } from '@/types';
+import { OptionType, PollType } from '@/types';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { Contract, ethers } from 'ethers';
@@ -23,13 +23,15 @@ interface Poll {
   subTopic: string;
   isZuPassRequired: boolean;
   description: string;
-  options: string[];
+  optionNames: string[];
   pollMetadata: string;
 }
 
 const PollPage = () => {
   const router = useRouter();
   const { id } = router.query;
+  const options: OptionType[] = [];
+
 
   const handleBack = () => {
     router.push('/');
@@ -37,6 +39,12 @@ const PollPage = () => {
   const [poll, setPoll] = useState<Poll>();
   const contractAbi = VotingContract.abi;
   const contractAddress = contract_addresses.VotingContract;
+  const handleCheckboxChange = (optionName: string, isChecked: boolean) => {
+    const updatedOptions = options.map(option =>
+      option.name === optionName ? { ...option, isChecked } : option
+    );
+    // setOptions(updatedOptions);
+  };
 
   useEffect(() => {
     const fetchPoll = async () => {
@@ -103,9 +111,9 @@ const PollPage = () => {
             This vote requires a <Label className="font-bold">zero-value transaction</Label> from your wallet
           </Label>
           <div className="flex flex-col gap-2.5">
-            <CheckerButton />
-            <CheckerButton />
-            <CheckerButton />
+            {/* {poll.optionNames.map((optionName) => {
+              <CheckerButton option={optionName} onCheckboxChange={}/>
+            })} */}
           </div>
         </div>
       </div>

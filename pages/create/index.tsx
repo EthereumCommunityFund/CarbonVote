@@ -14,6 +14,7 @@ import { convertToHoursAndMinutesToSeconds, convertToMinutes } from '@/utils';
 import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
 import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
 import { toast } from '@/components/ui/use-toast';
+import { OptionType } from '@/types';
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
   const contractAbi = VotingContract.abi;
@@ -34,6 +35,10 @@ const CreatePollPage = () => {
   const [motionDescription, setMotionDescription] = useState<string>('');
   const [timeLimit, setTimeLimit] = useState<string>();
   const [votingMethod, setVotingMethod] = useState<'ethholding' | 'voting1' | 'voting2'>('ethholding');
+  const [options, setOptions] = useState<OptionType[]>([
+    { name: 'Yes', isChecked: false },
+    { name: 'No', isChecked: false },
+  ]);
 
   const createNewPoll = async () => {
     if (!motionTitle || !motionDescription || !timeLimit) {
@@ -51,7 +56,12 @@ const CreatePollPage = () => {
     }
 
     const pollType = 0;
-    const optionNames = ['Yes', 'No'];
+    const optionNames: string[] = [];
+
+    options.forEach((option) => {
+      if (option.isChecked)
+        optionNames.push(option.name);
+    })
     const pollMetadata = 'arbitrary data';
     console.log('Title:', motionTitle);
     console.log('Description:', motionDescription);
@@ -94,6 +104,12 @@ const CreatePollPage = () => {
     console.log(e.target.value, 'voting method: ');
     setVotingMethod(e.target.value);
   };
+  const handleCheckboxChange = (optionName: string, isChecked: boolean) => {
+    const updatedOptions = options.map(option =>
+      option.name === optionName ? { ...option, isChecked } : option
+    );
+    setOptions(updatedOptions);
+  };
 
   const handleBack = () => {
     router.push('/');
@@ -124,8 +140,9 @@ const CreatePollPage = () => {
               <Label className="text-black/60 text-base">min: 2</Label>
               <Label className="text-black/60 text-base">max: 3</Label>
             </div>
-            <CheckerButton />
-            <CheckerButton />
+            {options.map(option => (
+              <CheckerButton key={option.name} option={option} onCheckboxChange={handleCheckboxChange} />
+            ))}
             <div className="flex justify-end">
               <Button className="rounded-full" leftIcon={PlusIcon}>
                 Add Option
