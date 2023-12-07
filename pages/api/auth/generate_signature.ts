@@ -13,6 +13,17 @@ function hash_message(message: string) {
     return ethers.keccak256(ethers.toUtf8Bytes(message))
 }
 
+function prefixedHash(message: string) {
+    let messageHash = ethers.keccak256(ethers.toUtf8Bytes(message));
+    return ethers.keccak256(ethers.toUtf8Bytes("\x19Ethereum Signed Message:\n32", messageHash));
+    // keccak256(
+    //     abi.encodePacked(
+    //         "\x19Ethereum Signed Message:\n32",
+    //         messageHash
+    //     )
+    // );
+}
+
 async function handler(req: NextApiRequest, res: NextApiResponse) {
     let privateKey = process.env.PRIVATE_KEY as string;
     let signed_message = await signMessage(privateKey, "message");
