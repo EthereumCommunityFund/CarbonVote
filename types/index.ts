@@ -10,3 +10,8 @@ export type PollType = {
   subTopic: string,
   isZuPassRequired: boolean
 }
+
+export type OptionType = {
+  name: string,
+  isChecked: boolean,
+}
