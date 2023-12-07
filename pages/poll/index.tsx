@@ -30,6 +30,34 @@ const PollPage = () => {
   const [isClosed, setIsClosed] = useState<boolean>();
   const [remainingTime, setRemainingTime] = useState<RemainingTime>();
 
+  console.log(poll?.options, 'options');
+  useEffect(() => {
+    const optionContractAbi = VotingOption.abi;
+    const optionNames: any[] = [];
+
+    const fetchVotingOption = async () => {
+      if (window.ethereum && id && poll && poll.options) {
+        let provider = new ethers.BrowserProvider(window.ethereum as any);
+        let signer = await provider.getSigner();
+
+        for (const address of poll.options) {
+          const contract = new ethers.Contract(address, optionContractAbi, signer);
+          console.log(contract, 'contract');
+
+          try {
+            const optionName = await contract.name();
+            optionNames.push(optionName);
+          } catch (error) {
+            console.error('Error fetching options:', error);
+          }
+        }
+        console.log(optionNames, 'optionNames');
+      }
+    };
+
+    fetchVotingOption();
+  }, [id, poll]); // Adding poll to the dependency array to re-run the effect when poll changes
+
   useEffect(() => {
     fetchPollFromApi(id);
 
