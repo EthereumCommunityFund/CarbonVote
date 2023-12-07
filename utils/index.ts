@@ -29,3 +29,17 @@ export const convertToMinutes = (timeString: any) => {
 
   return totalMinutes;
 };
+
+export const convertToHoursAndMinutesToSeconds = (timeLimitString: any) => {
+  const timeParts = timeLimitString.match(/(\d+)(h|m)/g);
+  let seconds = 0;
+  timeParts.forEach((part: string) => {
+    const value = parseInt(part, 10);
+    if (part.includes('h')) {
+      seconds += value * 60 * 60;
+    } else if (part.includes('m')) {
+      seconds += value * 60;
+    }
+  });
+  return seconds;
+};

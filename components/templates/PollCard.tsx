@@ -10,7 +10,7 @@ interface IPollCard {
   id: string;
   title: string;
   startDate: string | Date;
-  endDate: string | Date;
+  endTime: string | Date;
   isLive: boolean;
   creator: string;
   topic: string;
@@ -21,7 +21,7 @@ interface IPollCard {
   pollMetadata: string;
 }
 
-export const PollCardTemplate = ({ id, title, startDate, endDate, isLive, topic, subTopic, isZuPassRequired, description, options, pollMetadata }: IPollCard) => {
+export const PollCardTemplate = ({ id, title, startDate, endTime, isLive, topic, subTopic, isZuPassRequired, description, options, pollMetadata }: IPollCard) => {
   const router = useRouter();
   const handleClickItem = () => {
     router.push({
@@ -29,7 +29,6 @@ export const PollCardTemplate = ({ id, title, startDate, endDate, isLive, topic,
       query: { id },
     });
   };
-
   useEffect(() => {
     console.log(id, 'id');
   }, []);
@@ -46,7 +45,7 @@ export const PollCardTemplate = ({ id, title, startDate, endDate, isLive, topic,
         {isLive ? (
           <div className="flex flex-2">
             <ClockIcon />
-            <CountdownTimer targetDate={new Date(endDate)} />
+            <CountdownTimer targetDate={new Date(Number(endTime))} />
           </div>
         ) : (
           <></>

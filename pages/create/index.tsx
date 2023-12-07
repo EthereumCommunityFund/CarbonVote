@@ -10,7 +10,7 @@ import { useRouter } from 'next/router';
 import { ChangeEvent, useState } from 'react';
 import { useEffect } from 'react';
 import { Contract, ethers } from 'ethers';
-import { convertToMinutes } from '@/utils';
+import { convertToHoursAndMinutesToSeconds, convertToMinutes } from '@/utils';
 import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
 import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
 import { toast } from '@/components/ui/use-toast';
@@ -40,9 +40,10 @@ const CreatePollPage = () => {
       console.error('All fields are required');
       return;
     }
-    const durationInSeconds = convertToMinutes(timeLimit) * 60;
-    const currentTimeInSeconds = Math.floor(Date.now() / 1000);
-    const endTimeTimestamp = currentTimeInSeconds + durationInSeconds;
+    // const durationInSeconds = convertToMinutes(timeLimit) * 60;
+    // const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+    // const endTimeTimestamp = currentTimeInSeconds + durationInSeconds;
+    const durationInSeconds = convertToHoursAndMinutesToSeconds(timeLimit);
     console.log(durationInSeconds);
     if (durationInSeconds <= 0) {
       console.error('Invalid duration');
@@ -52,15 +53,15 @@ const CreatePollPage = () => {
     const pollType = 0;
     const optionNames = ['Yes', 'No'];
     const pollMetadata = 'arbitrary data';
-    console.log('Formatted Title:', motionTitle);
-    console.log('Formatted Description:', motionDescription);
-    console.log('Duration (seconds):', endTimeTimestamp);
+    console.log('Title:', motionTitle);
+    console.log('Description:', motionDescription);
+    console.log('Duration (seconds):', durationInSeconds);
     console.log('Option Names:', optionNames);
     console.log('Poll Metadata:', pollMetadata);
 
     try {
       if (pollContract) {
-        const tx = await pollContract.createPoll(motionTitle, motionTitle, endTimeTimestamp, optionNames, pollType, pollMetadata);
+        const tx = await pollContract.createPoll(motionTitle, motionTitle, durationInSeconds, optionNames, pollType, pollMetadata);
         await tx.wait();
         toast({
           title: 'Poll created successfully',
