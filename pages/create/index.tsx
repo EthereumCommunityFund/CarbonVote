@@ -57,11 +57,10 @@ const CreatePollPage = () => {
 
     const pollType = 0;
     const optionNames: string[] = [];
-
+    // const optionNames = ['Yes', 'No'];
     options.forEach((option) => {
-      if (option.isChecked)
-        optionNames.push(option.name);
-    })
+      if (option.isChecked) optionNames.push(option.name);
+    });
     const pollMetadata = 'arbitrary data';
     console.log('Title:', motionTitle);
     console.log('Description:', motionDescription);
@@ -105,9 +104,7 @@ const CreatePollPage = () => {
     setVotingMethod(e.target.value);
   };
   const handleCheckboxChange = (optionName: string, isChecked: boolean) => {
-    const updatedOptions = options.map(option =>
-      option.name === optionName ? { ...option, isChecked } : option
-    );
+    const updatedOptions = options.map((option) => (option.name === optionName ? { ...option, isChecked } : option));
     setOptions(updatedOptions);
   };
 
@@ -140,7 +137,7 @@ const CreatePollPage = () => {
               <Label className="text-black/60 text-base">min: 2</Label>
               <Label className="text-black/60 text-base">max: 3</Label>
             </div>
-            {options.map(option => (
+            {options.map((option) => (
               <CheckerButton key={option.name} option={option} onCheckboxChange={handleCheckboxChange} />
             ))}
             <div className="flex justify-end">
