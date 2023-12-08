@@ -92,8 +92,8 @@ contract VotingContract {
         );
         require(verified, "Signature verification failed");
         require(
-            recoveredAddress == voter,
-            "Recovered address does not match the sender"
+            recoveredAddress == signer_public_key,
+            "Signature cannot be verified"
         );
 
         // Then record the vote
