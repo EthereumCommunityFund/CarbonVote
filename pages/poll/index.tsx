@@ -13,6 +13,7 @@ import { contract_addresses } from '../../carbonvote-contracts/artifacts/deploye
 import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
 import VotingOption from '../../carbonvote-contracts/artifacts/contracts/VotingOption.sol/VotingOption.json';
 import OptionButton from '@/components/ui/buttons/OptionButton';
+import { toast } from '@/components/ui/use-toast';
 interface Poll {
   id: string;
   name: string;
@@ -42,11 +43,6 @@ const PollPage = () => {
 
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
-  const handleVote = (option: string) => {
-    setSelectedOption(option);
-    // Additional logic to handle voting
-  };
-
   useEffect(() => {
     const optionContractAbi = VotingOption.abi;
     const optionNames: any[] = [];
@@ -73,7 +69,70 @@ const PollPage = () => {
     };
 
     fetchVotingOption();
-  }, [id, poll]); // Adding poll to the dependency array to re-run the effect when poll changes
+  }, [id, poll]);
+
+  // const handleVote = async (optionIndex: number) => {
+  //   const signature = localStorage.getItem('userSignature');
+  //   const message = localStorage.getItem('userMessage');
+  //   if (!signature) {
+  //     console.error('No signature found. Please connect your wallet.');
+  //     return;
+  //   }
+  //   if (window.ethereum && id) {
+  //     let provider = new ethers.BrowserProvider(window.ethereum as any);
+  //     let signer = await provider.getSigner();
+  //     const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+  //     try {
+  //       await contract.vote(poll?.id, optionIndex, signature, message);
+  //       console.log('Vote cast successfully');
+  //       toast({
+  //         title: 'Vote cast successfully',
+  //       });
+  //     } catch (error: any) {
+  //       console.error('Error casting vote:', error);
+  //       toast({
+  //         title: 'Error',
+  //         description: error.message,
+  //         variant: 'destructive',
+  //       });
+  //     }
+  //   }
+  // };
+
+  const handleVote = async (optionIndex: number) => {
+    const signature = localStorage.getItem('userSignature');
+    const message = localStorage.getItem('userMessage');
+
+    if (!signature || !message) {
+      console.error('No signature or message found. Please connect your wallet.');
+      return;
+    }
+
+    if (!window.ethereum) {
+      console.error('Please install MetaMask to perform this action.');
+      return;
+    }
+
+    try {
+      let provider = new ethers.BrowserProvider(window.ethereum as any);
+      let signer = await provider.getSigner();
+      const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+
+      const transactionResponse = await contract.vote(id, optionIndex, signature, message);
+      await transactionResponse.wait(); // Wait for the transaction to be mined
+      console.log('Vote cast successfully');
+      toast({
+        title: 'Vote cast successfully',
+      });
+    } catch (error: any) {
+      console.error('Error casting vote:', error);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
 
   useEffect(() => {
     const fetchPoll = async () => {
@@ -141,7 +200,7 @@ const PollPage = () => {
           </Label>
           <div className="flex flex-col gap-2.5">
             {optionNames.map((optionName, index) => (
-              <OptionButton key={index} optionName={optionName} onVote={handleVote} isChecked={selectedOption === optionName} />
+              <OptionButton key={index} index={index} optionName={optionName} onVote={() => handleVote(index)} isChecked={selectedOption === optionName} />
             ))}
           </div>
         </div>
