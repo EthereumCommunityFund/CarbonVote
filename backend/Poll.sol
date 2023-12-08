@@ -18,7 +18,7 @@ contract RegularPoll {
     event PollCreated(string newQuestion, string newPollDescription, uint256 newDuration, uint256 newNumOptions);
 
     uint256 constant public MAX_QUESTION_LENGTH = 100;
-    uint256 constant public MAX_DESCRIPTION_LENGTH = 500;
+    uint256 constant public MAX_DESCRIPTION_LENGTH = 2000;
 
     modifier onlyAdmin() {
         require(msg.sender == admin, "Only the admin can execute this");
