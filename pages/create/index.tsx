@@ -45,9 +45,6 @@ const CreatePollPage = () => {
       console.error('All fields are required');
       return;
     }
-    // const durationInSeconds = convertToMinutes(timeLimit) * 60;
-    // const currentTimeInSeconds = Math.floor(Date.now() / 1000);
-    // const endTimeTimestamp = currentTimeInSeconds + durationInSeconds;
     const durationInSeconds = convertToHoursAndMinutesToSeconds(timeLimit);
     console.log(durationInSeconds);
     if (durationInSeconds <= 0) {
@@ -148,7 +145,7 @@ const CreatePollPage = () => {
           </div>
           <div className="flex flex-col gap-2">
             <Label className="text-2xl">Time Limit</Label>
-            <Input value={timeLimit} onChange={handleTimeLimitChange} placeholder={'Time Input'}></Input>
+            <Input value={timeLimit} onChange={handleTimeLimitChange} placeholder={'1hr 30m'}></Input>
           </div>
           <div className="flex flex-col gap-2">
             <Label className="text-2xl">Voting Method</Label>
