@@ -12,6 +12,7 @@ import { Contract, ethers } from 'ethers';
 import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
 import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
 import VotingOption from '../../carbonvote-contracts/artifacts/contracts/VotingOption.sol/VotingOption.json';
+import OptionButton from '@/components/ui/buttons/OptionButton';
 interface Poll {
   id: string;
   name: string;
@@ -30,8 +31,6 @@ interface Poll {
 const PollPage = () => {
   const router = useRouter();
   const { id } = router.query;
-  const options: OptionType[] = [];
-
 
   const handleBack = () => {
     router.push('/');
@@ -39,13 +38,14 @@ const PollPage = () => {
   const [poll, setPoll] = useState<Poll>();
   const contractAbi = VotingContract.abi;
   const contractAddress = contract_addresses.VotingContract;
-  const handleCheckboxChange = (optionName: string, isChecked: boolean) => {
-    const updatedOptions = options.map(option =>
-      option.name === optionName ? { ...option, isChecked } : option
-    );
-    // setOptions(updatedOptions);
-  };
+  const [optionNames, setOptionNames] = useState<string[]>([]);
 
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+
+  const handleVote = (option: string) => {
+    setSelectedOption(option);
+    // Additional logic to handle voting
+  };
 
   useEffect(() => {
     const optionContractAbi = VotingOption.abi;
@@ -67,6 +67,7 @@ const PollPage = () => {
             console.error('Error fetching options:', error);
           }
         }
+        setOptionNames(optionNames);
         console.log(optionNames, 'optionNames');
       }
     };
@@ -139,9 +140,9 @@ const PollPage = () => {
             This vote requires a <Label className="font-bold">zero-value transaction</Label> from your wallet
           </Label>
           <div className="flex flex-col gap-2.5">
-            {/* {poll.optionNames.map((optionName) => {
-              <CheckerButton option={optionName} onCheckboxChange={}/>
-            })} */}
+            {optionNames.map((optionName, index) => (
+              <OptionButton key={index} optionName={optionName} onVote={handleVote} isChecked={selectedOption === optionName} />
+            ))}
           </div>
         </div>
       </div>
