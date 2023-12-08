@@ -22,56 +22,93 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const [account, setAccount] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  const checkIfWalletIsConnected = async () => {
-    if (window.ethereum) {
-      try {
-        const provider = new ethers.BrowserProvider(window.ethereum as any);
-        setProvider(provider);
-
-        const accounts = await provider.listAccounts();
-        console.log(accounts);
-        if (accounts.length > 0) {
-          setAccount(accounts[0].address);
-          setIsConnected(true);
+  useEffect(() => {
+    const init = async () => {
+      if (window.ethereum) {
+        try {
+          const newProvider = new ethers.BrowserProvider(window.ethereum as any);
+          const accounts = await newProvider.listAccounts();
+          if (accounts.length > 0) {
+            setAccount(accounts[0].address);
+            setIsConnected(true);
+            setProvider(newProvider);
+          }
+        } catch (error) {
+          console.error('An error occurred while connecting to the wallet:', error);
         }
-      } catch (err) {
-        console.error(err);
+      } else {
+        console.error('MetaMask is not detected in the browser');
       }
-    } else {
-      console.error('MetaMask is not detected in the browser');
-    }
-  };
+    };
+
+    init();
+  }, []);
 
   useEffect(() => {
-    checkIfWalletIsConnected();
-    window.ethereum?.on?.('accountsChanged', handleAccountsChanged);
+    window.ethereum?.on('accountsChanged', handleAccountsChanged);
     return () => {
-      window.ethereum?.removeListener?.('accountsChanged', handleAccountsChanged);
+      window.ethereum?.removeListener('accountsChanged', handleAccountsChanged);
     };
-  }, []);
+  }, [account]);
 
   const handleAccountsChanged = (accounts: string[]) => {
     if (accounts.length === 0) {
-      console.log('Please connect to MetaMask.');
       setAccount(null);
       setIsConnected(false);
-    } else if (accounts[0] !== account) {
+    } else {
       setAccount(accounts[0]);
       setIsConnected(true);
     }
   };
 
+  const generateSignature = async (account: string, message: string) => {
+    const response = await fetch('/api/auth/generate_signature', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+
+      body: JSON.stringify({ account, message }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate signature');
+    }
+
+    const data = await response.json();
+    console.log(data.data.message, 'message');
+    console.log(data.data.signed_message, 'signature');
+    return data.data.signed_message;
+  };
+
   const connectToMetamask = async () => {
-    let provider;
-    let signer = null;
-    if (window.ethereum == null) {
+    if (!window.ethereum) {
       console.log('MetaMask not installed; using read-only defaults');
-      // provider = ethers.getDefaultProvider();
-    } else {
-      provider = new ethers.BrowserProvider(window.ethereum as any);
-      signer = await provider.getSigner();
+      return;
+    }
+
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum as any);
+      const signer = await provider.getSigner();
+      const account = await signer.getAddress();
+      const message = account;
+      const signature = await generateSignature(account as string, message as string);
+
+      if (signature) {
+        localStorage.setItem('userSignature', signature);
+        localStorage.setItem('userMessage', message);
+        setAccount(account);
+        setIsConnected(true);
+        setProvider(provider);
+      } else {
+        console.error('Signature generation failed');
+        // Set any state needed to indicate the failure
+      }
+    } catch (error) {
+      console.error('Error connecting to MetaMask or generating signature:', error);
     }
   };
+
   // Provide the context
   return <WalletContext.Provider value={{ provider, account, isConnected, connectToMetamask }}>{children}</WalletContext.Provider>;
 };
