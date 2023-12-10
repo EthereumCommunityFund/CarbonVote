@@ -71,34 +71,6 @@ const PollPage = () => {
     fetchVotingOption();
   }, [id, poll]);
 
-  // const handleVote = async (optionIndex: number) => {
-  //   const signature = localStorage.getItem('userSignature');
-  //   const message = localStorage.getItem('userMessage');
-  //   if (!signature) {
-  //     console.error('No signature found. Please connect your wallet.');
-  //     return;
-  //   }
-  //   if (window.ethereum && id) {
-  //     let provider = new ethers.BrowserProvider(window.ethereum as any);
-  //     let signer = await provider.getSigner();
-  //     const contract = new ethers.Contract(contractAddress, contractAbi, signer);
-  //     try {
-  //       await contract.vote(poll?.id, optionIndex, signature, message);
-  //       console.log('Vote cast successfully');
-  //       toast({
-  //         title: 'Vote cast successfully',
-  //       });
-  //     } catch (error: any) {
-  //       console.error('Error casting vote:', error);
-  //       toast({
-  //         title: 'Error',
-  //         description: error.message,
-  //         variant: 'destructive',
-  //       });
-  //     }
-  //   }
-  // };
-
   const handleVote = async (optionIndex: number) => {
     const signature = localStorage.getItem('userSignature');
     const message = localStorage.getItem('userMessage');
@@ -117,8 +89,13 @@ const PollPage = () => {
       let provider = new ethers.BrowserProvider(window.ethereum as any);
       let signer = await provider.getSigner();
       const contract = new ethers.Contract(contractAddress, contractAbi, signer);
-
-      const transactionResponse = await contract.vote(id, optionIndex, signature, message);
+      const pollIndex = Number(id);
+      const newOptionIndex = Number(optionIndex);
+      console.log(pollIndex, 'pollIndex');
+      console.log(newOptionIndex, 'newOptionIndex');
+      console.log(signature, 'signature');
+      console.log(message, 'message');
+      const transactionResponse = await contract.vote(pollIndex, newOptionIndex, signature, message);
       await transactionResponse.wait(); // Wait for the transaction to be mined
       console.log('Vote cast successfully');
       toast({
@@ -155,7 +132,7 @@ const PollPage = () => {
 
     fetchPoll();
     console.log(poll, 'poll');
-    console.log(id, 'id');
+    console.log(poll?.id, 'id');
     console.log(poll?.name, 'poll?.title');
   }, []);
 
