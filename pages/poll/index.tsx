@@ -1,3 +1,4 @@
+import { Contract, ethers } from 'ethers';
 import { ArrowLeftIcon, StopCircleIcon, ThumbDownIcon, ThumbUpIcon } from '@/components/icons';
 import { ClockIcon } from '@/components/icons/clock';
 import Button from '@/components/ui/buttons/Button';
@@ -8,12 +9,12 @@ import { Label } from '@/components/ui/Label';
 import { OptionType, PollType } from '@/types';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { Contract, ethers } from 'ethers';
 import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
 import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
 import VotingOption from '../../carbonvote-contracts/artifacts/contracts/VotingOption.sol/VotingOption.json';
 import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
+import { use } from 'chai';
 interface Poll {
   id: string;
   name: string;
@@ -44,6 +45,28 @@ const PollPage = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchPoll = async () => {
+      if (window.ethereum && id) {
+        let provider = new ethers.BrowserProvider(window.ethereum as any);
+        let signer = await provider.getSigner();
+
+        const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+
+        try {
+          const pollData = await contract.getPoll(id);
+          // console.log(contract);
+          // console.log(pollData, 'pollData');
+          setPoll(pollData);
+        } catch (error) {
+          console.error('Error fetching poll:', error);
+        }
+      }
+    };
+
+    fetchPoll();
+  }, []);
+
+  useEffect(() => {
     const optionContractAbi = VotingOption.abi;
     const optionNames: any[] = [];
 
@@ -51,10 +74,10 @@ const PollPage = () => {
       if (window.ethereum && id && poll && poll.options) {
         let provider = new ethers.BrowserProvider(window.ethereum as any);
         let signer = await provider.getSigner();
-
+        console.log(poll.options, 'poll.options');
         for (const address of poll.options) {
           const contract = new ethers.Contract(address, optionContractAbi, signer);
-          console.log(contract, 'contract');
+          // console.log(contract, 'contract');
 
           try {
             const optionName = await contract.name();
@@ -64,11 +87,42 @@ const PollPage = () => {
           }
         }
         setOptionNames(optionNames);
-        console.log(optionNames, 'optionNames');
+        // console.log(optionNames, 'optionNames');
       }
     };
 
     fetchVotingOption();
+  }, [id, poll]);
+
+  useEffect(() => {
+    const optionContractAbi = VotingOption.abi;
+    const getOptionVoteCounts = async () => {
+      if (window.ethereum && id && poll && poll.options) {
+        let provider = new ethers.BrowserProvider(window.ethereum as any);
+
+        for (const address of poll.options) {
+          const contract = new ethers.Contract(address, optionContractAbi, provider);
+          const votersCount = await contract.getVotersCount();
+
+          let votersData = [];
+          for (let i = 0; i < votersCount; i++) {
+            const voterAddress = await contract.voters(i);
+            const balance = await provider.getBalance(voterAddress);
+            const balanceInEth = ethers.formatEther(balance);
+
+            votersData.push({
+              address: voterAddress,
+              balance: balanceInEth,
+            });
+          }
+
+          // Now you have all voter addresses and their balances for a specific option
+          console.log(votersData, 'votersData');
+        }
+      }
+    };
+
+    getOptionVoteCounts();
   }, [id, poll]);
 
   const handleVote = async (optionIndex: number) => {
@@ -91,10 +145,10 @@ const PollPage = () => {
       const contract = new ethers.Contract(contractAddress, contractAbi, signer);
       const pollIndex = Number(id);
       const newOptionIndex = Number(optionIndex);
-      console.log(pollIndex, 'pollIndex');
-      console.log(newOptionIndex, 'newOptionIndex');
-      console.log(signature, 'signature');
-      console.log(message, 'message');
+      // console.log(pollIndex, 'pollIndex');
+      // console.log(newOptionIndex, 'newOptionIndex');
+      // console.log(signature, 'signature');
+      // console.log(message, 'message');
       const transactionResponse = await contract.vote(pollIndex, newOptionIndex, signature, message);
       await transactionResponse.wait(); // Wait for the transaction to be mined
       console.log('Vote cast successfully');
@@ -110,31 +164,6 @@ const PollPage = () => {
       });
     }
   };
-
-  useEffect(() => {
-    const fetchPoll = async () => {
-      if (window.ethereum && id) {
-        let provider = new ethers.BrowserProvider(window.ethereum as any);
-        let signer = await provider.getSigner();
-
-        const contract = new ethers.Contract(contractAddress, contractAbi, signer);
-
-        try {
-          const pollData = await contract.getPoll(id);
-          console.log(contract);
-          console.log(pollData, 'pollData');
-          setPoll(pollData);
-        } catch (error) {
-          console.error('Error fetching poll:', error);
-        }
-      }
-    };
-
-    fetchPoll();
-    console.log(poll, 'poll');
-    console.log(poll?.id, 'id');
-    console.log(poll?.name, 'poll?.title');
-  }, []);
 
   if (!poll) {
     return <div>Loading...</div>; // Add loading state handling

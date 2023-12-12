@@ -75,6 +75,9 @@ contract VotingOption {
         delete voterIndex[voter];
         hasVoted[voter] = false;
     }
+    function getVotersCount() public view returns (uint256) {
+    return voters.length;
+    }
 
     function decodeMessageAndSignature(
         bytes memory data
