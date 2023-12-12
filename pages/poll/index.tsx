@@ -14,7 +14,7 @@ import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteC
 import VotingOption from '../../carbonvote-contracts/artifacts/contracts/VotingOption.sol/VotingOption.json';
 import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
-import { use } from 'chai';
+
 interface Poll {
   id: string;
   name: string;
@@ -28,6 +28,13 @@ interface Poll {
   description: string;
   options: string[];
   pollMetadata: string;
+}
+
+interface Option {
+  optionName: string;
+  votersCount: number;
+  totalEth: string;
+  votersData: any;
 }
 
 const PollPage = () => {
@@ -94,31 +101,43 @@ const PollPage = () => {
     fetchVotingOption();
   }, [id, poll]);
 
+  const [optionsData, setOptionsData] = useState<Option[]>([]);
+
   useEffect(() => {
     const optionContractAbi = VotingOption.abi;
     const getOptionVoteCounts = async () => {
       if (window.ethereum && id && poll && poll.options) {
         let provider = new ethers.BrowserProvider(window.ethereum as any);
+        let aggregatedData = [];
 
         for (const address of poll.options) {
           const contract = new ethers.Contract(address, optionContractAbi, provider);
           const votersCount = await contract.getVotersCount();
 
+          let totalBalance = BigInt(0);
           let votersData = [];
+
           for (let i = 0; i < votersCount; i++) {
             const voterAddress = await contract.voters(i);
             const balance = await provider.getBalance(voterAddress);
-            const balanceInEth = ethers.formatEther(balance);
+            totalBalance += BigInt(balance.toString());
 
             votersData.push({
               address: voterAddress,
-              balance: balanceInEth,
+              balance: ethers.formatEther(balance),
             });
           }
 
-          // Now you have all voter addresses and their balances for a specific option
-          console.log(votersData, 'votersData');
+          const optionName = await contract.name();
+          aggregatedData.push({
+            optionName,
+            votersCount,
+            totalEth: ethers.formatEther(totalBalance),
+            votersData,
+          });
         }
+        console.log(aggregatedData, 'aggregatedData');
+        setOptionsData(aggregatedData);
       }
     };
 
@@ -212,17 +231,37 @@ const PollPage = () => {
         </div>
       </div>
       <div className="flex flex-col gap-10 w-96">
-        <div className="flex flex-col bg-white rounded-xl gap-5">
+        <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
+          <Label className="text-2xl">Details</Label>
+        </div>
+        {/* <div className="flex flex-col bg-white rounded-xl gap-5">
           <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
             <Label className="text-2xl">Details</Label>
           </div>
-          {/* <div className="flex flex-col gap-2.5 pl-5 pb-5">
-            <Label>Voting Method: {poll.creator}</Label>
-            <Label>Start Date: {poll.startDate as string}</Label>
-            <Label>End Date: {mockPoll.endDate as string}</Label>
-            <Label>Requirements: {mockPoll.startDate as string}</Label>
-          </div> */}
-        </div>
+          <div className="flex flex-col gap-2.5 pl-5 pb-5">
+            <Label>No of voters {}</Label>
+            <Label>Total Eth of Voters {}</Label>
+          </div>
+        </div> */}
+        {optionsData &&
+          optionsData.map((option, index) => (
+            <div key={index} className="flex flex-col bg-white rounded-xl gap-5">
+              <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
+                <Label className="text-2xl">{option.optionName}</Label>
+              </div>
+              <div className="flex flex-col gap-2.5 pl-5 pb-5">
+                <Label>No of voters: {option.votersCount.toString()}</Label>
+                <Label>Total Eth of Voters: {option.totalEth} ETH</Label>
+                {/* You can also iterate over votersData if needed */}
+                {/* {option.votersData.map((voter, voterIndex) => (
+              <div key={voterIndex}>
+                <Label>Voter Address: {voter.address}</Label>
+                <Label>Voter Balance: {voter.balance}</Label>
+              </div>
+            ))} */}
+              </div>
+            </div>
+          ))}
       </div>
     </div>
   );
