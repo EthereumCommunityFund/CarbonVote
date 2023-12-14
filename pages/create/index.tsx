@@ -40,24 +40,58 @@ const CreatePollPage = () => {
     { name: 'No', isChecked: false },
   ]);
 
+  // const [options, setOptions] = useState<OptionType[]>([]);
+  const handleOptionChange = (updatedOption: OptionType) => {
+    const updatedOptions = options.map((option) => (option.name === updatedOption.name ? updatedOption : option));
+    setOptions(updatedOptions);
+  };
+
+  const addOption = () => {
+    setOptions([...options, { name: '', isChecked: false }]);
+  };
+
+  const removeOption = (index: number) => {
+    setOptions(options.filter((_, i) => i !== index));
+  };
+
+  const updateOption = (index: number, updatedOption: OptionType) => {
+    const updatedOptions = options.map((option, i) => (i === index ? updatedOption : option));
+    setOptions(updatedOptions);
+  };
+
   const createNewPoll = async () => {
     if (!motionTitle || !motionDescription || !timeLimit) {
-      console.error('All fields are required');
+      toast({
+        title: 'Error',
+        description: 'All fields are required',
+        variant: 'destructive',
+      });
       return;
     }
     const durationInSeconds = convertToHoursAndMinutesToSeconds(timeLimit);
     console.log(durationInSeconds);
     if (durationInSeconds <= 0) {
-      console.error('Invalid duration');
-      // return;
+      toast({
+        title: 'Error',
+        description: 'Invalid duration',
+        variant: 'destructive',
+      });
+      return;
     }
 
     const pollType = 0;
-    const optionNames: string[] = [];
-    // const optionNames = ['Yes', 'No'];
-    options.forEach((option) => {
-      if (option.isChecked) optionNames.push(option.name);
-    });
+
+    const checkedOptions = options.filter((option) => option.isChecked);
+    if (checkedOptions.length < 2) {
+      toast({
+        title: 'Error',
+        description: 'At least two options should be selected',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const optionNames = checkedOptions.map((option) => option.name);
     const pollMetadata = 'arbitrary data';
     console.log('Title:', motionTitle);
     console.log('Description:', motionDescription);
@@ -66,17 +100,17 @@ const CreatePollPage = () => {
     console.log('Poll Metadata:', pollMetadata);
 
     try {
-      if (pollContract) {
-        const tx = await pollContract.createPoll(motionTitle, motionTitle, durationInSeconds, optionNames, pollType, pollMetadata);
-        await tx.wait();
-        toast({
-          title: 'Poll created successfully',
-        });
-        console.log('Poll created successfully');
-        setTimeout(() => {
-          router.push('/');
-        }, 5000);
-      }
+      // if (pollContract) {
+      //   const tx = await pollContract.createPoll(motionTitle, motionTitle, durationInSeconds, optionNames, pollType, pollMetadata);
+      //   await tx.wait();
+      //   toast({
+      //     title: 'Poll created successfully',
+      //   });
+      //   console.log('Poll created successfully');
+      //   setTimeout(() => {
+      //     router.push('/');
+      //   }, 5000);
+      // }
     } catch (error: any) {
       console.error('Error creating poll:', error);
       toast({
@@ -100,9 +134,13 @@ const CreatePollPage = () => {
     console.log(e.target.value, 'voting method: ');
     setVotingMethod(e.target.value);
   };
-  const handleCheckboxChange = (optionName: string, isChecked: boolean) => {
-    const updatedOptions = options.map((option) => (option.name === optionName ? { ...option, isChecked } : option));
-    setOptions(updatedOptions);
+  const handleCheckboxChange = (index: number, isChecked: boolean) => {
+    const newOptions = options.map((option, i) => (i === index ? { ...option, isChecked } : option));
+    setOptions(newOptions);
+  };
+  const handleInputChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    const newOptions = options.map((option, i) => (i === index ? { ...option, name: event.target.value } : option));
+    setOptions(newOptions);
   };
 
   const handleBack = () => {
@@ -134,11 +172,15 @@ const CreatePollPage = () => {
               <Label className="text-black/60 text-base">min: 2</Label>
               <Label className="text-black/60 text-base">max: 3</Label>
             </div>
-            {options.map((option) => (
-              <CheckerButton key={option.name} option={option} onCheckboxChange={handleCheckboxChange} />
+            {options.map((option, index) => (
+              <div key={index} className="flex items-center space-x-2">
+                <CheckerButton option={option} onOptionChange={(updatedOption) => handleCheckboxChange(index, updatedOption.isChecked)} onInputChange={(e) => handleInputChange(index, e)} />
+                <button onClick={() => removeOption(index)}>Remove</button>
+              </div>
             ))}
+
             <div className="flex justify-end">
-              <Button className="rounded-full" leftIcon={PlusIcon}>
+              <Button className="rounded-full" leftIcon={PlusIcon} onClick={addOption}>
                 Add Option
               </Button>
             </div>
