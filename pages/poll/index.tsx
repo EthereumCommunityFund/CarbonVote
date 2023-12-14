@@ -51,54 +51,55 @@ const PollPage = () => {
 
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchPoll = async () => {
-      if (window.ethereum && id) {
-        let provider = new ethers.BrowserProvider(window.ethereum as any);
-        let signer = await provider.getSigner();
+  const fetchPoll = async () => {
+    if (window.ethereum && id) {
+      let provider = new ethers.BrowserProvider(window.ethereum as any);
+      let signer = await provider.getSigner();
 
-        const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+      const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+
+      try {
+        const pollData = await contract.getPoll(id);
+        // console.log(contract);
+        // console.log(pollData, 'pollData');
+        setPoll(pollData);
+      } catch (error) {
+        console.error('Error fetching poll:', error);
+      }
+    }
+  };
+
+  const optionContractAbi = VotingOption.abi;
+  // const optionNames: any[] = [];
+
+  const fetchVotingOptions = async () => {
+    if (window.ethereum && id && poll && poll.options) {
+      let provider = new ethers.BrowserProvider(window.ethereum as any);
+      let signer = await provider.getSigner();
+      const optionNames: any[] = [];
+      console.log(poll.options, 'poll.options');
+      for (const address of poll.options) {
+        const contract = new ethers.Contract(address, optionContractAbi, signer);
+        // console.log(contract, 'contract');
 
         try {
-          const pollData = await contract.getPoll(id);
-          // console.log(contract);
-          // console.log(pollData, 'pollData');
-          setPoll(pollData);
+          const optionName = await contract.name();
+          optionNames.push(optionName);
         } catch (error) {
-          console.error('Error fetching poll:', error);
+          console.error('Error fetching options:', error);
         }
       }
-    };
-
-    fetchPoll();
-  }, []);
+      setOptionNames(optionNames);
+      // console.log(optionNames, 'optionNames');
+    }
+  };
 
   useEffect(() => {
-    const optionContractAbi = VotingOption.abi;
-    const optionNames: any[] = [];
+    fetchPoll();
+  }, [id]);
 
-    const fetchVotingOption = async () => {
-      if (window.ethereum && id && poll && poll.options) {
-        let provider = new ethers.BrowserProvider(window.ethereum as any);
-        let signer = await provider.getSigner();
-        console.log(poll.options, 'poll.options');
-        for (const address of poll.options) {
-          const contract = new ethers.Contract(address, optionContractAbi, signer);
-          // console.log(contract, 'contract');
-
-          try {
-            const optionName = await contract.name();
-            optionNames.push(optionName);
-          } catch (error) {
-            console.error('Error fetching options:', error);
-          }
-        }
-        setOptionNames(optionNames);
-        // console.log(optionNames, 'optionNames');
-      }
-    };
-
-    fetchVotingOption();
+  useEffect(() => {
+    fetchVotingOptions();
   }, [id, poll]);
 
   const [optionsData, setOptionsData] = useState<Option[]>([]);
@@ -145,11 +146,15 @@ const PollPage = () => {
   }, [id, poll]);
 
   const handleVote = async (optionIndex: number) => {
-    const signature = localStorage.getItem('userSignature');
-    const message = localStorage.getItem('userMessage');
+    const signature = localStorage.getItem('signature');
+    const message = localStorage.getItem('message');
 
-    if (!signature || !message) {
-      console.error('No signature or message found. Please connect your wallet.');
+    if (!signature) {
+      console.error('No signature found. Please connect your passport');
+      return;
+    }
+    if (!message) {
+      console.error('No message found. Please connect your passport');
       return;
     }
 
@@ -174,6 +179,8 @@ const PollPage = () => {
       toast({
         title: 'Vote cast successfully',
       });
+      await fetchPoll();
+      await fetchVotingOptions();
     } catch (error: any) {
       console.error('Error casting vote:', error);
       toast({

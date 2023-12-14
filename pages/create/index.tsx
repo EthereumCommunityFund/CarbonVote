@@ -15,6 +15,8 @@ import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteC
 import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
 import { toast } from '@/components/ui/use-toast';
 import { OptionType } from '@/types';
+import { useUserPassportContext } from '@/context/PassportContext';
+
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
   const contractAbi = VotingContract.abi;
@@ -31,6 +33,7 @@ const CreatePollPage = () => {
     }
   }, []);
   const router = useRouter();
+  const { signIn, isPassportConnected } = useUserPassportContext();
   const [motionTitle, setMotionTitle] = useState<string>();
   const [motionDescription, setMotionDescription] = useState<string>('');
   const [timeLimit, setTimeLimit] = useState<string>();
@@ -60,6 +63,10 @@ const CreatePollPage = () => {
   };
 
   const createNewPoll = async () => {
+    if (!isPassportConnected) {
+      signIn();
+      return;
+    }
     if (!motionTitle || !motionDescription || !timeLimit) {
       toast({
         title: 'Error',
@@ -100,17 +107,17 @@ const CreatePollPage = () => {
     console.log('Poll Metadata:', pollMetadata);
 
     try {
-      // if (pollContract) {
-      //   const tx = await pollContract.createPoll(motionTitle, motionTitle, durationInSeconds, optionNames, pollType, pollMetadata);
-      //   await tx.wait();
-      //   toast({
-      //     title: 'Poll created successfully',
-      //   });
-      //   console.log('Poll created successfully');
-      //   setTimeout(() => {
-      //     router.push('/');
-      //   }, 5000);
-      // }
+      if (pollContract) {
+        const tx = await pollContract.createPoll(motionTitle, motionTitle, durationInSeconds, optionNames, pollType, pollMetadata);
+        await tx.wait();
+        toast({
+          title: 'Poll created successfully',
+        });
+        console.log('Poll created successfully');
+        setTimeout(() => {
+          router.push('/');
+        }, 5000);
+      }
     } catch (error: any) {
       console.error('Error creating poll:', error);
       toast({
