@@ -62,3 +62,35 @@ export function openGroupMembershipPopup(
 }
 
 
+// export function zuzalupopup(
+//   zupassClientUrl: string,
+//   popupUrl: string,
+//   originalSiteName: string
+// ) {
+//   const proofUrl = constructZupassPcdGetRequestUrl<
+//     typeof SemaphoreSignaturePCDPackage
+//   >(
+//     zupassClientUrl,
+//     popupUrl,
+//     SemaphoreSignaturePCDPackage.name,
+//     {
+//       identity: {
+//         argumentType: ArgumentTypeName.PCD,
+//         pcdType: SemaphoreIdentityPCDPackage.name,
+//         value: undefined,
+//         userProvided: true
+//       },
+//       signedMessage: {
+//         argumentType: ArgumentTypeName.String
+//       }
+//     },
+//     {
+//       title: "Zuzalu Auth",
+//       description: originalSiteName,
+//       signIn: true
+//     }
+//   );
+
+//   openZupassPopup(popupUrl, proofUrl);
+// }
+
