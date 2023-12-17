@@ -93,4 +93,3 @@ export function openGroupMembershipPopup(
 
 //   openZupassPopup(popupUrl, proofUrl);
 // }
-
