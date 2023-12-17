@@ -1,11 +1,21 @@
-import { createContext, ReactNode, useState, useContext, useEffect } from 'react';
+import {
+  createContext,
+  ReactNode,
+  useState,
+  useContext,
+  useEffect,
+} from "react";
 
-import { useZupassPopupMessages } from '@pcd/passport-interface/src/PassportPopup';
+import { useZupassPopupMessages } from "@pcd/passport-interface/src/PassportPopup";
 
-import { useRouter } from 'next/router';
+import { useRouter } from "next/router";
 
-import { openGroupMembershipPopup } from '../src/util';
-import { generate_signature, verifyProof } from '../controllers/auth.controller';
+import { openGroupMembershipPopup } from "../src/util";
+import {
+  generate_signature,
+  verifyProof,
+} from "../controllers/auth.controller";
+import { openSignedZuzaluSignInPopup } from "@pcd/passport-interface";
 
 type UserPassportContextData = {
   signIn: () => void;
@@ -27,9 +37,11 @@ export const UserPassportContext = createContext<UserPassportContextData>({
   signOut: () => {},
   pcd: null,
 });
-const PCD_STORAGE_KEY = 'userPCD';
+const PCD_STORAGE_KEY = "userPCD";
 
-export function UserPassportContextProvider({ children }: UserPassportProviderProps) {
+export function UserPassportContextProvider({
+  children,
+}: UserPassportProviderProps) {
   const router = useRouter();
   const [pcdStr] = useZupassPopupMessages();
   const [pcd, setPcd] = useState<string | null>(null);
@@ -41,34 +53,42 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
           const pcd = JSON.parse(pcdStr); // Parse the received PCD string
           const _pcd = JSON.parse(pcd.pcd); // Parse the nested PCD object
 
-          const userId = _pcd.id; // Extract the unique identifier 'id'
-          const generateSignature = async (account: string, message: string) => {
-            const response = await fetch('/api/auth/generate_signature', {
-              method: 'POST',
+          const userId = _pcd.claim.externalNullifier; // Extract the unique identifier 'id'
+
+          console.log(userId, _pcd);
+          const generateSignature = async (
+            account: string,
+            message: string
+          ) => {
+            const response = await fetch("/api/auth/generate_signature", {
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
 
               body: JSON.stringify({ account, message }),
             });
 
             if (!response.ok) {
-              throw new Error('Failed to generate signature');
+              throw new Error("Failed to generate signature");
             }
 
             const data = await response.json();
-            console.log(data.data.message, 'message');
-            console.log(data.data.signed_message, 'signature');
+            console.log(data.data.message, "message");
+            console.log(data.data.signed_message, "signature");
             return data.data.signed_message;
           };
-          const signature = await generateSignature(userId as string, userId as string);
+          const signature = await generateSignature(
+            userId as string,
+            userId as string
+          );
           const message = userId as string;
           if (signature) {
-            localStorage.setItem('signature', signature);
-            localStorage.setItem('message', message); // Save the generated signature
+            localStorage.setItem("signature", signature);
+            localStorage.setItem("message", message); // Save the generated signature
           }
         } catch (error) {
-          console.error('Error processing PCD string:', error);
+          console.error("Error processing PCD string:", error);
         }
       }
     };
@@ -91,7 +111,23 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
   }, [pcd]);
 
   const signIn = () => {
-    openGroupMembershipPopup('https://zupass.org/', window.location.origin + '/popup', 'https://api.zupass.org/semaphore/1', 'carbonvote', undefined, undefined);
+    // openSignedZuzaluSignInPopup(
+    //   "https://zupass.org/",
+    //   window.location.origin + "/popup",
+    //   // "https://api.zupass.org/semaphore/1",
+    //   "consumer-client",
+    //   "carbonvote",
+    //   undefined,
+    //   undefined
+    // );
+    openGroupMembershipPopup(
+      "https://zupass.org/",
+      window.location.origin + "/popup",
+      "https://api.zupass.org/semaphore/1",
+      "carbonvote",
+      undefined,
+      undefined
+    );
   };
 
   const signOut = () => {
@@ -99,13 +135,13 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
     localStorage.removeItem(PCD_STORAGE_KEY);
     setPcd(null);
     // Redirect to home or sign-in page if needed
-    router.push('/');
+    router.push("/");
   };
 
   const isAuthenticated = () => {
     // Check if window is defined (i.e., if the code is running on the client side)
-    if (typeof window !== 'undefined') {
-      const pcdToken = localStorage.getItem('userPCD');
+    if (typeof window !== "undefined") {
+      const pcdToken = localStorage.getItem("userPCD");
       return !!pcdToken;
     }
     return false; // Return false if not running on client side
@@ -120,14 +156,22 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
     if (pcdStr) {
       try {
         const parsedPcd = JSON.parse(pcdStr);
+        console.log(parsedPcd, "parced pcd");
+
         setPcd(parsedPcd.pcd); // Save the PCD to state
       } catch (error) {
-        console.error('Error parsing PCD string:', error);
+        console.error("Error parsing PCD string:", error);
       }
     }
   }, [pcdStr]);
 
-  return <UserPassportContext.Provider value={{ signIn, isAuthenticated, signOut, pcd, isPassportConnected }}>{children}</UserPassportContext.Provider>;
+  return (
+    <UserPassportContext.Provider
+      value={{ signIn, isAuthenticated, signOut, pcd, isPassportConnected }}
+    >
+      {children}
+    </UserPassportContext.Provider>
+  );
 }
 
 export const useUserPassportContext = () => useContext(UserPassportContext);

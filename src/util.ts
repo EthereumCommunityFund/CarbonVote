@@ -4,7 +4,7 @@ import { ArgumentTypeName } from "@pcd/pcd-types";
 import { SemaphoreGroupPCDPackage } from "@pcd/semaphore-group-pcd";
 import { SemaphoreIdentityPCDPackage } from "@pcd/semaphore-identity-pcd";
 import { generateSnarkMessageHash } from "@pcd/util";
-
+import { SemaphoreSignaturePCDPackage } from "@pcd/semaphore-signature-pcd";
 
 
 
@@ -38,7 +38,7 @@ export function openGroupMembershipPopup(
       },
       identity: {
         argumentType: ArgumentTypeName.PCD,
-        pcdType: SemaphoreIdentityPCDPackage.name,
+        pcdType: SemaphoreGroupPCDPackage.name,
         value: undefined,
         userProvided: true,
       },
@@ -60,3 +60,36 @@ export function openGroupMembershipPopup(
     openZupassPopup(popupUrl, proofUrl);
   }
 }
+
+
+// export function openGroupMembershipPopup(
+//   zupassClientUrl: string,
+//   popupUrl: string,
+//   originalSiteName: string
+// ) {
+//   const proofUrl = constructZupassPcdGetRequestUrl<
+//     typeof SemaphoreSignaturePCDPackage
+//   >(
+//     zupassClientUrl,
+//     popupUrl,
+//     SemaphoreSignaturePCDPackage.name,
+//     {
+//       identity: {
+//         argumentType: ArgumentTypeName.PCD,
+//         pcdType: SemaphoreIdentityPCDPackage.name,
+//         value: undefined,
+//         userProvided: true
+//       },
+//       signedMessage: {
+//         argumentType: ArgumentTypeName.String
+//       }
+//     },
+//     {
+//       title: "Zuzalu Auth",
+//       description: originalSiteName,
+//       signIn: true
+//     }
+//   );
+
+//   openZupassPopup(popupUrl, proofUrl);
+// }

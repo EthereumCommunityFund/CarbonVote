@@ -52,8 +52,15 @@
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.2",
+    "@nomicfoundation/hardhat-ethers": "^3.0.5",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.10",
+    "@nomicfoundation/hardhat-verify": "^2.0.2",
     "@pcd/eslint-config-custom": "^0.7.2",
     "@pcd/tsconfig": "^0.7.2",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@typechain/hardhat": "^9.1.0",
+    "@types/chai": "^4.3.11",
     "@types/circomlibjs": "^0.1.5",
     "@types/expect": "^24.3.0",
     "@types/json-bigint": "^1.0.4",
@@ -61,6 +68,7 @@
     "@types/jsonwebtoken": "^9.0.5",
     "@types/libsodium-wrappers-sumo": "^0.7.7",
     "@types/lodash": "^4.14.202",
+    "@types/mocha": "^10.0.6",
     "@types/pako": "^2.0.2",
     "@types/qr-image": "^3.2.8",
     "@types/react": "^18.0.22",
@@ -71,9 +79,12 @@
     "autoprefixer": "^10.4.16",
     "eslint": "7.32.0",
     "hardhat": "^2.19.2",
+    "hardhat-gas-reporter": "^1.0.9",
     "postcss": "^8.4.31",
+    "solidity-coverage": "^0.8.5",
     "tailwindcss": "^3.3.5",
     "ts-node": "^10.9.1",
+    "typechain": "^8.3.2",
     "typescript": "5.1.6"
   }
 }
