@@ -5,6 +5,7 @@ import { LockOpenIcon } from '../icons/lockopen';
 import CountdownTimer from '../ui/CountDownTimer';
 import { Label } from '../ui/Label';
 import { useRouter } from 'next/router';
+import { useUserPassportContext } from '@/context/PassportContext';
 
 interface IPollCard {
   id: string;
@@ -23,7 +24,12 @@ interface IPollCard {
 
 export const PollCardTemplate = ({ id, title, startDate, endTime, isLive, topic, subTopic, isZuPassRequired, description, options, pollMetadata }: IPollCard) => {
   const router = useRouter();
+  const { signIn, isPassportConnected } = useUserPassportContext();
   const handleClickItem = () => {
+    if (!isPassportConnected) {
+      signIn();
+      return;
+    }
     router.push({
       pathname: '/poll',
       query: { id },

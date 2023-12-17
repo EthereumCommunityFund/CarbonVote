@@ -61,25 +61,25 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     }
   };
 
-  const generateSignature = async (account: string, message: string) => {
-    const response = await fetch('/api/auth/generate_signature', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+  // const generateSignature = async (account: string, message: string) => {
+  //   const response = await fetch('/api/auth/generate_signature', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
 
-      body: JSON.stringify({ account, message }),
-    });
+  //     body: JSON.stringify({ account, message }),
+  //   });
 
-    if (!response.ok) {
-      throw new Error('Failed to generate signature');
-    }
+  //   if (!response.ok) {
+  //     throw new Error('Failed to generate signature');
+  //   }
 
-    const data = await response.json();
-    console.log(data.data.message, 'message');
-    console.log(data.data.signed_message, 'signature');
-    return data.data.signed_message;
-  };
+  //   const data = await response.json();
+  //   console.log(data.data.message, 'message');
+  //   console.log(data.data.signed_message, 'signature');
+  //   return data.data.signed_message;
+  // };
 
   const connectToMetamask = async () => {
     if (!window.ethereum) {
@@ -91,19 +91,6 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       const provider = new ethers.BrowserProvider(window.ethereum as any);
       const signer = await provider.getSigner();
       const account = await signer.getAddress();
-      const message = account;
-      const signature = await generateSignature(account as string, message as string);
-
-      if (signature) {
-        localStorage.setItem('userSignature', signature);
-        localStorage.setItem('userMessage', message);
-        setAccount(account);
-        setIsConnected(true);
-        setProvider(provider);
-      } else {
-        console.error('Signature generation failed');
-        // Set any state needed to indicate the failure
-      }
     } catch (error) {
       console.error('Error connecting to MetaMask or generating signature:', error);
     }
