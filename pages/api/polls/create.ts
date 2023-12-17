@@ -64,4 +64,4 @@ const createPoll = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 export default createPoll;
-//export default withAuthorization(createPoll);
+
