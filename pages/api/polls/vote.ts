@@ -9,41 +9,89 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
         return;
     }
 
-    const { option_id, voter_identifier } = req.body;
+    const { option_id, voter_identifier, poll_id } = req.body;
 
-    if (!option_id || !voter_identifier) {
-        res.status(400).send('Option ID and Voter Identifier are required');
+    if (!option_id || !voter_identifier || !poll_id) {
+        res.status(400).send('Option ID, Poll ID, and Voter Identifier are required');
         return;
     }
 
     try {
-        // Create a hash for the voter to maintain anonymity
         const vote_hash = crypto.createHash('sha256').update(voter_identifier).digest('hex');
 
-        // Check if this voter has already voted for this option (to prevent double voting)
-        const { data: existingVote } = await supabase
-            .from('Votes')
+        // Check if the user has already voted for the same option in the same poll
+        const { data: existingVoteOnOption } = await supabase
+            .from('votes')
             .select('*')
             .eq('vote_hash', vote_hash)
+            .eq('poll_id', poll_id)
             .eq('option_id', option_id)
             .single();
 
-        if (existingVote) {
-            res.status(409).send('Voter has already voted for this option');
+        if (existingVoteOnOption) {
+            res.status(409).send('You have already voted for this option in this poll.');
             return;
         }
 
-        // Insert the vote
+        // Check if this voter has already voted in the poll
+        const { data, error: existingVoteError } = await supabase
+            .from('votes')
+            .select('option_id')
+            .eq('vote_hash', vote_hash)
+            .eq('poll_id', poll_id)
+            .select();
+
+        console.log(existingVoteError)
+        let existingVote;
+        if (data) {
+            existingVote = data[0]
+        }
+
+
+
+        if (existingVoteError) throw existingVoteError;
+
+        if (existingVote) {
+            // If they voted for a different option, update the previous option's vote count
+            if (existingVote.option_id !== option_id) {
+                const { error: decrementError } = await supabase
+                    .rpc('decrement_vote', { option_id_param: existingVote.option_id });
+
+                if (decrementError) {
+                    console.log(decrementError)
+                    throw decrementError;
+
+                }
+
+            }
+
+            // Delete the previous vote
+            const { error: deleteError } = await supabase
+                .from('votes')
+                .delete()
+                .match({ vote_hash, poll_id });
+
+            if (deleteError) throw deleteError;
+        }
+
+        // Insert the new vote
         const { error: insertError } = await supabase
-            .from('Votes')
+            .from('votes')
             .insert([{
                 id: uuidv4(),
                 option_id,
                 vote_hash,
+                poll_id,
                 cast_at: new Date()
             }]);
 
         if (insertError) throw insertError;
+
+        // Increment the vote count for the new option
+        const { error: incrementError } = await supabase
+            .rpc('increment_vote', { option_id_param: option_id });
+
+        if (incrementError) throw incrementError;
 
         res.status(201).send('Vote recorded successfully');
     } catch (error: any) {
