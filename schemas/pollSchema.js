@@ -9,7 +9,7 @@ const optionSchema = Joi.object({
 const pollSchema = Joi.object({
     title: Joi.string().required(),
     description: Joi.string().allow(''),
-    time_limit: Joi.date().iso().required(),
+    time_limit: Joi.number().required(),
     voting_method: Joi.string().valid('headCount').required(),
     options: Joi.array().items(optionSchema).required(),
     credentials: Joi.array().items(Joi.string().guid({ version: 'uuidv4' })).required()
