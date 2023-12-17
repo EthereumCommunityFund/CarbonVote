@@ -2,8 +2,6 @@ import Joi from 'joi';
 
 const optionSchema = Joi.object({
     option_description: Joi.string().required(),  
-    votes: Joi.number().integer().min(0).default(0), 
-    total_weight: Joi.number().min(0).default(0) 
 });
 
 const pollSchema = Joi.object({

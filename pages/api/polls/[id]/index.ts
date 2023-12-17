@@ -28,7 +28,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         let { data: options, error: optionsError } = await supabase
             .from('options')
             .select('*')
-            .eq('id', pollId);
+            .eq('poll_id', pollId);
+
+        console.log(options, "options")
 
         if (optionsError) throw optionsError;
 

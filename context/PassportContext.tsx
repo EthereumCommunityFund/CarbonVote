@@ -100,6 +100,7 @@ export function UserPassportContextProvider({
           if (signature) {
             localStorage.setItem("signature", signature);
             localStorage.setItem("message", message); // Save the generated signature
+            localStorage.setItem("userId", userId);
           }
           setPcd(_pcd);
           setIsAuthenticated(true);
