@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import VotingContract from './../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
 import { contract_addresses } from './../carbonvote-contracts/artifacts/deployedAddresses.json';
+import { toast } from '@/components/ui/use-toast';
 
 interface Poll {
   name: string;
@@ -23,6 +24,7 @@ interface Poll {
 
 export default function Home() {
   const router = useRouter();
+  const { signIn, isPassportConnected } = useUserPassportContext();
   const pollList: PollType[] = mockpolls;
   const [polls, setPolls] = useState<Poll[]>([]);
   const contractAbi = VotingContract.abi;
@@ -66,6 +68,18 @@ export default function Home() {
   }, []);
 
   const handleCreatePoll = () => {
+    if (!isPassportConnected) {
+      try {
+        signIn();
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Error connecting to Passport. Please try again.',
+          variant: 'destructive',
+        });
+      }
+      return;
+    }
     router.push(`/create`);
   };
 
