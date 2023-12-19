@@ -16,6 +16,7 @@ import { contract_addresses } from '../../carbonvote-contracts/artifacts/deploye
 import { toast } from '@/components/ui/use-toast';
 import { OptionType } from '@/types';
 import { useUserPassportContext } from '@/context/PassportContext';
+import { PollRequestData, createPoll } from '@/controllers/poll.controller';
 
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
@@ -34,10 +35,11 @@ const CreatePollPage = () => {
   }, []);
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
+  const [credentials, setCredentials] = useState<string[]>([]);
   const [motionTitle, setMotionTitle] = useState<string>();
   const [motionDescription, setMotionDescription] = useState<string>('');
   const [timeLimit, setTimeLimit] = useState<string>();
-  const [votingMethod, setVotingMethod] = useState<'ethholding' | 'voting1' | 'voting2'>('ethholding');
+  const [votingMethod, setVotingMethod] = useState<'ethholding' | 'headcount'>('ethholding');
   const [options, setOptions] = useState<OptionType[]>([
     { name: 'Yes', isChecked: false },
     { name: 'No', isChecked: false },
@@ -85,7 +87,11 @@ const CreatePollPage = () => {
       });
       return;
     }
+    // const endTime = new Date();
+    // endTime.setSeconds(endTime.getSeconds() + durationInSeconds);
 
+    // Convert the end time to an ISO string
+    // const timeLimitISO = endTime.toISOString();
     const pollType = 0;
 
     const checkedOptions = options.filter((option) => option.isChecked);
@@ -106,25 +112,64 @@ const CreatePollPage = () => {
     console.log('Option Names:', optionNames);
     console.log('Poll Metadata:', pollMetadata);
 
-    try {
-      if (pollContract) {
-        const tx = await pollContract.createPoll(motionTitle, motionTitle, durationInSeconds, optionNames, pollType, pollMetadata);
-        await tx.wait();
+    if (votingMethod === 'headcount') {
+      const pollData = {
+        title: motionTitle,
+        description: motionDescription,
+        time_limit: durationInSeconds,
+        voting_method: 'headCount',
+        options: options.filter((option) => option.isChecked).map((option) => ({ description: option.name })),
+        credentials: credentials,
+      };
+
+      try {
+        console.log('Creating poll...', pollData);
+        // const response = await createPoll(pollData);
+        const response = await fetch('/api/polls', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+
+          body: JSON.stringify({ pollData }),
+        });
+
+        console.log('Poll created successfully', response);
         toast({
           title: 'Poll created successfully',
         });
-        console.log('Poll created successfully');
         setTimeout(() => {
           router.push('/');
         }, 5000);
+      } catch (error) {
+        console.error('Error creating poll:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to create poll',
+          variant: 'destructive',
+        });
       }
-    } catch (error: any) {
-      console.error('Error creating poll:', error);
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+    } else {
+      try {
+        if (pollContract) {
+          const tx = await pollContract.createPoll(motionTitle, motionTitle, durationInSeconds, optionNames, pollType, pollMetadata);
+          await tx.wait();
+          toast({
+            title: 'Poll created successfully',
+          });
+          console.log('Poll created successfully');
+          setTimeout(() => {
+            router.push('/');
+          }, 5000);
+        }
+      } catch (error: any) {
+        console.error('Error creating poll:', error);
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive',
+        });
+      }
     }
   };
 
@@ -177,12 +222,12 @@ const CreatePollPage = () => {
             <div className="flex gap-2 items-center">
               <Label className="text-2xl">Options</Label>
               <Label className="text-black/60 text-base">min: 2</Label>
-              <Label className="text-black/60 text-base">max: 3</Label>
+              {/* <Label className="text-black/60 text-base">max: 3</Label> */}
             </div>
             {options.map((option, index) => (
               <div key={index} className="flex items-center space-x-2">
                 <CheckerButton option={option} onOptionChange={(updatedOption) => handleCheckboxChange(index, updatedOption.isChecked)} onInputChange={(e) => handleInputChange(index, e)} />
-                <button onClick={() => removeOption(index)}>Remove</button>
+                <button onClick={() => removeOption(index)}>❌</button>
               </div>
             ))}
 
@@ -209,22 +254,25 @@ const CreatePollPage = () => {
                 <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="ethholding">
                   EthHolding
                 </option>
-                <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="voting1">
-                  Voting 1
+                <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="headcount">
+                  HeadCount
                 </option>
-                <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="voting2">
+                {/* <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="voting2">
                   Voting 2
-                </option>
+                </option> */}
               </select>
             </div>
           </div>
           {votingMethod === 'ethholding' ? (
             <></>
           ) : (
-            <div className="flex flex-col gap-2">
-              <Label className="text-2xl">Access Rules</Label>
-              <CredentialForm />
-            </div>
+            votingMethod === 'headcount' && (
+              <div className="flex flex-col gap-2">
+                <Label className="text-2xl">Access Rules</Label>
+                {/* <CredentialForm selectedCredentials={credentials} onCredentialsChange={setCredentials} /> */}
+                <CredentialForm selectedCredentials={credentials} onCredentialsChange={(selectedUuids) => setCredentials(selectedUuids)} />
+              </div>
+            )
           )}
         </div>
         <div className="flex gap-2.5 justify-end">
