@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-
+import { fetchAllPolls as fetchAllPollsFromAPI } from '@/controllers/poll.controller';
 import { Label } from '@/components/ui/Label';
 import { useUserPassportContext } from '../context/PassportContext';
 import { mockpolls } from '@/constant/mockPolls';
@@ -32,40 +32,53 @@ export default function Home() {
 
   useEffect(() => {
     const fetchPolls = async () => {
-      if (window.ethereum) {
-        let provider = new ethers.BrowserProvider(window.ethereum as any);
-        let signer = await provider.getSigner();
+      try {
+        // Fetch from smart contract
+        const pollsFromContractPromise = fetchPollsFromContract();
+        // Fetch from API
+        const pollsFromAPIPromise = fetchAllPollsFromAPI();
 
-        const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+        // Wait for both promises to resolve
+        const [pollsFromContract, pollsFromAPIResponse] = await Promise.all([pollsFromContractPromise, pollsFromAPIPromise]);
 
-        try {
-          // Get all polls at once
-          const { names, descriptions, options, endTimes, pollTypes, pollMetadatas } = await contract.getAllPolls();
-          const pollsData = names.map((name: any, index: string | number) => ({
-            name: name,
-            description: descriptions[index],
-            options: options[index],
-            endTime: endTimes[index],
-            pollType: pollTypes[index],
-            pollMetadata: pollMetadatas[index],
-          }));
-          console.log(
-            VotingContract.abi
-            // await contract.
-          );
-          console.log(contract);
-          // const pollsData = await contract.getAllPolls();
-          console.log(pollsData, 'pollsData');
-          setPolls(pollsData);
-        } catch (error) {
-          console.error('Error fetching polls:', error);
-        }
+        // Assuming the API response has data in the `.data` property
+        const pollsFromAPI = pollsFromAPIResponse.data;
+
+        // Combine both sets of polls
+        const combinedPolls = [...pollsFromContract, ...pollsFromAPI];
+
+        setPolls(combinedPolls);
+      } catch (error) {
+        console.error('Error fetching polls:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to fetch polls. Please try again.',
+          variant: 'destructive',
+        });
       }
     };
 
     fetchPolls();
     console.log(polls, 'polls');
   }, []);
+
+  const fetchPollsFromContract = async () => {
+    if (window.ethereum) {
+      const provider = new ethers.BrowserProvider(window.ethereum as any);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+      const { names, descriptions, options, endTimes, pollTypes, pollMetadatas } = await contract.getAllPolls();
+      return names.map((name: any, index: string | number) => ({
+        name,
+        description: descriptions[index],
+        options: options[index],
+        endTime: endTimes[index],
+        pollType: pollTypes[index],
+        pollMetadata: pollMetadatas[index],
+      }));
+    }
+    return [];
+  };
 
   const handleCreatePoll = () => {
     if (!isPassportConnected) {
