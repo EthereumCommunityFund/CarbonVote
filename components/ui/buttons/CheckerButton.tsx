@@ -93,7 +93,13 @@ const CheckerButton: React.FC<CheckerButtonProps> = ({ option, onOptionChange, o
   return (
     <div className="flex items-center space-x-2 cursor-pointer">
       <input type="checkbox" checked={option.isChecked} onChange={handleCheckboxClick} className="text-lg font-bold" />
-      <input type="text" value={option.name} onChange={onInputChange} className="w-full h-full border-none outline-none bg-transparent cursor-pointer rounded-full px-4 py-2" />
+      <input
+        type="text"
+        value={option.name}
+        onChange={onInputChange}
+        className="w-full h-full border-none outline-none bg-transparent cursor-pointer bg-gray-100 rounded-full px-4 py-2"
+        placeholder="Yes/No"
+      />
     </div>
   );
 };
