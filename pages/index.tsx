@@ -120,18 +120,18 @@ export default function Home() {
             return (
               <PollCardTemplate
                 key={index}
-                id={`${index}`} // Assuming you don't have a unique ID, you can use the index or a better unique identifier
+                id={`${index}`}
                 title={poll.name || poll.title}
-                creator={'Creator Name'} // Replace with actual creator if available
+                creator={'Creator Name'}
                 description={poll.description}
-                endTime={new Date(Number(poll.endTime || poll.time_limit) * 1000)}
+                endTime={new Date(Number(poll.endTime) * 1000)}
                 isLive={Date.now() < Number(poll.endTime) * 1000}
                 options={poll.options}
                 pollMetadata={poll.pollMetadata}
                 startDate={''}
                 topic={''}
                 subTopic={''}
-                isZuPassRequired={false}
+                isZuPassRequired={true}
                 votingMethod={poll.votingMethod || poll.voting_method}
                 poll={poll}
               />

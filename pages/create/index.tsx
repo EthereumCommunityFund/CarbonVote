@@ -127,18 +127,6 @@ const CreatePollPage = () => {
         console.log('Creating poll...', pollData);
 
         const response = await createPoll(pollData);
-        // const response = await fetch('/api/polls/create', {
-        //   method: 'POST',
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //   },
-
-        //   body: JSON.stringify({ pollData }),
-        // });
-
-        // const result = await createPoll(pollData);
-
-        // console.log(result, "result");
 
         console.log('Poll created successfully', response);
         toast({
@@ -263,9 +251,6 @@ const CreatePollPage = () => {
                 <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="headcount">
                   HeadCount
                 </option>
-                {/* <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="voting2">
-                  Voting 2
-                </option> */}
               </select>
             </div>
           </div>
@@ -275,7 +260,6 @@ const CreatePollPage = () => {
             votingMethod === 'headcount' && (
               <div className="flex flex-col gap-2">
                 <Label className="text-2xl">Access Rules</Label>
-                {/* <CredentialForm selectedCredentials={credentials} onCredentialsChange={setCredentials} /> */}
                 <CredentialForm selectedCredentials={credentials} onCredentialsChange={(selectedUuids) => setCredentials(selectedUuids)} />
               </div>
             )
