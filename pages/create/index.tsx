@@ -249,72 +249,66 @@ const CreatePollPage = () => {
             Back
           </Button>
         </div>
-        <div className="bg-white flex flex-col gap-2.5 rounded-2xl p-5 ">
-          <Label className="text-2xl">Create Poll</Label>
-          <div className="flex flex-col gap-1">
-            <Label className="text-black/60 text-lg">Motion Title: </Label>
-            <Input
-              value={motionTitle}
-              onChange={handleTitleInputChange}
-              placeholder={"Motion Title"}
-            />
+        <div className="flex justify-end pb-5 border-b border-black/30"></div>
+        <div className="flex flex-col gap-2.5">
+          <Label className="text-black/60 text-lg font-bold">
+            Motion Description:{" "}
+          </Label>
+          <TextEditor
+            value={motionDescription}
+            onChange={handleDescriptionChange}
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <div className="flex gap-2 items-center">
+            <Label className="text-2xl">Options</Label>
+            <Label className="text-black/60 text-base">min: 2</Label>
+            {/* <Label className="text-black/60 text-base">max: 3</Label> */}
           </div>
-          <div className="flex justify-end pb-5 border-b border-black/30"></div>
-          <div className="flex flex-col gap-2.5">
-            <Label className="text-black/60 text-lg font-bold">
-              Motion Description:{" "}
-            </Label>
-            <TextEditor
-              value={motionDescription}
-              onChange={handleDescriptionChange}
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <div className="flex gap-2 items-center">
-              <Label className="text-2xl">Options</Label>
-              <Label className="text-black/60 text-base">min: 2</Label>
-              {/* <Label className="text-black/60 text-base">max: 3</Label> */}
+          {options.map((option, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <CheckerButton
+                option={option}
+                onOptionChange={(updatedOption) =>
+                  handleCheckboxChange(index, updatedOption.isChecked)
+                }
+                onInputChange={(e) => handleInputChange(index, e)}
+              />
+              <button onClick={() => removeOption(index)}>❌</button>
             </div>
-            {options.map((option, index) => (
-              <div key={index} className="flex items-center space-x-2">
-                <CheckerButton
-                  option={option}
-                  onOptionChange={(updatedOption) =>
-                    handleCheckboxChange(index, updatedOption.isChecked)
-                  }
-                  onInputChange={(e) => handleInputChange(index, e)}
-                />
-                <button onClick={() => removeOption(index)}>❌</button>
-              </div>
-            ))}
+          ))}
 
-            <div className="flex justify-end">
-              <Button
-                className="rounded-full"
-                leftIcon={PlusIcon}
-                onClick={addOption}
-              >
-                Add Option
-              </Button>
-            </div>
+          <div className="flex justify-end">
+            <Button
+              className="rounded-full"
+              leftIcon={PlusIcon}
+              onClick={addOption}
+            >
+              Add Option
+            </Button>
           </div>
-          <div className="flex flex-col gap-2">
-            <Label className="text-2xl">Time Limit</Label>
-            <Input
-              value={timeLimit}
-              onChange={handleTimeLimitChange}
-              placeholder={"1hr 30m"}
-            ></Input>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label className="text-2xl">Voting Method</Label>
-            <div className="flex flex-col gap-1">
-              <Label className="text-base">Select a Method</Label>
-              <select
-                onChange={handleVotingSelect}
-                value={votingMethod}
-                className="flex w-full text-black outline-none rounded-lg py-2.5 pr-3 pl-2.5 bg-inputField gap-2.5 items-center border border-white/10 border-opacity-10"
-                title="Voting Method"
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label className="text-2xl">Time Limit</Label>
+          <Input
+            value={timeLimit}
+            onChange={handleTimeLimitChange}
+            placeholder={"1hr 30m"}
+          ></Input>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label className="text-2xl">Voting Method</Label>
+          <div className="flex flex-col gap-1">
+            <Label className="text-base">Select a Method</Label>
+            <select
+              onChange={handleVotingSelect}
+              value={votingMethod}
+              className="flex w-full text-black outline-none rounded-lg py-2.5 pr-3 pl-2.5 bg-inputField gap-2.5 items-center border border-white/10 border-opacity-10"
+              title="Voting Method"
+            >
+              <option
+                className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                value="ethholding"
               >
                 <option
                   className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
@@ -368,7 +362,16 @@ const CreatePollPage = () => {
           <div className="flex flex-col gap-2.5 pl-5 pb-5"></div>
         </div>
       </div>
+    </div >
+  <div className="flex flex-col gap-10 w-96">
+    <div className="flex flex-col bg-white rounded-xl gap-5">
+      <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
+        <Label className="text-2xl">Details</Label>
+      </div>
+      <div className="flex flex-col gap-2.5 pl-5 pb-5"></div>
     </div>
-  );
+  </div>
+  </div >
+);
 };
 export default CreatePollPage;
