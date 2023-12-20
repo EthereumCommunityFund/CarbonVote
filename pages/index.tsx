@@ -50,7 +50,7 @@ export default function Home() {
 
         // Combine both sets of polls
         const combinedPolls = [...pollsFromContract, ...pollsFromAPI];
-
+        console.log(combinedPolls, 'combinedPolls');
         setPolls(combinedPolls);
       } catch (error) {
         console.error('Error fetching polls:', error);
@@ -63,7 +63,7 @@ export default function Home() {
     };
 
     fetchPolls();
-    console.log(polls, 'polls');
+    // console.log(polls, 'polls');
   }, []);
 
   const fetchPollsFromContract = async () => {
