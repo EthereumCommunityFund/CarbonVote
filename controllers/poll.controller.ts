@@ -11,7 +11,7 @@ export type PollRequestData = {
 
 export type VoteRequestData = {
     option_id: string;
-    voter_identifier: string;
+    voter_identifier: string | null;
     poll_id: string;
 };
 
@@ -32,5 +32,5 @@ export const createPoll = async (pollData: PollRequestData) => {
 };
 
 export const castVote = async (voteData: VoteRequestData) => {
-    return await axiosInstance.post('/api/vote', voteData);
+    return await axiosInstance.post('/api/polls/vote', voteData);
 };

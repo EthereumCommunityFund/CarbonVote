@@ -256,7 +256,7 @@ const PollPage = () => {
           </Label>
           <div className="flex flex-col gap-2.5">
             {optionNames.map((optionName, index) => (
-              <OptionButton key={index} index={index} optionName={optionName} onVote={() => handleVote(index)} isChecked={selectedOption === optionName} />
+              <OptionButton key={index} index={index} optionName={optionName} onVote={(optionIndex) => handleVote(optionIndex as number)} isChecked={selectedOption === optionName} type="contract" />
             ))}
           </div>
         </div>
