@@ -53,26 +53,8 @@ const PollPage = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch poll data based on the source
-    // if (source === 'api') {
-    //   // Fetch from API
-    //   fetchPollFromApi(id);
-    // } else if (source === 'contract') {
-    //   // Fetch from contract
-    //   fetchPollFromContract();
-    // }
     fetchPollFromContract();
   }, [id, source]);
-
-  const fetchPollFromApi = async (pollId: string | string[] | undefined) => {
-    try {
-      const response = await fetchPollById(pollId as string);
-      console.log(response, 'response');
-      // setPoll(response.data);
-    } catch (error) {
-      console.error('Error fetching poll from API:', error);
-    }
-  };
 
   const fetchPollFromContract = async () => {
     if (window.ethereum && id) {
@@ -117,10 +99,6 @@ const PollPage = () => {
       // console.log(optionNames, 'optionNames');
     }
   };
-
-  // useEffect(() => {
-  //   fetchPoll();
-  // }, [id]);
 
   useEffect(() => {
     fetchVotingOptions();
