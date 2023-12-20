@@ -125,7 +125,7 @@ const CreatePollPage = () => {
 
       try {
         console.log('Creating poll...', pollData);
-        console.log(options, 'options');
+
         const response = await createPoll(pollData);
         // const response = await fetch('/api/polls/create', {
         //   method: 'POST',

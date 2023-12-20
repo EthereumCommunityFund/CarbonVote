@@ -1,4 +1,3 @@
-import { Contract, ethers } from 'ethers';
 import { ArrowLeftIcon, StopCircleIcon, ThumbDownIcon, ThumbUpIcon } from '@/components/icons';
 import { ClockIcon } from '@/components/icons/clock';
 import Button from '@/components/ui/buttons/Button';
@@ -6,19 +5,17 @@ import CheckerButton from '@/components/ui/buttons/CheckerButton';
 import CountdownTimer from '@/components/ui/CountDownTimer';
 import HtmlString from '@/components/ui/Html';
 import { Label } from '@/components/ui/Label';
-import { OptionType, PollType } from '@/types';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
-import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
-import VotingOption from '../../carbonvote-contracts/artifacts/contracts/VotingOption.sol/VotingOption.json';
 import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
-import { fetchPollById } from '@/controllers/poll.controller';
+import { VoteRequestData, castVote, fetchPollById } from '@/controllers/poll.controller';
+import { useUserPassportContext } from '@/context/PassportContext';
 
 interface Poll {
   id: string;
   name: string;
+  title: string;
   startDate: string | Date;
   endDate: string | Date;
   isLive: boolean;
@@ -32,179 +29,62 @@ interface Poll {
 }
 
 interface Option {
-  optionName: string;
-  votersCount: number;
-  totalEth: string;
-  votersData: any;
+  id: string;
+  option_description: string;
+  pollId: string;
+  totalWeight: number;
+  votes: number;
 }
 
 const PollPage = () => {
   const router = useRouter();
-  const { id, source } = router.query;
+  const { id } = router.query;
 
   const handleBack = () => {
     router.push('/');
   };
   const [poll, setPoll] = useState<Poll>();
-  const contractAbi = VotingContract.abi;
-  const contractAddress = contract_addresses.VotingContract;
-  const [optionNames, setOptionNames] = useState<string[]>([]);
-
+  const { signIn, isPassportConnected } = useUserPassportContext();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [options, setOptions] = useState<Option[]>([]);
 
   useEffect(() => {
-    // Fetch poll data based on the source
-    // if (source === 'api') {
-    //   // Fetch from API
-    //   fetchPollFromApi(id);
-    // } else if (source === 'contract') {
-    //   // Fetch from contract
-    //   fetchPollFromContract();
-    // }
-    fetchPollFromContract();
-  }, [id, source]);
+    fetchPollFromApi(id);
+  }, [id]);
 
   const fetchPollFromApi = async (pollId: string | string[] | undefined) => {
     try {
       const response = await fetchPollById(pollId as string);
-      console.log(response, 'response');
-      // setPoll(response.data);
+      const data = await response.data;
+      console.log(data, 'pollData');
+      setPoll(data);
+      setOptions(data.options);
     } catch (error) {
       console.error('Error fetching poll from API:', error);
     }
   };
 
-  const fetchPollFromContract = async () => {
-    if (window.ethereum && id) {
-      let provider = new ethers.BrowserProvider(window.ethereum as any);
-      let signer = await provider.getSigner();
-
-      const contract = new ethers.Contract(contractAddress, contractAbi, signer);
-
-      try {
-        const pollData = await contract.getPoll(id);
-        // console.log(contract);
-        console.log(pollData, 'pollData');
-
-        setPoll(pollData);
-      } catch (error) {
-        console.error('Error fetching poll:', error);
-      }
+  const handleVote = async (optionId: string) => {
+    if (!isPassportConnected) {
+      signIn();
+      return;
     }
-  };
-
-  const optionContractAbi = VotingOption.abi;
-  // const optionNames: any[] = [];
-
-  const fetchVotingOptions = async () => {
-    if (window.ethereum && id && poll && poll.options) {
-      let provider = new ethers.BrowserProvider(window.ethereum as any);
-      let signer = await provider.getSigner();
-      const optionNames: any[] = [];
-      console.log(poll.options, 'poll.options');
-      for (const address of poll.options) {
-        const contract = new ethers.Contract(address, optionContractAbi, signer);
-        // console.log(contract, 'contract');
-
-        try {
-          const optionName = await contract.name();
-          optionNames.push(optionName);
-        } catch (error) {
-          console.error('Error fetching options:', error);
-        }
-      }
-      setOptionNames(optionNames);
-      // console.log(optionNames, 'optionNames');
-    }
-  };
-
-  // useEffect(() => {
-  //   fetchPoll();
-  // }, [id]);
-
-  useEffect(() => {
-    fetchVotingOptions();
-  }, [id, poll]);
-
-  const [optionsData, setOptionsData] = useState<Option[]>([]);
-
-  useEffect(() => {
-    const optionContractAbi = VotingOption.abi;
-    const getOptionVoteCounts = async () => {
-      if (window.ethereum && id && poll && poll.options) {
-        let provider = new ethers.BrowserProvider(window.ethereum as any);
-        let aggregatedData = [];
-
-        for (const address of poll.options) {
-          const contract = new ethers.Contract(address, optionContractAbi, provider);
-          const votersCount = await contract.getVotersCount();
-
-          let totalBalance = BigInt(0);
-          let votersData = [];
-
-          for (let i = 0; i < votersCount; i++) {
-            const voterAddress = await contract.voters(i);
-            const balance = await provider.getBalance(voterAddress);
-            totalBalance += BigInt(balance.toString());
-
-            votersData.push({
-              address: voterAddress,
-              balance: ethers.formatEther(balance),
-            });
-          }
-
-          const optionName = await contract.name();
-          aggregatedData.push({
-            optionName,
-            votersCount,
-            totalEth: ethers.formatEther(totalBalance),
-            votersData,
-          });
-        }
-        console.log(aggregatedData, 'aggregatedData');
-        setOptionsData(aggregatedData);
-      }
+    const voter_identifier = localStorage.getItem('userId');
+    const pollId = poll?.id;
+    const voteData = {
+      poll_id: pollId,
+      option_id: optionId,
+      voter_identifier: voter_identifier,
     };
 
-    getOptionVoteCounts();
-  }, [id, poll]);
-
-  const handleVote = async (optionIndex: number) => {
-    const signature = localStorage.getItem('signature');
-    const message = localStorage.getItem('message');
-
-    if (!signature) {
-      console.error('No signature found. Please connect your passport');
-      return;
-    }
-    if (!message) {
-      console.error('No message found. Please connect your passport');
-      return;
-    }
-
-    if (!window.ethereum) {
-      console.error('Please install MetaMask to perform this action.');
-      return;
-    }
-
     try {
-      let provider = new ethers.BrowserProvider(window.ethereum as any);
-      let signer = await provider.getSigner();
-      const contract = new ethers.Contract(contractAddress, contractAbi, signer);
-      const pollIndex = Number(id);
-      const newOptionIndex = Number(optionIndex);
-      // console.log(pollIndex, 'pollIndex');
-      // console.log(newOptionIndex, 'newOptionIndex');
-      // console.log(signature, 'signature');
-      // console.log(message, 'message');
-      const transactionResponse = await contract.vote(pollIndex, newOptionIndex, signature, message);
-      await transactionResponse.wait(); // Wait for the transaction to be mined
-      console.log('Vote cast successfully');
+      console.log(voteData, 'voteData');
+      const response = await castVote(voteData as VoteRequestData);
+      console.log(response, 'response');
       toast({
         title: 'Vote cast successfully',
       });
-      await fetchPollFromContract();
-      await fetchVotingOptions();
+      await fetchPollFromApi(id);
     } catch (error: any) {
       console.error('Error casting vote:', error);
       toast({
@@ -241,7 +121,7 @@ const PollPage = () => {
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-black/60 text-lg">Motion: </Label>
-            <Label className="text-2xl">{poll?.name}</Label>
+            <Label className="text-2xl">{poll?.title}</Label>
           </div>
           <div className="flex justify-end pb-5 border-b border-black/30">{/* <Label>by: {mockPoll.creator}</Label> */}</div>
           <div className="flex flex-col gap-2.5">
@@ -255,8 +135,15 @@ const PollPage = () => {
             This vote requires a <Label className="font-bold">zero-value transaction</Label> from your wallet
           </Label>
           <div className="flex flex-col gap-2.5">
-            {optionNames.map((optionName, index) => (
-              <OptionButton key={index} index={index} optionName={optionName} onVote={() => handleVote(index)} isChecked={selectedOption === optionName} />
+            {options?.map((option) => (
+              <OptionButton
+                key={option.id}
+                id={option.id}
+                optionName={option.option_description}
+                onVote={(optionId) => handleVote(optionId as string)}
+                isChecked={selectedOption === option.option_description}
+                type="api"
+              />
             ))}
           </div>
         </div>
@@ -265,31 +152,15 @@ const PollPage = () => {
         <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
           <Label className="text-2xl">Details</Label>
         </div>
-        {/* <div className="flex flex-col bg-white rounded-xl gap-5">
-          <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
-            <Label className="text-2xl">Details</Label>
-          </div>
-          <div className="flex flex-col gap-2.5 pl-5 pb-5">
-            <Label>No of voters {}</Label>
-            <Label>Total Eth of Voters {}</Label>
-          </div>
-        </div> */}
-        {optionsData &&
-          optionsData.map((option, index) => (
-            <div key={index} className="flex flex-col bg-white rounded-xl gap-5">
+        {options &&
+          options.map((option) => (
+            <div key={option.id} className="flex flex-col bg-white rounded-xl gap-5">
               <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
-                <Label className="text-2xl">{option.optionName}</Label>
+                <Label className="text-2xl">{option.option_description}</Label>
               </div>
               <div className="flex flex-col gap-2.5 pl-5 pb-5">
-                <Label>No of voters: {option.votersCount.toString()}</Label>
-                <Label>Total Eth of Voters: {option.totalEth} ETH</Label>
-                {/* You can also iterate over votersData if needed */}
-                {/* {option.votersData.map((voter, voterIndex) => (
-              <div key={voterIndex}>
-                <Label>Voter Address: {voter.address}</Label>
-                <Label>Voter Balance: {voter.balance}</Label>
-              </div>
-            ))} */}
+                <Label>No of voters: {option.votes}</Label>
+                <Label>Total Weight of Voters: {option.totalWeight} </Label>
               </div>
             </div>
           ))}

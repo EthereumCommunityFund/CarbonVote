@@ -27,16 +27,6 @@ interface IPollCard {
 export const PollCardTemplate = ({ id, title, startDate, endTime, isLive, topic, subTopic, isZuPassRequired, description, options, votingMethod, pollMetadata, poll }: IPollCard) => {
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
-  // const handleClickItem = () => {
-  //   if (!isPassportConnected) {
-  //     signIn();
-  //     return;
-  //   }
-  //   router.push({
-  //     pathname: '/poll',
-  //     query: { id },
-  //   });
-  // };
   const handleClickItem = () => {
     if (!isPassportConnected) {
       signIn();
@@ -45,21 +35,22 @@ export const PollCardTemplate = ({ id, title, startDate, endTime, isLive, topic,
 
     // Define the base path
     let path = '/poll'; // Default path for API polls
-
+    const pollId = votingMethod === 'headCount' ? poll.id : id;
     // Update path if the voting method is 'ethholding' for contract polls
-    if (votingMethod === 'ETHHOLDING') {
+    if (votingMethod === 'ethholding') {
       path = '/contract-poll';
     }
 
     // Navigate to the appropriate path with the poll ID
     router.push({
       pathname: path,
-      query: { id },
+      query: { id: pollId },
     });
   };
 
   useEffect(() => {
     console.log(id, 'id');
+    console.log(poll.id, 'poll.id');
   }, []);
   return (
     <div className="bg-white flex flex-col justify-between rounded-lg p-3 hover:cursor-pointer w-full gap-3.5" onClick={handleClickItem}>
