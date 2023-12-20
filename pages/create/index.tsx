@@ -17,6 +17,7 @@ import { toast } from '@/components/ui/use-toast';
 import { OptionType } from '@/types';
 import { useUserPassportContext } from '@/context/PassportContext';
 import { PollRequestData, createPoll } from '@/controllers/poll.controller';
+import axiosInstance from '@/src/axiosInstance';
 
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
@@ -134,6 +135,10 @@ const CreatePollPage = () => {
 
         //   body: JSON.stringify({ pollData }),
         // });
+
+        // const result = await createPoll(pollData);
+
+        // console.log(result, "result");
 
         console.log('Poll created successfully', response);
         toast({
