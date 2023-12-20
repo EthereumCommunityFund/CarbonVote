@@ -20,29 +20,50 @@ interface IPollCard {
   description: string;
   options: string[];
   pollMetadata: string;
+  votingMethod: string;
+  poll: any;
 }
 
-export const PollCardTemplate = ({ id, title, startDate, endTime, isLive, topic, subTopic, isZuPassRequired, description, options, pollMetadata }: IPollCard) => {
+export const PollCardTemplate = ({ id, title, startDate, endTime, isLive, topic, subTopic, isZuPassRequired, description, options, votingMethod, pollMetadata, poll }: IPollCard) => {
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
+  // const handleClickItem = () => {
+  //   if (!isPassportConnected) {
+  //     signIn();
+  //     return;
+  //   }
+  //   router.push({
+  //     pathname: '/poll',
+  //     query: { id },
+  //   });
+  // };
   const handleClickItem = () => {
     if (!isPassportConnected) {
       signIn();
       return;
     }
+
+    // Define the base path
+    let path = '/poll'; // Default path for API polls
+
+    // Update path if the voting method is 'ethholding' for contract polls
+    if (votingMethod === 'ETHHOLDING') {
+      path = '/contract-poll';
+    }
+
+    // Navigate to the appropriate path with the poll ID
     router.push({
-      pathname: '/poll',
+      pathname: path,
       query: { id },
     });
   };
+
   useEffect(() => {
     console.log(id, 'id');
   }, []);
   return (
     <div className="bg-white flex flex-col justify-between rounded-lg p-3 hover:cursor-pointer w-full gap-3.5" onClick={handleClickItem}>
-      {/* <Label className="text-whilte/60">
-        {topic}/{subTopic}
-      </Label> */}
+      <Label className="text-whilte/60">{votingMethod.toLocaleUpperCase()}</Label>
       <Label>{title}</Label>
       <span dangerouslySetInnerHTML={{ __html: description }} />
       <div className="flex gap-3.5">

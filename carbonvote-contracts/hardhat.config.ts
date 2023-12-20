@@ -1,12 +1,12 @@
-import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox";
+import { HardhatUserConfig } from 'hardhat/config';
+import '@nomicfoundation/hardhat-toolbox';
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.19",
+  solidity: '0.8.19',
   defaultNetwork: 'hardhat',
   networks: {
     hardhat: {
-      chainId: 31337,
+      chainId: 1337,
     },
     // goerli: {
     //   url: GOERLI_API_URL,
