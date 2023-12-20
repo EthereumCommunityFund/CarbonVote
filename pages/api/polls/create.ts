@@ -17,7 +17,7 @@ const createPoll = async (req: NextApiRequest, res: NextApiResponse) => {
 
     let { title, description, time_limit, voting_method, options, credentials } = value;
 
-    time_limit = Math.floor(time_limit / 1000);
+    // time_limit = Math.floor(time_limit / 1000);
 
 
     try {
