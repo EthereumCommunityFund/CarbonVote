@@ -145,18 +145,18 @@ const CreatePollPage = () => {
       try {
         console.log("Creating poll...", pollData);
         // const response = await createPoll(pollData);
-        // const response = await fetch("/api/polls", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
+        const response = await fetch("/api/polls/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-        //   body: JSON.stringify({ pollData }),
-        // });
+          body: JSON.stringify({ pollData }),
+        });
 
-        const result = await createPoll(pollData);
+        // const result = await createPoll(pollData);
 
-        console.log(result, "result");
+        // console.log(result, "result");
 
         console.log("Poll created successfully", response);
         toast({
