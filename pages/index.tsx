@@ -15,11 +15,15 @@ import { toast } from '@/components/ui/use-toast';
 
 interface Poll {
   name: string;
+  title: string;
   description: string;
   options: string[];
   endTime: number;
   pollType: number;
   pollMetadata: string;
+  votingMethod: string;
+  voting_method: string;
+  time_limit: number;
 }
 
 export default function Home() {
@@ -75,6 +79,7 @@ export default function Home() {
         endTime: endTimes[index],
         pollType: pollTypes[index],
         pollMetadata: pollMetadatas[index],
+        votingMethod: 'ethholding',
       }));
     }
     return [];
@@ -116,10 +121,10 @@ export default function Home() {
               <PollCardTemplate
                 key={index}
                 id={`${index}`} // Assuming you don't have a unique ID, you can use the index or a better unique identifier
-                title={poll.name}
+                title={poll.name || poll.title}
                 creator={'Creator Name'} // Replace with actual creator if available
                 description={poll.description}
-                endTime={new Date(Number(poll.endTime) * 1000)}
+                endTime={new Date(Number(poll.endTime || poll.time_limit) * 1000)}
                 isLive={Date.now() < Number(poll.endTime) * 1000}
                 options={poll.options}
                 pollMetadata={poll.pollMetadata}
@@ -127,6 +132,8 @@ export default function Home() {
                 topic={''}
                 subTopic={''}
                 isZuPassRequired={false}
+                votingMethod={poll.votingMethod || poll.voting_method}
+                poll={poll}
               />
             );
           })}
