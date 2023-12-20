@@ -16,7 +16,7 @@ export type VoteRequestData = {
 };
 
 export type OptionData = {
-  description: string;
+  option_description: string;
 };
 
 export const fetchAllPolls = async () => {
@@ -28,7 +28,7 @@ export const fetchPollById = async (pollId: string) => {
 };
 
 export const createPoll = async (pollData: PollRequestData) => {
-  return await axiosInstance.post('/api/polls', pollData);
+  return await axiosInstance.post('/api/polls/create', pollData);
 };
 
 export const castVote = async (voteData: VoteRequestData) => {

@@ -118,21 +118,22 @@ const CreatePollPage = () => {
         description: motionDescription,
         time_limit: durationInSeconds,
         voting_method: 'headCount',
-        options: options.filter((option) => option.isChecked).map((option) => ({ description: option.name })),
+        options: options.filter((option) => option.isChecked).map((option) => ({ option_description: option.name })),
         credentials: credentials,
       };
 
       try {
         console.log('Creating poll...', pollData);
-        // const response = await createPoll(pollData);
-        const response = await fetch('/api/polls', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+        console.log(options, 'options');
+        const response = await createPoll(pollData);
+        // const response = await fetch('/api/polls/create', {
+        //   method: 'POST',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //   },
 
-          body: JSON.stringify({ pollData }),
-        });
+        //   body: JSON.stringify({ pollData }),
+        // });
 
         console.log('Poll created successfully', response);
         toast({
