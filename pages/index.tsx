@@ -12,6 +12,7 @@ import { ethers } from 'ethers';
 import VotingContract from './../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
 import { contract_addresses } from './../carbonvote-contracts/artifacts/deployedAddresses.json';
 import { toast } from '@/components/ui/use-toast';
+import Spinner from '@/components/ui/Spinner';
 
 interface Poll {
   name: string;
@@ -29,6 +30,7 @@ interface Poll {
 export default function Home() {
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
+  const [isLoading, setIsLoading] = useState(false);
   const pollList: PollType[] = mockpolls;
   const [polls, setPolls] = useState<Poll[]>([]);
   const contractAbi = VotingContract.abi;
@@ -37,6 +39,7 @@ export default function Home() {
   useEffect(() => {
     const fetchPolls = async () => {
       try {
+        setIsLoading(true);
         // Fetch from smart contract
         const pollsFromContractPromise = fetchPollsFromContract();
         // Fetch from API
@@ -52,6 +55,7 @@ export default function Home() {
         const combinedPolls = [...pollsFromContract, ...pollsFromAPI];
         console.log(combinedPolls, 'combinedPolls');
         setPolls(combinedPolls);
+        setIsLoading(false);
       } catch (error) {
         console.error('Error fetching polls:', error);
         toast({
@@ -110,6 +114,7 @@ export default function Home() {
         </div>
       </div>
       <div className="px-[273px] flex flex-col gap-[30px]">
+        {isLoading ? <Spinner /> : <></>}
         <div className="flex justify-end">
           <Button className="rounded-full" leftIcon={PlusCirceIcon} onClick={handleCreatePoll}>
             Create a Poll

@@ -88,9 +88,7 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+  background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
 }
 
 @media (max-width: 1200px) {
@@ -103,4 +101,30 @@ body {
   .dashboard-menu.open {
     @apply translate-x-0;
   }
+}
+
+@keyframes spinner {
+  0% {
+    transform: translateX(-50%) rotate(0deg);
+  }
+
+  100% {
+    transform: translateX(-50%) rotate(360deg);
+  }
+}
+
+/* SPINNER */
+.spinner {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translateX(-50%) translateY(-50%);
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  border-top: 7px solid #e2e7e9;
+  border-right: 7px solid #e2e7e9;
+  border-bottom: 7px solid #e2e7e9;
+  border-left: 7px solid #ccd1d3;
+  animation: spinner 1.1s linear infinite;
 }
