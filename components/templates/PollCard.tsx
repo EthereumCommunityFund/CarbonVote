@@ -59,7 +59,7 @@ export const PollCardTemplate = ({ id, title, startDate, endTime, isLive, topic,
       <span dangerouslySetInnerHTML={{ __html: description }} />
       <div className="flex gap-3.5">
         {isZuPassRequired ? <LockClosedIcon /> : <LockOpenIcon />}
-        <div className="bg-[#F84A4A20] px-2.5 rounded-lg items-center">{isLive ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-">Ended</Label>}</div>
+        <div className={`${isLive ? `bg-[#F84A4A20]` : `bg-[#F8F8F8]`} px-2.5 rounded-lg items-center`}>{isLive ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-[#656565]">Closed</Label>}</div>
         {isLive ? (
           <div className="flex flex-2">
             <ClockIcon />
