@@ -1,10 +1,4 @@
-import {
-  createContext,
-  ReactNode,
-  useState,
-  useContext,
-  useEffect,
-} from "react";
+import { createContext, ReactNode, useState, useContext, useEffect } from 'react';
 
 import { useZupassPopupMessages } from '@pcd/passport-interface/src/PassportPopup';
 import { EdDSATicketFieldsToReveal } from '@pcd/zk-eddsa-event-ticket-pcd';
@@ -15,7 +9,6 @@ import {
   generate_signature,
   verifyProof,
 } from "../controllers/auth.controller";
-import { openSignedZuzaluSignInPopup } from "@pcd/passport-interface";
 
 import { openSignedZuzaluSignInPopup } from '@pcd/passport-interface';
 import { useZuAuth, supportedEvents, supportedProducs } from 'zuauth';
@@ -40,11 +33,9 @@ export const UserPassportContext = createContext<UserPassportContextData>({
   signOut: () => { },
   pcd: null,
 });
-const PCD_STORAGE_KEY = "userPCD";
+const PCD_STORAGE_KEY = 'userPCD';
 
-export function UserPassportContextProvider({
-  children,
-}: UserPassportProviderProps) {
+export function UserPassportContextProvider({ children }: UserPassportProviderProps) {
   const router = useRouter();
   const { authenticate } = useZuAuth();
 
@@ -75,19 +66,19 @@ export function UserPassportContextProvider({
             const response = await fetch('/api/auth/generate_signature', {
               method: 'POST',
               headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
               },
 
               body: JSON.stringify({ account, message }),
             });
 
             if (!response.ok) {
-              throw new Error("Failed to generate signature");
+              throw new Error('Failed to generate signature');
             }
 
             const data = await response.json();
-            console.log(data.data.message, "message");
-            console.log(data.data.signed_message, "signature");
+            console.log(data.data.message, 'message');
+            console.log(data.data.signed_message, 'signature');
             return data.data.signed_message;
           };
 
@@ -102,7 +93,7 @@ export function UserPassportContextProvider({
           setIsAuthenticated(true);
           localStorage.setItem(PCD_STORAGE_KEY, pcdStr);
         } catch (error) {
-          console.error("Error processing PCD string:", error);
+          console.error('Error processing PCD string:', error);
         }
       } else {
         console.log('cannot proof zupass tickets');
@@ -206,7 +197,7 @@ export function UserPassportContextProvider({
     localStorage.removeItem(PCD_STORAGE_KEY);
     setPcd(null);
     // Redirect to home or sign-in page if needed
-    router.push("/");
+    router.push('/');
   };
 
   return (

@@ -43,11 +43,7 @@ const CreatePollPage = () => {
       const doConnect = async () => {
         const provider = new ethers.BrowserProvider(window.ethereum as any);
         const signer = await provider.getSigner();
-        const contract = new ethers.Contract(
-          contractAddress,
-          contractAbi,
-          signer
-        );
+        const contract = new ethers.Contract(contractAddress, contractAbi, signer);
         setPollContract(contract);
       };
       doConnect();
