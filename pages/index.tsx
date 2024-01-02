@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router';
+import { useQuery } from 'react-query';
 import { fetchAllPolls as fetchAllPollsFromAPI } from '@/controllers/poll.controller';
 import { Label } from '@/components/ui/Label';
 import { useUserPassportContext } from '../context/PassportContext';
@@ -30,45 +31,8 @@ interface Poll {
 export default function Home() {
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
-  const [isLoading, setIsLoading] = useState(false);
-  const pollList: PollType[] = mockpolls;
-  const [polls, setPolls] = useState<Poll[]>([]);
   const contractAbi = VotingContract.abi;
   const contractAddress = contract_addresses.VotingContract;
-
-  useEffect(() => {
-    const fetchPolls = async () => {
-      try {
-        setIsLoading(true);
-        // Fetch from smart contract
-        const pollsFromContractPromise = fetchPollsFromContract();
-        // Fetch from API
-        const pollsFromAPIPromise = fetchAllPollsFromAPI();
-
-        // Wait for both promises to resolve
-        const [pollsFromContract, pollsFromAPIResponse] = await Promise.all([pollsFromContractPromise, pollsFromAPIPromise]);
-
-        // Assuming the API response has data in the `.data` property
-        const pollsFromAPI = pollsFromAPIResponse.data;
-
-        // Combine both sets of polls
-        const combinedPolls = [...pollsFromContract, ...pollsFromAPI];
-        console.log(combinedPolls, 'combinedPolls');
-        setPolls(combinedPolls);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error fetching polls:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to fetch polls. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    };
-
-    fetchPolls();
-    // console.log(polls, 'polls');
-  }, []);
 
   const fetchPollsFromContract = async () => {
     if (window.ethereum) {
@@ -88,6 +52,13 @@ export default function Home() {
     }
     return [];
   };
+  const fetchPolls = async () => {
+    const pollsFromContract = await fetchPollsFromContract();
+    const { data: pollsFromAPI } = await fetchAllPollsFromAPI();
+    return [...pollsFromContract, ...pollsFromAPI];
+  };
+
+  const { data: polls, isLoading, error } = useQuery('polls', fetchPolls);
 
   const handleCreatePoll = () => {
     if (!isPassportConnected) {
@@ -121,7 +92,7 @@ export default function Home() {
           </Button>
         </div>
         <div className="flex flex-col gap-2.5 h-[250px] overflow-y-auto">
-          {polls.map((poll, index) => {
+          {polls?.map((poll: Poll, index: number) => {
             return (
               <PollCardTemplate
                 key={index}
