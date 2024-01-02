@@ -23,17 +23,6 @@ const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
   const contractAbi = VotingContract.abi;
   const contractAddress = contract_addresses.VotingContract;
-  useEffect(() => {
-    if (window.ethereum) {
-      const doConnect = async () => {
-        const provider = new ethers.BrowserProvider(window.ethereum as any);
-        const signer = await provider.getSigner();
-        const contract = new ethers.Contract(contractAddress, contractAbi, signer);
-        setPollContract(contract);
-      };
-      doConnect();
-    }
-  }, []);
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
   const [credentials, setCredentials] = useState<string[]>([]);
@@ -45,6 +34,19 @@ const CreatePollPage = () => {
     { name: 'Yes', isChecked: false },
     { name: 'No', isChecked: false },
   ]);
+  const [isZuPassRequired, setIsZuPassRequired] = useState(false);
+
+  useEffect(() => {
+    if (window.ethereum) {
+      const doConnect = async () => {
+        const provider = new ethers.BrowserProvider(window.ethereum as any);
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+        setPollContract(contract);
+      };
+      doConnect();
+    }
+  }, []);
 
   // const [options, setOptions] = useState<OptionType[]>([]);
   const handleOptionChange = (updatedOption: OptionType) => {
@@ -64,6 +66,18 @@ const CreatePollPage = () => {
     const updatedOptions = options.map((option, i) => (i === index ? updatedOption : option));
     setOptions(updatedOptions);
   };
+  const credentialsMapping = {
+    'ZuConnect Resident': '76118436-886f-4690-8a54-ab465d08fa0d',
+    // ... add other credential mappings
+  };
+
+  useEffect(() => {
+    if (votingMethod === 'headcount') {
+      setIsZuPassRequired(true);
+    } else {
+      setIsZuPassRequired(false);
+    }
+  }, [votingMethod]);
 
   const createNewPoll = async () => {
     if (!isPassportConnected) {
@@ -260,7 +274,12 @@ const CreatePollPage = () => {
             votingMethod === 'headcount' && (
               <div className="flex flex-col gap-2">
                 <Label className="text-2xl">Access Rules</Label>
-                <CredentialForm selectedCredentials={credentials} onCredentialsChange={(selectedUuids) => setCredentials(selectedUuids)} />
+                <CredentialForm
+                  selectedCredentials={credentials}
+                  onCredentialsChange={(selectedUuids) => setCredentials(selectedUuids)}
+                  isZuPassRequired={isZuPassRequired}
+                  setIsZuPassRequired={setIsZuPassRequired}
+                />
               </div>
             )
           )}
