@@ -78,13 +78,17 @@ import ToggleSwitchButton from '../ui/buttons/ToggleSwitchButton';
 type CredentialFormProps = {
   selectedCredentials: string[];
   onCredentialsChange: (credentials: string[]) => void;
+  isZuPassRequired: boolean;
+  setIsZuPassRequired: (isZuPassRequired: boolean) => void;
 };
+interface CredentialsMapping {
+  [key: string]: string;
+}
 
-export const CredentialForm = ({ selectedCredentials, onCredentialsChange }: CredentialFormProps) => {
+export const CredentialForm = ({ selectedCredentials, onCredentialsChange, isZuPassRequired, setIsZuPassRequired }: CredentialFormProps) => {
   const [credential, setCredential] = useState('');
-  const [isZuPassRequired, setIsZuPassRequired] = useState(false);
 
-  const credentialsMapping = {
+  const credentialsMapping: CredentialsMapping = {
     'ZuConnect Resident': '76118436-886f-4690-8a54-ab465d08fa0d',
     // ... add other credential mappings
   };
@@ -98,11 +102,11 @@ export const CredentialForm = ({ selectedCredentials, onCredentialsChange }: Cre
     }
   };
 
-  const handleCredentialSelect = (event: any) => {
-    const credentialName = event.target.value;
-    setCredential(credentialName); // Update the local state to reflect the UI change
+  const handleCredentialSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const credentialName = event.target.value as keyof typeof credentialsMapping;
+    setCredential(String(credentialName));
     const credentialUUID = credentialsMapping[credentialName];
-    onCredentialsChange([credentialUUID]); // Update the parent component's state
+    onCredentialsChange([credentialUUID]);
   };
 
   return (

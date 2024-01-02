@@ -1,23 +1,14 @@
-import {
-  createContext,
-  ReactNode,
-  useState,
-  useContext,
-  useEffect,
-} from "react";
+import { createContext, ReactNode, useState, useContext, useEffect } from 'react';
 
-import { useZupassPopupMessages } from "@pcd/passport-interface/src/PassportPopup";
-import { EdDSATicketFieldsToReveal } from "@pcd/zk-eddsa-event-ticket-pcd";
-import { useRouter } from "next/router";
+import { useZupassPopupMessages } from '@pcd/passport-interface/src/PassportPopup';
+import { EdDSATicketFieldsToReveal } from '@pcd/zk-eddsa-event-ticket-pcd';
+import { useRouter } from 'next/router';
 
-import { openGroupMembershipPopup } from "../src/util";
-import {
-  generate_signature,
-  verifyProof,
-} from "../controllers/auth.controller";
+import { openGroupMembershipPopup } from '../src/util';
+import { generate_signature, verifyProof } from '../controllers/auth.controller';
 
-import { openSignedZuzaluSignInPopup } from "@pcd/passport-interface";
-import { useZuAuth, supportedEvents, supportedProducs } from "zuauth";
+import { openSignedZuzaluSignInPopup } from '@pcd/passport-interface';
+import { useZuAuth, supportedEvents, supportedProducs } from 'zuauth';
 
 type UserPassportContextData = {
   signIn: () => void;
@@ -39,11 +30,9 @@ export const UserPassportContext = createContext<UserPassportContextData>({
   signOut: () => {},
   pcd: null,
 });
-const PCD_STORAGE_KEY = "userPCD";
+const PCD_STORAGE_KEY = 'userPCD';
 
-export function UserPassportContextProvider({
-  children,
-}: UserPassportProviderProps) {
+export function UserPassportContextProvider({ children }: UserPassportProviderProps) {
   const router = useRouter();
   const { authenticate } = useZuAuth();
 
@@ -51,7 +40,7 @@ export function UserPassportContextProvider({
 
   const [pcdStr] = useZupassPopupMessages();
   const [pcd, setPcd] = useState<string | null>(null);
-  const [mode, setMode] = useState<"ticket|sign-in">("sign-in");
+  const [mode, setMode] = useState<'ticket|sign-in'>('sign-in');
   const processPcd = (pcdStr) => {
     console.log(pcdStr);
     const pcd = JSON.parse(pcdStr);
@@ -63,53 +52,47 @@ export function UserPassportContextProvider({
     const func = async () => {
       if (!pcdStr) return;
 
-      if (pcdStr && mode === "sign-in") {
+      if (pcdStr && mode === 'sign-in') {
         try {
           let _pcd = processPcd(pcdStr);
           await verifyProof(_pcd);
           const userId = _pcd.claim.externalNullifier; // Extract the unique identifier 'id'
           console.log(userId, _pcd);
-          const generateSignature = async (
-            account: string,
-            message: string
-          ) => {
-            const response = await fetch("/api/auth/generate_signature", {
-              method: "POST",
+          const generateSignature = async (account: string, message: string) => {
+            const response = await fetch('/api/auth/generate_signature', {
+              method: 'POST',
               headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
               },
 
               body: JSON.stringify({ account, message }),
             });
 
             if (!response.ok) {
-              throw new Error("Failed to generate signature");
+              throw new Error('Failed to generate signature');
             }
 
             const data = await response.json();
-            console.log(data.data.message, "message");
-            console.log(data.data.signed_message, "signature");
+            console.log(data.data.message, 'message');
+            console.log(data.data.signed_message, 'signature');
             return data.data.signed_message;
           };
 
-          const signature = await generateSignature(
-            userId as string,
-            userId as string
-          );
+          const signature = await generateSignature(userId as string, userId as string);
           const message = userId as string;
           if (signature) {
-            localStorage.setItem("signature", signature);
-            localStorage.setItem("message", message); // Save the generated signature
-            localStorage.setItem("userId", userId);
+            localStorage.setItem('signature', signature);
+            localStorage.setItem('message', message); // Save the generated signature
+            localStorage.setItem('userId', userId);
           }
           setPcd(_pcd);
           setIsAuthenticated(true);
           localStorage.setItem(PCD_STORAGE_KEY, pcdStr);
         } catch (error) {
-          console.error("Error processing PCD string:", error);
+          console.error('Error processing PCD string:', error);
         }
       } else {
-        console.log("cannot proof zupass tickets");
+        console.log('cannot proof zupass tickets');
       }
     };
     func();
@@ -121,10 +104,11 @@ export function UserPassportContextProvider({
     if (storedPcd) {
       setPcd(processPcd(storedPcd));
     }
+    setIsAuthenticated(!!storedPcd);
   }, []);
 
   const verifyZupassTicket = () => {
-    setMode("ticket");
+    setMode('ticket');
     const defaultSetOfTicketFieldsToReveal: EdDSATicketFieldsToReveal = {
       revealTicketId: true,
       revealEventId: true,
@@ -166,27 +150,27 @@ export function UserPassportContextProvider({
     // ]
     authenticate(
       defaultSetOfTicketFieldsToReveal,
-      "1366567502",
+      '1366567502',
       undefined,
       [
-        "5de90d09-22db-40ca-b3ae-d934573def8b",
-        "5de90d09-22db-40ca-b3ae-d934573def8b",
-        "5de90d09-22db-40ca-b3ae-d934573def8b",
-        "91312aa1-5f74-4264-bdeb-f4a3ddb8670c",
-        "54863995-10c4-46e4-9342-75e48b68d307",
-        "797de414-2aec-4ef8-8655-09df7e2b6cc6",
-        "a6109324-7ca0-4198-9583-77962d1b9d53",
+        '5de90d09-22db-40ca-b3ae-d934573def8b',
+        '5de90d09-22db-40ca-b3ae-d934573def8b',
+        '5de90d09-22db-40ca-b3ae-d934573def8b',
+        '91312aa1-5f74-4264-bdeb-f4a3ddb8670c',
+        '54863995-10c4-46e4-9342-75e48b68d307',
+        '797de414-2aec-4ef8-8655-09df7e2b6cc6',
+        'a6109324-7ca0-4198-9583-77962d1b9d53',
       ],
       [
-        "5ba4cd9e-893c-4a4a-b15b-cf36ceda1938",
-        "10016d35-40df-4033-a171-7d661ebaccaa",
-        "53b518ed-e427-4a23-bf36-a6e1e2764256",
-        "cc9e3650-c29b-4629-b275-6b34fc70b2f9",
-        "d2123bf9-c027-4851-b52c-d8b73fc3f5af",
-        "d3620f38-56a9-4235-bea8-0d1dba6bb623",
-        "a6109324-7ca0-4198-9583-77962d1b9d53",
+        '5ba4cd9e-893c-4a4a-b15b-cf36ceda1938',
+        '10016d35-40df-4033-a171-7d661ebaccaa',
+        '53b518ed-e427-4a23-bf36-a6e1e2764256',
+        'cc9e3650-c29b-4629-b275-6b34fc70b2f9',
+        'd2123bf9-c027-4851-b52c-d8b73fc3f5af',
+        'd3620f38-56a9-4235-bea8-0d1dba6bb623',
+        'a6109324-7ca0-4198-9583-77962d1b9d53',
       ],
-      "ticket-popup"
+      'ticket-popup'
     );
   };
 
@@ -200,15 +184,8 @@ export function UserPassportContextProvider({
     //   undefined,
     //   undefined
     // );
-    setMode("sign-in");
-    openGroupMembershipPopup(
-      "https://zupass.org/",
-      window.location.origin + "/popup",
-      "https://api.zupass.org/semaphore/1",
-      "carbonvote",
-      undefined,
-      undefined
-    );
+    setMode('sign-in');
+    openGroupMembershipPopup('https://zupass.org/', window.location.origin + '/popup', 'https://api.zupass.org/semaphore/1', 'carbonvote', undefined, undefined);
   };
 
   const signOut = () => {
@@ -216,7 +193,7 @@ export function UserPassportContextProvider({
     localStorage.removeItem(PCD_STORAGE_KEY);
     setPcd(null);
     // Redirect to home or sign-in page if needed
-    router.push("/");
+    router.push('/');
   };
 
   return (

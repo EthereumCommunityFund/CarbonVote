@@ -11,6 +11,7 @@ import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
 import { VoteRequestData, castVote, fetchPollById } from '@/controllers/poll.controller';
 import { useUserPassportContext } from '@/context/PassportContext';
+import OptionVotingCountProgress from '@/components/OptionVotingCounts';
 
 interface Poll {
   id: string;
@@ -101,15 +102,15 @@ const PollPage = () => {
 
   return (
     <div className="flex gap-20 px-20 pt-5 text-black w-full justify-center">
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-2.5 max-w-[1000px] w-full">
         <div>
           <Button className="rounded-full" leftIcon={ArrowLeftIcon} onClick={handleBack}>
             Back
           </Button>
         </div>
-        <div className="bg-white flex flex-col gap-2.5 rounded-2xl p-5 ">
+        <div className="bg-white flex flex-col gap-1.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
-            <div className="bg-[#F84A4A20] px-2.5 rounded-lg items-center">{poll?.isLive ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-white/70">Ended</Label>}</div>
+            <div className={`${poll.isLive ? `bg-[#F84A4A20]` : `bg-[#F8F8F8]`} px-2.5 rounded-lg items-center`}>{poll.isLive ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-[#656565]">Closed</Label>}</div>
             {poll?.isLive ? (
               <div className="flex gap-2">
                 <ClockIcon />
@@ -120,7 +121,7 @@ const PollPage = () => {
             )}
           </div>
           <div className="flex flex-col gap-1">
-            <Label className="text-black/60 text-lg">Motion: </Label>
+            <Label className="text-black/60 text-base">Motion: </Label>
             <Label className="text-2xl">{poll?.title}</Label>
           </div>
           <div className="flex justify-end pb-5 border-b border-black/30">{/* <Label>by: {mockPoll.creator}</Label> */}</div>
@@ -148,25 +149,31 @@ const PollPage = () => {
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-10 w-96">
-        <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
+      <div className="flex flex-col gap-8 w-96">
+        <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
           <Label className="text-2xl">Details</Label>
+          <hr></hr>
+          <div className='flex flex-col gap-4 pt-3 text-base'>
+            <Label>Voting Method: </Label>
+            <Label>Start Date: </Label>
+            <Label>End Date: </Label>
+            <Label>Requirements: </Label>
+          </div>
         </div>
-        {options &&
-          options.map((option) => (
-            <div key={option.id} className="flex flex-col bg-white rounded-xl gap-5">
-              <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
-                <Label className="text-2xl">{option.option_description}</Label>
-              </div>
-              <div className="flex flex-col gap-2.5 pl-5 pb-5">
-                <Label>No of voters: {option.votes}</Label>
-                <Label>Total Weight of Voters: {option.totalWeight} </Label>
-              </div>
-            </div>
-          ))}
+        <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
+          <Label className="text-2xl">Results</Label>
+          <hr></hr>
+          <div className='flex flex-col gap-2.5 pt-2.5'>
+            {options &&
+              options.map((option: Option) => (
+                <OptionVotingCountProgress description={option.option_description} votes={option.votes} />
+              ))
+            }
+          </div>
+        </div>
       </div>
     </div>
-  );
+  )
 };
 
 export default PollPage;
