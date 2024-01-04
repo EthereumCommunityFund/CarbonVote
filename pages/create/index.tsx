@@ -208,8 +208,8 @@ const CreatePollPage = () => {
   };
 
   return (
-    <div className="flex gap-20 px-20 pt-5 text-black w-full justify-center h-[600px] overflow-y-auto">
-      <div className="flex flex-col gap-2.5">
+    <div className="flex gap-20 px-20 py-5 text-black w-full justify-center overflow-y-auto">
+      <div className="flex flex-col gap-2.5 py-5">
         <div>
           <Button className="rounded-full" leftIcon={ArrowLeftIcon} onClick={handleBack}>
             Back
@@ -293,7 +293,7 @@ const CreatePollPage = () => {
           </Button>
         </div>
       </div>
-      <div className="flex flex-col gap-10 w-96">
+      <div className="flex flex-col gap-10 w-96 pb-10">
         <div className="flex flex-col bg-white rounded-xl gap-5">
           <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
             <Label className="text-2xl">Details</Label>
