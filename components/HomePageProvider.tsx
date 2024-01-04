@@ -2,10 +2,10 @@ import { HeaderComponent } from "./Header";
 import { NavigationBar } from "./NavigationBar";
 export const HomePageProvider = ({ children, props }: { children: React.ReactNode; props: any }) => {
   return (
-    <div className='fixed overflow-y-hidden w-full'>
+    <div className='fixed w-full z-50'>
       <HeaderComponent />
-      <div className="relative">
-        <div className="h-[100vh] mx-auto relative bg-blue-50">
+      <div className="relative overflow-y-auto bg-blue-50">
+        <div className="h-[calc(100vh-64px)] mx-auto relative">
           {children}
         </div>
       </div>
