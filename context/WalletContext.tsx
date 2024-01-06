@@ -44,12 +44,33 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     init();
   }, []);
 
+  interface EthereumWindow extends Window {
+    ethereum?: {
+      request: ({ method }: { method: string }) => Promise<void>;
+      on: (event: string, callback: (...args: any[]) => void) => void;
+      removeListener: (event: string, callback: (...args: any[]) => void) => void;
+    };
+  }
+
   useEffect(() => {
+    const ethereumWindow = window as EthereumWindow;
+    ethereumWindow.ethereum?.on('accountsChanged', handleAccountsChanged);
+  
+    return () => {
+      ethereumWindow.ethereum?.removeListener('accountsChanged', handleAccountsChanged);
+    };
+  }, [account]);
+
+
+  /*useEffect(() => {
     window.ethereum?.on('accountsChanged', handleAccountsChanged);
     return () => {
       window.ethereum?.removeListener('accountsChanged', handleAccountsChanged);
     };
-  }, [account]);
+  }, [account]);*/
+
+
+  
 
   const handleAccountsChanged = (accounts: string[]) => {
     if (accounts.length === 0) {
