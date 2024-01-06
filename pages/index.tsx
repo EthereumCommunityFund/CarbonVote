@@ -11,7 +11,7 @@ import { PlusCirceIcon } from '@/components/icons';
 import { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import VotingContract from './../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
-import { contract_addresses } from './../carbonvote-contracts/artifacts/deployedAddresses.json';
+//import { contract_addresses } from './../carbonvote-contracts/artifacts/deployedAddresses.json';
 import { toast } from '@/components/ui/use-toast';
 import Spinner from '@/components/ui/Spinner';
 
