@@ -92,7 +92,7 @@ export const PollForm = () => {
       <div className="flex flex-col gap-3.5 px-5 text-white/80">
         <Label className="text-xl font-bold">Access Rules</Label>
         <div className="flex gap-8 items-center">
-          <ToggleSwitchButton value={isZuPassRquired} onClick={handleIsZuPassRequired} />
+          <ToggleSwitchButton checked={isZuPassRquired} onClick={handleIsZuPassRequired} />
           <Label className="text-lg">Require ZuPass</Label>
           {
             isZuPassRquired ?
@@ -101,7 +101,7 @@ export const PollForm = () => {
           }
         </div>
         <div className="flex gap-8 items-center">
-          <ToggleSwitchButton value={isGitCoinPassRquired} onClick={handleIsGitCoinPassRequired} />
+          <ToggleSwitchButton checked={isGitCoinPassRquired} onClick={handleIsGitCoinPassRequired} />
           <Label className="text-lg">Require Gitcoin Passport</Label>
         </div>
       </div>
@@ -110,7 +110,7 @@ export const PollForm = () => {
         <div>
           <Label className="text-xl">On-Chain Signals</Label>
           <div className="flex gap-8 items-center">
-            <ToggleSwitchButton value={isGitCoinPassRquired} onClick={handleIsGitCoinPassRequired} />
+            <ToggleSwitchButton checked={isGitCoinPassRquired} onClick={handleIsGitCoinPassRequired} />
             <Label className="text-lg">Require Gitcoin Passport</Label>
           </div>
         </div>

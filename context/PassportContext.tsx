@@ -40,8 +40,9 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
 
   const [pcdStr] = useZupassPopupMessages();
   const [pcd, setPcd] = useState<string | null>(null);
-  const [mode, setMode] = useState<'ticket|sign-in'>('sign-in');
-  const processPcd = (pcdStr) => {
+  //const [mode, setMode] = useState<'ticket|sign-in'>('sign-in');
+  const [mode, setMode] = useState<'ticket' | 'sign-in'>('sign-in');
+  const processPcd = (pcdStr: string) => {
     console.log(pcdStr);
     const pcd = JSON.parse(pcdStr);
     const _pcd = JSON.parse(pcd.pcd);
