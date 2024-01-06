@@ -32,7 +32,8 @@ export default function Home() {
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
   const contractAbi = VotingContract.abi;
-  const contractAddress = contract_addresses.VotingContract;
+  //const contractAddress = contract_addresses.VotingContract;
+  const contractAddress = "0x12B4b94e5d5D0a2433851f9B423CC0B5a4C71DEa";
 
   const fetchPollsFromContract = async () => {
     if (window.ethereum) {
