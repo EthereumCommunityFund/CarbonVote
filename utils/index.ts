@@ -30,16 +30,30 @@ export const convertToMinutes = (timeString: any) => {
   return totalMinutes;
 };
 
-export const convertToHoursAndMinutesToSeconds = (timeLimitString: any) => {
-  const timeParts = timeLimitString.match(/(\d+)(h|m)/g);
+export const convertToHoursAndMinutesToSeconds = (timeLimitString: string): number => {
+  const SECONDS_IN_MINUTE = 60;
+  const MINUTES_IN_HOUR = 60;
+  const HOURS_IN_DAY = 24;
+
+  const timeParts = timeLimitString.match(/(\d+)(d|day|days|h|hour|hours|m|min|minute|minutes)/g);
+
+  if (!timeParts) {
+    throw new Error("Invalid time format");
+  }
+
   let seconds = 0;
   timeParts.forEach((part: string) => {
     const value = parseInt(part, 10);
-    if (part.includes('h')) {
-      seconds += value * 60 * 60;
-    } else if (part.includes('m')) {
-      seconds += value * 60;
+
+    if (part.includes('d') || part.includes('day') || part.includes('days')) {
+      seconds += value * HOURS_IN_DAY * MINUTES_IN_HOUR * SECONDS_IN_MINUTE;
+    } else if (part.includes('h') || part.includes('hour') || part.includes('hours')) {
+      seconds += value * MINUTES_IN_HOUR * SECONDS_IN_MINUTE;
+    } else if (part.includes('m') || part.includes('min') || part.includes('minute') || part.includes('minutes')) {
+      seconds += value * SECONDS_IN_MINUTE;
     }
   });
+
   return seconds;
 };
+
