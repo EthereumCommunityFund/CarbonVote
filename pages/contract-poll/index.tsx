@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/Label';
 import { OptionType, PollType } from '@/types';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
+//import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
 import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
 import VotingOption from '../../carbonvote-contracts/artifacts/contracts/VotingOption.sol/VotingOption.json';
 import OptionButton from '@/components/ui/buttons/OptionButton';
