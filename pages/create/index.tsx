@@ -1,30 +1,23 @@
-import {
-  ArrowLeftIcon,
-  PlusCirceIcon,
-  PlusIcon,
-  StopCircleIcon,
-  ThumbDownIcon,
-  ThumbUpIcon,
-} from "@/components/icons";
-import { XMarkIcon } from "@/components/icons/xmark";
-import { CredentialForm } from "@/components/templates/CredentialForm";
-import Button from "@/components/ui/buttons/Button";
-import CheckerButton from "@/components/ui/buttons/CheckerButton";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
-import TextEditor from "@/components/ui/TextEditor";
-import { useRouter } from "next/router";
-import { ChangeEvent, useState } from "react";
-import { useEffect } from "react";
-import { Contract, ethers } from "ethers";
-import { convertToHoursAndMinutesToSeconds, convertToMinutes } from "@/utils";
-import VotingContract from "../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json";
-import { contract_addresses } from "../../carbonvote-contracts/artifacts/deployedAddresses.json";
-import { toast } from "@/components/ui/use-toast";
-import { OptionType } from "@/types";
-import { useUserPassportContext } from "@/context/PassportContext";
-import { PollRequestData, createPoll } from "@/controllers/poll.controller";
-import axiosInstance from "@/src/axiosInstance";
+import { ArrowLeftIcon, PlusCirceIcon, PlusIcon, StopCircleIcon, ThumbDownIcon, ThumbUpIcon } from '@/components/icons';
+import { XMarkIcon } from '@/components/icons/xmark';
+import { CredentialForm } from '@/components/templates/CredentialForm';
+import Button from '@/components/ui/buttons/Button';
+import CheckerButton from '@/components/ui/buttons/CheckerButton';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
+import TextEditor from '@/components/ui/TextEditor';
+import { useRouter } from 'next/router';
+import { ChangeEvent, useState } from 'react';
+import { useEffect } from 'react';
+import { Contract, ethers } from 'ethers';
+import { convertToHoursAndMinutesToSeconds, convertToMinutes } from '@/utils';
+import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
+//import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
+import { toast } from '@/components/ui/use-toast';
+import { OptionType } from '@/types';
+import { useUserPassportContext } from '@/context/PassportContext';
+import { PollRequestData, createPoll } from '@/controllers/poll.controller';
+import axiosInstance from '@/src/axiosInstance';
 
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
