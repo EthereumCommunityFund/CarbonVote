@@ -15,3 +15,11 @@ export type OptionType = {
   name: string,
   isChecked: boolean,
 }
+
+export interface Option {
+  id: string;
+  option_description: string;
+  pollId: string;
+  totalWeight: number;
+  votes: number;
+}

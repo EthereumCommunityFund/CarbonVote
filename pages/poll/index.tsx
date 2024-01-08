@@ -12,6 +12,8 @@ import { toast } from '@/components/ui/use-toast';
 import { VoteRequestData, castVote, fetchPollById } from '@/controllers/poll.controller';
 import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
+import PieChartComponent from '@/components/ui/PieChart';
+import { Option } from '@/types';
 
 interface Poll {
   id: string;
@@ -29,13 +31,7 @@ interface Poll {
   pollMetadata: string;
 }
 
-interface Option {
-  id: string;
-  option_description: string;
-  pollId: string;
-  totalWeight: number;
-  votes: number;
-}
+
 
 const PollPage = () => {
   const router = useRouter();
@@ -170,6 +166,7 @@ const PollPage = () => {
               ))
             }
           </div>
+          <PieChartComponent votes={options} />
         </div>
       </div>
     </div>

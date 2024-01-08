@@ -1,13 +1,24 @@
 import React from 'react';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Pie } from 'react-chartjs-2';
 
-const PieChart: React.FC = () => {
+import { Option } from '@/types';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
+
+interface IPieChartComponent {
+  votes: Option[],
+}
+
+const PieChartComponent: React.FC<IPieChartComponent> = ({ votes }) => {
   // Data for the pie chart
+  const labels: string[] = votes.map((vote) => vote.option_description)
+  const weight: number[] = votes.map((vote) => vote.votes);
   const data = {
-    labels: ['Red', 'Blue', 'Yellow'],
+    labels: labels,
     datasets: [
       {
-        data: [300, 50, 100],
+        data: weight,
         backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
         hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
       },
@@ -16,10 +27,11 @@ const PieChart: React.FC = () => {
 
   return (
     <div>
-      <h2>Pie Chart Example</h2>
-      <Pie data={data} />
+      <Pie
+        data={data}
+      />
     </div>
   );
 };
 
-export default PieChart;
+export default PieChartComponent;
