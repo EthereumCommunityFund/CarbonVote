@@ -91,7 +91,7 @@ export default function Home() {
             Create a Poll
           </Button>
         </div>
-        <div className="flex flex-col gap-2.5 h-[250px]">
+        <div className="flex flex-col gap-2.5">
           {polls?.map((poll: Poll, index: number) => {
             return (
               <PollCardTemplate

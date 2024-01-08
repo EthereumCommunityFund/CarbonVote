@@ -27,6 +27,7 @@ interface Poll {
   description: string;
   options: string[];
   pollMetadata: string;
+  voting_method: string;
 }
 
 interface Option {
@@ -154,7 +155,7 @@ const PollPage = () => {
           <Label className="text-2xl">Details</Label>
           <hr></hr>
           <div className='flex flex-col gap-4 pt-3 text-base'>
-            <Label>Voting Method: </Label>
+            <Label>Voting Method: {poll.voting_method}</Label>
             <Label>Start Date: </Label>
             <Label>End Date: </Label>
             <Label>Requirements: </Label>

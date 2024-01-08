@@ -50,7 +50,7 @@ export const PollCardTemplate = ({ id, title, startDate, endTime, isLive, topic,
 
   useEffect(() => {
     console.log(id, 'id');
-    console.log(poll.id, 'poll.id');
+    console.log(startDate, endTime, 'poll.id');
   }, []);
   return (
     <div className="bg-white flex flex-col justify-between rounded-lg p-3 hover:cursor-pointer w-full gap-3.5" onClick={handleClickItem}>
