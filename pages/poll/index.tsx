@@ -12,9 +12,9 @@ import { toast } from '@/components/ui/use-toast';
 import { VoteRequestData, castVote, fetchPollById } from '@/controllers/poll.controller';
 import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
-import PieChartComponent from '@/components/ui/PieChart';
 import { PollOptionType, PollType, RemainingTime } from '@/types';
 import { getPollStatus } from '@/utils';
+import PieChartComponent from '@/components/ui/PieChart';
 
 const PollPage = () => {
   const router = useRouter();
