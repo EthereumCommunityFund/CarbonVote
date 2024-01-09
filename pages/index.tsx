@@ -15,18 +15,6 @@ import VotingContract from './../carbonvote-contracts/deployment/contracts/VoteC
 import { toast } from '@/components/ui/use-toast';
 import Spinner from '@/components/ui/Spinner';
 
-interface Poll {
-  name: string;
-  title: string;
-  description: string;
-  options: string[];
-  endTime: number;
-  pollType: number;
-  pollMetadata: string;
-  votingMethod: string;
-  voting_method: string;
-  time_limit: number;
-}
 
 export default function Home() {
   const router = useRouter();
@@ -93,24 +81,18 @@ export default function Home() {
           </Button>
         </div>
         <div className="flex flex-col gap-2.5 h-[250px]">
-          {polls?.map((poll: Poll, index: number) => {
+          {polls?.map((poll: PollType, index: number) => {
             return (
               <PollCardTemplate
                 key={index}
-                id={`${index}`}
-                title={poll.name || poll.title}
-                creator={'Creator Name'}
+                id={`${poll.id}`}
+                title={poll.title}
                 description={poll.description}
-                endTime={new Date(Number(poll.endTime) * 1000)}
-                isLive={Date.now() < Number(poll.endTime) * 1000}
                 options={poll.options}
-                pollMetadata={poll.pollMetadata}
-                startDate={''}
-                topic={''}
-                subTopic={''}
-                isZuPassRequired={true}
-                votingMethod={poll.votingMethod || poll.voting_method}
-                poll={poll}
+                voting_method={poll.voting_method}
+                created_at={poll.created_at}
+                credentials={poll.credentials}
+                time_limit={poll.time_limit}
               />
             );
           })}
