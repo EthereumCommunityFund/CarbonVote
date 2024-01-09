@@ -212,7 +212,7 @@ const PollPage = () => {
             {poll?.isLive ? (
               <div className="flex gap-2">
                 <ClockIcon />
-                <CountdownTimer targetDate={new Date('2023-12-25T00:00:00')} />
+                {/* <CountdownTimer remainingTime={new Date(poll.startDate).toLocaleString()} /> */}
               </div>
             ) : (
               <></>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ClockIcon } from '../icons/clock';
 import { LockClosedIcon } from '../icons/lockclosed';
 import { LockOpenIcon } from '../icons/lockopen';
@@ -6,27 +6,14 @@ import CountdownTimer from '../ui/CountDownTimer';
 import { Label } from '../ui/Label';
 import { useRouter } from 'next/router';
 import { useUserPassportContext } from '@/context/PassportContext';
+import { PollStatusType, PollType, RemainingTime } from '@/types';
+import { getPollStatus } from '@/utils';
 
-interface IPollCard {
-  id: string;
-  title: string;
-  startDate: string | Date;
-  endTime: string | Date;
-  isLive: boolean;
-  creator: string;
-  topic: string;
-  subTopic: string;
-  isZuPassRequired: boolean;
-  description: string;
-  options: string[];
-  pollMetadata: string;
-  votingMethod: string;
-  poll: any;
-}
-
-export const PollCardTemplate = ({ id, title, startDate, endTime, isLive, topic, subTopic, isZuPassRequired, description, options, votingMethod, pollMetadata, poll }: IPollCard) => {
+export const PollCardTemplate = ({ id, title, description, options, voting_method, created_at, credentials, time_limit }: PollType) => {
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
+  const [isClosed, setIsClosed] = useState<boolean>();
+  const [remainingTime, setRemainingTime] = useState<RemainingTime>();
   const handleClickItem = () => {
     if (!isPassportConnected) {
       signIn();
@@ -35,9 +22,9 @@ export const PollCardTemplate = ({ id, title, startDate, endTime, isLive, topic,
 
     // Define the base path
     let path = '/poll'; // Default path for API polls
-    const pollId = votingMethod === 'headCount' ? poll.id : id;
+    const pollId = voting_method === 'headCount' ? id : id;
     // Update path if the voting method is 'ethholding' for contract polls
-    if (votingMethod === 'ethholding') {
+    if (voting_method === 'ethholding') {
       path = '/contract-poll';
     }
 
@@ -50,20 +37,28 @@ export const PollCardTemplate = ({ id, title, startDate, endTime, isLive, topic,
 
   useEffect(() => {
     console.log(id, 'id');
-    console.log(poll.id, 'poll.id');
+    const interval = setInterval(() => {
+      const pollStatus = getPollStatus({ id, title, description, options, voting_method, created_at, credentials, time_limit });
+      setRemainingTime(pollStatus.remainingTime);
+      setIsClosed(pollStatus.closed);
+    }, 1000)
+
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
   return (
     <div className="bg-white flex flex-col justify-between rounded-lg p-3 hover:cursor-pointer w-full gap-3.5" onClick={handleClickItem}>
-      <Label className="text-whilte/60">{votingMethod.toLocaleUpperCase()}</Label>
+      <Label className="text-whilte/60">{voting_method?.toLocaleUpperCase()}</Label>
       <Label>{title}</Label>
       <span dangerouslySetInnerHTML={{ __html: description }} />
       <div className="flex gap-3.5">
-        {isZuPassRequired ? <LockClosedIcon /> : <LockOpenIcon />}
-        <div className={`${isLive ? `bg-[#F84A4A20]` : `bg-[#F8F8F8]`} px-2.5 rounded-lg items-center`}>{isLive ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-[#656565]">Closed</Label>}</div>
-        {isLive ? (
+        {credentials && credentials[0]?.credential_type === "zupass" ? <LockClosedIcon /> : <LockOpenIcon />}
+        <div className={`${!isClosed ? `bg-[#F84A4A20]` : `bg-[#F8F8F8]`} px-2.5 rounded-lg items-center`}>{!isClosed ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-[#656565]">Closed</Label>}</div>
+        {!isClosed && remainingTime ? (
           <div className="flex flex-2">
             <ClockIcon />
-            <CountdownTimer targetDate={new Date(Number(endTime))} />
+            <CountdownTimer remainingTime={remainingTime} />
           </div>
         ) : (
           <></>
