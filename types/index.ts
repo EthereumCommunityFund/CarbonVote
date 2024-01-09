@@ -1,6 +1,6 @@
 export type OptionType = {
-  name: string,
-  isChecked: boolean,
+  name: string;
+  isChecked: boolean;
 }
 
 export interface PollStatusType {

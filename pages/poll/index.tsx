@@ -14,30 +14,7 @@ import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
 import { PollOptionType, PollType, RemainingTime } from '@/types';
 import { getPollStatus } from '@/utils';
-
-interface Poll {
-  id: string;
-  name: string;
-  title: string;
-  startDate: string | Date;
-  endDate: string | Date;
-  isLive: boolean;
-  creator: string;
-  topic: string;
-  subTopic: string;
-  isZuPassRequired: boolean;
-  description: string;
-  options: string[];
-  pollMetadata: string;
-}
-
-interface Option {
-  id: string;
-  option_description: string;
-  pollId: string;
-  totalWeight: number;
-  votes: number;
-}
+import PieChartComponent from '@/components/ui/PieChart';
 
 const PollPage = () => {
   const router = useRouter();
@@ -184,11 +161,12 @@ const PollPage = () => {
           <hr></hr>
           <div className='flex flex-col gap-2.5 pt-2.5'>
             {options &&
-              options.map((option: Option) => (
+              options.map((option: PollOptionType) => (
                 <OptionVotingCountProgress key={option.id} description={option.option_description} votes={option.votes} />
               ))
             }
           </div>
+          <PieChartComponent votes={options} />
         </div>
       </div>
     </div>
