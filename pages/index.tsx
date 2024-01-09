@@ -3,7 +3,7 @@ import { useQuery } from 'react-query';
 import { fetchAllPolls as fetchAllPollsFromAPI } from '@/controllers/poll.controller';
 import { Label } from '@/components/ui/Label';
 import { useUserPassportContext } from '../context/PassportContext';
-import { mockpolls } from '@/constant/mockPolls';
+
 import { PollType } from '@/types';
 import { PollCardTemplate } from '@/components/templates/PollCard';
 import Button from '@/components/ui/buttons/Button';
