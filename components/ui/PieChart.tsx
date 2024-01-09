@@ -2,12 +2,12 @@ import React from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Pie } from 'react-chartjs-2';
 
-import { Option } from '@/types';
+import { PollOptionType } from '@/types';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface IPieChartComponent {
-  votes: Option[],
+  votes: PollOptionType[],
 }
 
 const PieChartComponent: React.FC<IPieChartComponent> = ({ votes }) => {
