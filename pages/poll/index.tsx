@@ -13,25 +13,8 @@ import { VoteRequestData, castVote, fetchPollById } from '@/controllers/poll.con
 import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
 import PieChartComponent from '@/components/ui/PieChart';
-import { Option } from '@/types';
-
-interface Poll {
-  id: string;
-  name: string;
-  title: string;
-  startDate: string | Date;
-  endDate: string | Date;
-  isLive: boolean;
-  creator: string;
-  topic: string;
-  subTopic: string;
-  isZuPassRequired: boolean;
-  description: string;
-  options: string[];
-  pollMetadata: string;
-}
-
-
+import { PollOptionType, PollType, RemainingTime } from '@/types';
+import { getPollStatus } from '@/utils';
 
 const PollPage = () => {
   const router = useRouter();
@@ -40,13 +23,27 @@ const PollPage = () => {
   const handleBack = () => {
     router.push('/');
   };
-  const [poll, setPoll] = useState<Poll>();
+  const [poll, setPoll] = useState<PollType>();
   const { signIn, isPassportConnected } = useUserPassportContext();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [options, setOptions] = useState<Option[]>([]);
+  const [options, setOptions] = useState<PollOptionType[]>([]);
+  const [isClosed, setIsClosed] = useState<boolean>();
+  const [remainingTime, setRemainingTime] = useState<RemainingTime>();
 
   useEffect(() => {
     fetchPollFromApi(id);
+
+    const interval = setInterval(() => {
+      if (poll) {
+        const pollStatus = getPollStatus(poll);
+        setRemainingTime(pollStatus.remainingTime);
+        setIsClosed(pollStatus.closed);
+      }
+    }, 1000)
+
+    return () => {
+      clearInterval(interval);
+    };
   }, [id]);
 
   const fetchPollFromApi = async (pollId: string | string[] | undefined) => {
@@ -55,6 +52,9 @@ const PollPage = () => {
       const data = await response.data;
       console.log(data, 'pollData');
       setPoll(data);
+      const pollStatus = getPollStatus(data);
+      setRemainingTime(pollStatus.remainingTime);
+      setIsClosed(pollStatus.closed);
       setOptions(data.options);
     } catch (error) {
       console.error('Error fetching poll from API:', error);
@@ -106,11 +106,11 @@ const PollPage = () => {
         </div>
         <div className="bg-white flex flex-col gap-1.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
-            <div className={`${poll.isLive ? `bg-[#F84A4A20]` : `bg-[#F8F8F8]`} px-2.5 rounded-lg items-center`}>{poll.isLive ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-[#656565]">Closed</Label>}</div>
-            {poll?.isLive ? (
+            <div className={`${!isClosed ? `bg-[#F84A4A20]` : `bg-[#F8F8F8]`} px-2.5 rounded-lg items-center`}>{!isClosed ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-[#656565]">Closed</Label>}</div>
+            {!isClosed && remainingTime ? (
               <div className="flex gap-2">
                 <ClockIcon />
-                <CountdownTimer targetDate={new Date('2023-12-25T00:00:00')} />
+                <CountdownTimer remainingTime={remainingTime} />
               </div>
             ) : (
               <></>
@@ -161,8 +161,8 @@ const PollPage = () => {
           <hr></hr>
           <div className='flex flex-col gap-2.5 pt-2.5'>
             {options &&
-              options.map((option: Option) => (
-                <OptionVotingCountProgress description={option.option_description} votes={option.votes} />
+              options.map((option: PollOptionType) => (
+                <OptionVotingCountProgress key={option.id} description={option.option_description} votes={option.votes} />
               ))
             }
           </div>
