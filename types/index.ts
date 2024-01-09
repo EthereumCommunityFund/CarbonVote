@@ -1,4 +1,7 @@
 export type OptionType = {
+  id: string;
+  option_description: string;
+  votes: number;
   name: string,
   isChecked: boolean,
 }
