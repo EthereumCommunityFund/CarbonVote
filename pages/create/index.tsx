@@ -11,8 +11,8 @@ import { ChangeEvent, useState } from 'react';
 import { useEffect } from 'react';
 import { Contract, ethers } from 'ethers';
 import { convertToHoursAndMinutesToSeconds, convertToMinutes } from '@/utils';
-import VotingContract from '../../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
-//import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
+import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
+import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
 import { toast } from '@/components/ui/use-toast';
 import { OptionType } from '@/types';
 import { useUserPassportContext } from '@/context/PassportContext';
@@ -22,8 +22,8 @@ import axiosInstance from '@/src/axiosInstance';
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
   const contractAbi = VotingContract.abi;
-  //const contractAddress = contract_addresses.VotingContract;
-  const contractAddress = "0x12B4b94e5d5D0a2433851f9B423CC0B5a4C71DEa";
+  const contractAddress = contract_addresses.VotingContract;
+  //const contractAddress = "0x12B4b94e5d5D0a2433851f9B423CC0B5a4C71DEa";
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
   const [credentials, setCredentials] = useState<string[]>([]);
@@ -278,8 +278,8 @@ const CreatePollPage = () => {
                 <CredentialForm
                   selectedCredentials={credentials}
                   onCredentialsChange={(selectedUuids) => setCredentials(selectedUuids)}
-                  isZuPassRequired={isZuPassRequired}
-                  setIsZuPassRequired={setIsZuPassRequired}
+                  /*isZuPassRequired={isZuPassRequired}
+                  setIsZuPassRequired={setIsZuPassRequired}*/
                 />
               </div>
             )

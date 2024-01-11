@@ -27,7 +27,7 @@
       "module": "commonjs",
       "outDir": "dist",
       "lib": [
-        "es2019"
+        "es2020"
       ],
       "target": "es2019",
       "isolatedModules": false,
