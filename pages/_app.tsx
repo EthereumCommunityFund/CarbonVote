@@ -1,3 +1,4 @@
+require('dotenv').config();
 import { HomePageProvider } from '../components/HomePageProvider';
 import { UserPassportContextProvider } from '../context/PassportContext';
 import { WalletProvider } from '../context/WalletContext';

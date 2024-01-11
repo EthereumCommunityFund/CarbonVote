@@ -1,16 +1,24 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-
-import { RemainingTime } from '@/types';
+import { calculateTimeRemaining } from '@/utils';
 
 interface CountdownTimerProps {
-  remainingTime: RemainingTime;
+  endTime: number;
 }
 
-const CountdownTimer: React.FC<CountdownTimerProps> = ({ remainingTime }: CountdownTimerProps) => {
+const CountdownTimer: React.FC<CountdownTimerProps> = ({ endTime }) => {
+  const [remainingTime, setRemainingTime] = useState<string | null>(null);
 
-  return <div>{remainingTime.days} Days {remainingTime.hours} Hours {remainingTime.minutes} Minutes {remainingTime.seconds} Seconds</div>;
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRemainingTime(calculateTimeRemaining(endTime));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return <div>{remainingTime}</div>;
 };
 
 export default CountdownTimer;

@@ -7,13 +7,17 @@ export type PollRequestData = {
     votingMethod: string;
     options: OptionData[];
     credentials: string[];
-    poap_events: number[];
 };
 
 export type VoteRequestData = {
     option_id: string;
     voter_identifier: string | null;
     poll_id: string;
+};
+
+export type ScoreRequestData = {
+    address: string;
+    scorerId: string[];
 };
 
 export type OptionData = {

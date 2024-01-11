@@ -9,13 +9,39 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
-import { VoteRequestData, castVote, fetchPollById } from '@/controllers/poll.controller';
+import { VoteRequestData, castVote, fetchPollById, ScoreRequestData } from '@/controllers/poll.controller';
 import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
-import { PollOptionType, PollType, RemainingTime } from '@/types';
-import { getPollStatus } from '@/utils';
-import PieChartComponent from '@/components/ui/PieChart';
-import VotingOption from '../../carbonvote-contracts/artifacts/contracts/VotingOption.sol/VotingOption.json';
+import { useWallet } from '@/context/WalletContext';
+import { submitAndFetchScore } from '@/utils/getPassportScore';
+import { useZupassPopupMessages } from '@pcd/passport-interface/src/PassportPopup';
+import { ethers } from "ethers";
+import contractABI from '@/carbonvote-contracts/deployment/contracts/poapsverification.json';
+import { calculateTimeRemaining } from '@/utils/index';
+import { v4 as uuidv4 } from 'uuid';
+
+interface Poll {
+  id: string;
+  name: string;
+  title: string;
+  startTime: number;
+  endTime: number;
+  isLive: boolean;
+  creator: string;
+  topic: string;
+  subTopic: string;
+  description: string;
+  options: string[];
+  pollMetadata: string;
+}
+
+interface Option {
+  id: string;
+  option_description: string;
+  pollId: string;
+  totalWeight: number;
+  votes: number;
+}
 
 const PollPage = () => {
   const router = useRouter();
@@ -24,55 +50,22 @@ const PollPage = () => {
   const handleBack = () => {
     router.push('/');
   };
-  const [poll, setPoll] = useState<PollType>();
-  const { signIn, isPassportConnected } = useUserPassportContext();
+  const [poll, setPoll] = useState<Poll>();
+  const { signIn, isPassportConnected, verifyticket, signInAndVerify } = useUserPassportContext();
+  const { connectToMetamask, isConnected, account } = useWallet();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [options, setOptions] = useState<PollOptionType[]>([]);
-  const [isClosed, setIsClosed] = useState<boolean>();
-  const [remainingTime, setRemainingTime] = useState<RemainingTime>();
-
-  console.log(poll?.options, 'options');
-  useEffect(() => {
-    const optionContractAbi = VotingOption.abi;
-    const optionNames: any[] = [];
-
-    const fetchVotingOption = async () => {
-      if (window.ethereum && id && poll && poll.options) {
-        let provider = new ethers.BrowserProvider(window.ethereum as any);
-        let signer = await provider.getSigner();
-
-        for (const address of poll.options) {
-          const contract = new ethers.Contract(address, optionContractAbi, signer);
-          console.log(contract, 'contract');
-
-          try {
-            const optionName = await contract.name();
-            optionNames.push(optionName);
-          } catch (error) {
-            console.error('Error fetching options:', error);
-          }
-        }
-        console.log(optionNames, 'optionNames');
-      }
-    };
-
-    fetchVotingOption();
-  }, [id, poll]); // Adding poll to the dependency array to re-run the effect when poll changes
-
+  const [options, setOptions] = useState<Option[]>([]);
+  const [credentialId, setCredentialId] = useState("");
+  const [passportScore, setPassportScore] = useState('');
+  const [score, setScore] = useState('');
+  const [isTicketVerified, setTicketVerify] = useState(false);
+  const [remainingTime, settimeRemaining] = useState('');
+  const [startDate, setstartDate] = useState<Date>();
+  const [selectedVid, setSelectedVid] = useState('0');
+  const [poapsNumber, setPoapsNumber] = useState('0');
+  const contractAddress = "0xD07E11aeA30DC68E42327F116e47f12C7E434d77";
   useEffect(() => {
     fetchPollFromApi(id);
-
-    const interval = setInterval(() => {
-      if (poll) {
-        const pollStatus = getPollStatus(poll);
-        setRemainingTime(pollStatus.remainingTime);
-        setIsClosed(pollStatus.closed);
-      }
-    }, 1000)
-
-    return () => {
-      clearInterval(interval);
-    };
   }, [id]);
 
   const fetchPollFromApi = async (pollId: string | string[] | undefined) => {
@@ -81,21 +74,116 @@ const PollPage = () => {
       const data = await response.data;
       console.log(data, 'pollData');
       setPoll(data);
-      const pollStatus = getPollStatus(data);
-      setRemainingTime(pollStatus.remainingTime);
-      setIsClosed(pollStatus.closed);
       setOptions(data.options);
+      const credentialId = data.credentials?.[0]?.id || "";
+      const timeleft = calculateTimeRemaining(data.endTime);
+      console.log(data.endTime);
+      const startdate = new Date(data.startTime);
+      setstartDate(startdate);
+      console.log(startDate, 'start date');
+      if (!timeleft) { }
+      else {
+        settimeRemaining(timeleft);
+      }
+      if (credentialId) {
+        setCredentialId(credentialId);
+        console.log(credentialId, 'credential ID');
+      }
     } catch (error) {
       console.error('Error fetching poll from API:', error);
     }
   };
 
   const handleVote = async (optionId: string) => {
-    if (!isPassportConnected) {
-      signIn();
-      return;
+    let canVote = false;
+    let voter_identifier: any = '';
+    if (!localStorage.getItem('userUniqueId')) {
+      const uniqueId = uuidv4();
+      localStorage.setItem('userUniqueId', uniqueId);
     }
-    const voter_identifier = localStorage.getItem('userId');
+    //Zuconnect credentials voting
+    if (credentialId == '76118436-886f-4690-8a54-ab465d08fa0d') {
+      console.log('Zuconnect resident"');
+      if (!isPassportConnected) {
+        await signIn();
+      }
+      try {
+        await verifyticket();
+        let usereventId = localStorage.getItem('event Id');
+        console.log(usereventId);
+        if (usereventId == "91312aa1-5f74-4264-bdeb-f4a3ddb8670c" || usereventId == "54863995-10c4-46e4-9342-75e48b68d307" || usereventId == "797de414-2aec-4ef8-8655-09df7e2b6cc6" || usereventId == "a6109324-7ca0-4198-9583-77962d1b9d53") {
+          canVote = true;
+          console.log(canVote);
+        }
+      } catch (error) {
+        console.error('Error in verifying ticket:', error);
+        return;
+      }
+      voter_identifier = localStorage.getItem('userId');
+    }
+    //Devconnect
+    else if (credentialId == '3cc4b682-9865-47b0-aed8-ef1095e1c398') {
+      if (!isPassportConnected) {
+        await signIn();
+      }
+      try {
+        signInAndVerify();
+        let usereventId = localStorage.getItem('event Id');
+        if (usereventId !== "91312aa1-5f74-4264-bdeb-f4a3ddb8670c" && usereventId !== "54863995-10c4-46e4-9342-75e48b68d307" && usereventId !== "797de414-2aec-4ef8-8655-09df7e2b6cc6" && usereventId !== "a6109324-7ca0-4198-9583-77962d1b9d53" && usereventId !== "5de90d09-22db-40ca-b3ae-d934573def8b") {
+          canVote = true;
+        }
+        else { console.log('not a devconnect resident'); }
+      } catch (error) {
+        console.error('Error in verifying ticket:', error);
+        return;
+      }
+      voter_identifier = localStorage.getItem('userId');
+    }
+    //Gitcoin
+    else if (credentialId == '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2') {
+      if (!isConnected) {
+        connectToMetamask();
+      }
+      if (account !== null) {
+        submitAndFetchScore(account, '6347')
+          .then(response => {
+            let score = response.score;
+            if (score > 0) { canVote = true; }
+            console.log('Score:', score);
+          })
+          .catch(error => {
+            console.error('Error:', error);
+          });
+      }
+      voter_identifier = localStorage.getItem('userId');
+    }
+    //POAPS
+    else if (credentialId == '600d1865-1441-4e36-bb13-9345c94c4dfb') {
+      if (!isConnected) {
+        connectToMetamask();
+        return;
+      }
+      try {
+        const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
+        //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
+        const contract = new ethers.Contract(contractAddress, contractABI, provider);
+        const events = await contract.getEventCountForCollection(account);
+
+        setPoapsNumber(events.toString());
+        console.log(events.toString(), 'events');
+      } catch (error) {
+        console.error("An error occurred:", error);
+      }
+
+      if (Number(poapsNumber) > 4) {
+        canVote = true;
+      }
+      voter_identifier = localStorage.getItem('userId');
+    }
+    else {
+      voter_identifier = localStorage.getItem('userUniqueId');
+      canVote = true;
+    }
     const pollId = poll?.id;
     const voteData = {
       poll_id: pollId,
@@ -105,12 +193,23 @@ const PollPage = () => {
 
     try {
       console.log(voteData, 'voteData');
-      const response = await castVote(voteData as VoteRequestData);
-      console.log(response, 'response');
-      toast({
-        title: 'Vote cast successfully',
-      });
-      await fetchPollFromApi(id);
+      console.log(canVote);
+      if (!canVote) {
+        console.error('You do not have the credential to vote');
+        toast({
+          title: 'Error',
+          description: 'You do not have the credential to vote',
+          variant: 'destructive',
+        });
+      }
+      else {
+        const response = await castVote(voteData as VoteRequestData);
+        console.log(response, 'response');
+        toast({
+          title: 'Vote cast successfully',
+        });
+        await fetchPollFromApi(id);
+      }
     } catch (error: any) {
       console.error('Error casting vote:', error);
       toast({
@@ -135,31 +234,39 @@ const PollPage = () => {
         </div>
         <div className="bg-white flex flex-col gap-1.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
-            <div className={`${!isClosed ? `bg-[#F84A4A20]` : `bg-[#F8F8F8]`} px-2.5 rounded-lg items-center`}>{!isClosed ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-[#656565]">Closed</Label>}</div>
-            {!isClosed && remainingTime ? (
-              <div className="flex gap-2">
-                <ClockIcon />
-                <CountdownTimer remainingTime={remainingTime} />
-              </div>
-            ) : (
-              <></>
-            )}
+            <div className={`${remainingTime !== null && remainingTime !== 'Time is up!' ? 'bg-[#F84A4A20]' : 'bg-[#F8F8F8]'
+              } px-2.5 rounded-lg items-center`}>
+              {remainingTime !== null && remainingTime !== 'Time is up!' ? (
+                <Label className="text-[#F84A4A]">Live</Label>
+              ) : (
+                <Label className="text-[#656565]">Closed</Label>
+              )}
+              {remainingTime !== null && remainingTime !== 'Time is up!' ? (
+                <div className="flex gap-2">
+                  <ClockIcon />
+                  <CountdownTimer endTime={poll.endTime} />
+                </div>
+              ) : null}
+            </div>
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-black/60 text-base">Motion: </Label>
             <Label className="text-2xl">{poll?.title}</Label>
-          </div >
+          </div>
           <div className="flex justify-end pb-5 border-b border-black/30">{/* <Label>by: {mockPoll.creator}</Label> */}</div>
           <div className="flex flex-col gap-2.5">
             <Label className="text-black/60 text-lg font-bold">Description: </Label>
             <span dangerouslySetInnerHTML={{ __html: poll?.description }} />
           </div>
-        </div >
+        </div>
         <div className="bg-white/40 p-2.5 flex flex-col gap-3.5">
           <Label className="text-2xl">Vote on Poll</Label>
-          <Label>
-            This vote requires a <Label className="font-bold">zero-value transaction</Label> from your wallet
-          </Label>
+          {credentialId === "600d1865-1441-4e36-bb13-9345c94c4dfb" && (
+            <Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label>
+          )}
+          {credentialId === "6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2" && (
+            <Label className="text-sm">Your gitcoin passport score is: {score}/100 (Your score must be higher than 0 to vote)</Label>
+          )}
           <div className="flex flex-col gap-2.5">
             {options?.map((option) => (
               <OptionButton
@@ -173,16 +280,59 @@ const PollPage = () => {
             ))}
           </div>
         </div>
-      </div >
+        {/*<div className=''>
+          <select
+            id="vidSelect"
+            onChange={(e) => setSelectedVid(e.target.value)}
+            value={selectedVid}
+            className="border p-2 rounded-md"
+          >
+            <option value="0">India 2018</option>
+            <option value="1">Denver 2018</option>
+            <option value="2">Berlin 2018</option>
+            <option value="3">ETHCC 2018</option>
+            <option value="4">Dappcon 2018</option>
+            <option value="5">EDCON 2018</option>
+            <option value="6">India 2019</option>
+            <option value="7">Denver 2019</option>
+            <option value="8">Berlin 2019</option>
+            <option value="9">ETHCC 2019</option>
+          </select>
+        </div>*/}
+      </div>
       <div className="flex flex-col gap-8 w-96">
         <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
           <Label className="text-2xl">Details</Label>
           <hr></hr>
           <div className='flex flex-col gap-4 pt-3 text-base'>
-            <Label>Voting Method: </Label>
-            <Label>Start Date: </Label>
-            <Label>End Date: </Label>
-            <Label>Requirements: </Label>
+            <Label>Voting Method: HeadCounting</Label>
+            <Label>
+              {(() => {
+                return `Start Date: ${new Date(Number(poll.startTime))}`;
+              })()}
+            </Label>
+            <Label>
+              {(() => {
+                return `End Date: ${new Date(Number(poll.endTime))}`;
+              })()}
+            </Label>
+            <Label>
+              Requirements: {(() => {
+                console.log(credentialId);
+                switch (credentialId) {
+                  case '76118436-886f-4690-8a54-ab465d08fa0d':
+                    return 'Zuconnect Resident';
+                  case '3cc4b682-9865-47b0-aed8-ef1095e1c398':
+                    return 'Devconnect Resident';
+                  case '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2':
+                    return 'Gitcoin Passport';
+                  case '600d1865-1441-4e36-bb13-9345c94c4dfb':
+                    return 'POAPS Verification';
+                  default:
+                    return '';
+                }
+              })()}
+            </Label>
           </div>
         </div>
         <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
@@ -190,15 +340,14 @@ const PollPage = () => {
           <hr></hr>
           <div className='flex flex-col gap-2.5 pt-2.5'>
             {options &&
-              options.map((option: PollOptionType) => (
-                <OptionVotingCountProgress key={option.id} description={option.option_description} votes={option.votes} />
+              options.map((option: Option) => (
+                <OptionVotingCountProgress description={option.option_description} votes={option.votes} />
               ))
             }
           </div>
-          <PieChartComponent votes={options} />
         </div>
       </div>
-    </div >
+    </div>
   )
 };
 

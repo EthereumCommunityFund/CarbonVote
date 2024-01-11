@@ -1,29 +1,67 @@
 import { createContext, ReactNode, useState, useContext, useEffect } from 'react';
-
+import { SemaphoreIdentityPCDPackage } from "@pcd/semaphore-identity-pcd";
 import { useZupassPopupMessages } from '@pcd/passport-interface/src/PassportPopup';
 import { EdDSATicketFieldsToReveal } from '@pcd/zk-eddsa-event-ticket-pcd';
 import { useRouter } from 'next/router';
-
-import { openGroupMembershipPopup } from "../src/util";
 import {
-  generate_signature,
-  verifyProof,
-} from "../controllers/auth.controller";
-
+  ZKEdDSAEventTicketPCDPackage,
+  ZKEdDSAEventTicketPCDArgs,
+} from "@pcd/zk-eddsa-event-ticket-pcd";
+import { constructZupassPcdGetRequestUrl } from "@pcd/passport-interface/src/PassportInterface";
+import { openZupassPopup } from "@pcd/passport-interface/src/PassportPopup";
+import { SemaphoreGroupPCDPackage } from "@pcd/semaphore-group-pcd";
+import { generateSnarkMessageHash } from "@pcd/util";
+import { SemaphoreSignaturePCDPackage } from "@pcd/semaphore-signature-pcd";
+import { generate_signature, verifyProof } from '../controllers/auth.controller';
+import { ZKEdDSAEventTicketPCDClaim } from '@pcd/zk-eddsa-event-ticket-pcd';
 import { openSignedZuzaluSignInPopup } from '@pcd/passport-interface';
 import { useZuAuth, supportedEvents, supportedProducs } from 'zuauth';
-
+import { ArgumentTypeName } from "@pcd/pcd-types";
+import { EdDSATicketPCDPackage } from "@pcd/eddsa-ticket-pcd";
+import { ArgsOf, PCDPackage, SerializedPCD } from "@pcd/pcd-types";
 type UserPassportContextData = {
   signIn: () => void;
   isAuthenticated: boolean;
   isPassportConnected: boolean;
   signOut: () => void;
+  verifyticket: () => void;
   pcd: string | null;
+  signInAndVerify: () => void;
 };
-
+type InputParams = {
+  sso: string;
+  sig: string;
+  nonce: string;
+  return_sso_url: string;
+}
+enum PCDRequestType {
+  Get = "Get",
+  GetWithoutProving = "GetWithoutProving",
+  Add = "Add",
+  ProveAndAdd = "ProveAndAdd"
+}
 type UserPassportProviderProps = {
   children: ReactNode;
 };
+interface ProveOptions {
+  genericProveScreen?: boolean;
+  title?: string;
+  description?: string;
+  debug?: boolean;
+  proveOnServer?: boolean;
+  signIn?: boolean;
+}
+interface PCDRequest {
+  returnUrl: string;
+  type: PCDRequestType;
+}
+interface PCDGetRequest<T extends PCDPackage = PCDPackage>
+  extends PCDRequest {
+  type: PCDRequestType.Get;
+  pcdType: T["name"];
+  args: ArgsOf<T>;
+  options?: ProveOptions;
+}
 
 // export const UserPassportContext = createContext({} as UserPassportContextData);
 export const UserPassportContext = createContext<UserPassportContextData>({
@@ -31,6 +69,8 @@ export const UserPassportContext = createContext<UserPassportContextData>({
   isAuthenticated: false,
   isPassportConnected: false,
   signOut: () => { },
+  verifyticket: () => { },
+  signInAndVerify: () => { },
   pcd: null,
 });
 const PCD_STORAGE_KEY = 'userPCD';
@@ -43,25 +83,37 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
 
   const [pcdStr] = useZupassPopupMessages();
   const [pcd, setPcd] = useState<string | null>(null);
+  //const [eventpcd, setEventPcd] = useState<string | null>(null);
   //const [mode, setMode] = useState<'ticket|sign-in'>('sign-in');
   const [mode, setMode] = useState<'ticket' | 'sign-in'>('sign-in');
   const processPcd = (pcdStr: string) => {
     console.log(pcdStr);
     const pcd = JSON.parse(pcdStr);
     const _pcd = JSON.parse(pcd.pcd);
-    console.log(_pcd);
     return _pcd;
   };
   useEffect(() => {
     const func = async () => {
       if (!pcdStr) return;
-
+      if (pcdStr && mode === 'ticket') {
+        try {
+          let _pcd = processPcd(pcdStr);
+          console.log(_pcd, 'event pcd');
+          localStorage.setItem('event Id', _pcd.claim.partialTicket.eventId);
+        }
+        catch (error) {
+          console.error('Error processing PCD string:', error);
+        }
+      }
       if (pcdStr && mode === 'sign-in') {
         try {
           let _pcd = processPcd(pcdStr);
           await verifyProof(_pcd);
           const userId = _pcd.claim.externalNullifier; // Extract the unique identifier 'id'
           console.log(userId, _pcd);
+          console.log(pcdStr);
+          //const eventId = eventpcd.claim.partialTicket.eventId;
+          //console.log(eventId, 'event Id');
           const generateSignature = async (account: string, message: string) => {
             const response = await fetch('/api/auth/generate_signature', {
               method: 'POST',
@@ -111,7 +163,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
     setIsAuthenticated(!!storedPcd);
   }, []);
 
-  const verifyZupassTicket = () => {
+  /*const verifyZupassTicket = () => {
     setMode('ticket');
     const defaultSetOfTicketFieldsToReveal: EdDSATicketFieldsToReveal = {
       revealTicketId: true,
@@ -176,6 +228,170 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
       ],
       'ticket-popup'
     );
+  };*/
+  function openZupassPopup(popupUrl: string, proofUrl: string) {
+    const url = `${popupUrl}?proofUrl=${encodeURIComponent(proofUrl)}`;
+    const popup = window.open(url, "_blank", "width=450,height=600,top=100,popup");
+    if (popup) {
+      const checkPopupClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkPopupClosed);
+          const event = new Event('popupClosed');
+          window.dispatchEvent(event);
+        }
+      }, 1000);
+    } else {
+      console.error("Popup was blocked by the browser");
+    }
+  }
+
+  function openZupassTicketPopup(popupUrl: string, proofUrl: string) {
+    const url = `${popupUrl}?proofUrl=${encodeURIComponent(proofUrl)}`;
+    const popup = window.open(url, "_blank", "width=450,height=600,top=100,popup");
+    if (popup) {
+      const checkPopupClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkPopupClosed);
+          const event = new Event('ticketpopupClosed');
+          window.dispatchEvent(event);
+        }
+      }, 1000);
+    } else {
+      console.error("Popup was blocked by the browser");
+    }
+  }
+
+  function constructZupassPcdGetRequestUrl<T extends PCDPackage>(
+    zupassClientUrl: string,
+    returnUrl: string,
+    pcdType: T["name"],
+    args: ArgsOf<T>,
+    options?: ProveOptions
+  ) {
+    const req: PCDGetRequest<T> = {
+      type: PCDRequestType.Get,
+      returnUrl: returnUrl,
+      args: args,
+      pcdType,
+      options
+    };
+    const encReq = encodeURIComponent(JSON.stringify(req));
+    return `${zupassClientUrl}#/prove?request=${encReq}`;
+  }
+
+  function openZKEdDSAEventTicketPopup(
+    fieldsToReveal: EdDSATicketFieldsToReveal,
+    watermark: bigint,
+    validEventIds: string[],
+    validProductIds: string[]
+  ) {
+    const args: ZKEdDSAEventTicketPCDArgs = {
+      ticket: {
+        argumentType: ArgumentTypeName.PCD,
+        pcdType: EdDSATicketPCDPackage.name,
+        value: undefined,
+        userProvided: true,
+        validatorParams: {
+          eventIds: validEventIds,
+          productIds: validProductIds,
+          notFoundMessage: "No eligible PCDs found"
+        }
+      },
+      identity: {
+        argumentType: ArgumentTypeName.PCD,
+        pcdType: SemaphoreIdentityPCDPackage.name,
+        value: undefined,
+        userProvided: true
+      },
+      validEventIds: {
+        argumentType: ArgumentTypeName.StringArray,
+        value: validEventIds.length != 0 ? validEventIds : undefined,
+        userProvided: false
+      },
+      fieldsToReveal: {
+        argumentType: ArgumentTypeName.ToggleList,
+        value: fieldsToReveal,
+        userProvided: false
+      },
+      watermark: {
+        argumentType: ArgumentTypeName.BigInt,
+        value: watermark.toString(),
+        userProvided: false
+      },
+      externalNullifier: {
+        argumentType: ArgumentTypeName.BigInt,
+        value: watermark.toString(),
+        userProvided: false
+      }
+    };
+
+    const popupUrl = window.location.origin + "/popup";
+
+    const proofUrl = constructZupassPcdGetRequestUrl<
+      typeof ZKEdDSAEventTicketPCDPackage
+    >('https://zupass.org', popupUrl, ZKEdDSAEventTicketPCDPackage.name, args, {
+      genericProveScreen: true,
+      title: "Sign-In with Zupass",
+      description: "**Select a valid ticket to hop into the zuzaverse.**"
+    });
+
+    openZupassTicketPopup(popupUrl, proofUrl);
+  }
+  function openGroupMembershipPopup(
+    urlToZupassClient: string,
+    popupUrl: string,
+    urlToSemaphoreGroup: string,
+    originalSiteName: string,
+    signal?: string,
+    externalNullifier?: string,
+    returnUrl?: string
+  ) {
+    const proofUrl = constructZupassPcdGetRequestUrl<
+      typeof SemaphoreGroupPCDPackage
+    >(
+      urlToZupassClient,
+      returnUrl || popupUrl,
+      SemaphoreGroupPCDPackage.name,
+      {
+        externalNullifier: {
+          argumentType: ArgumentTypeName.BigInt,
+          userProvided: false,
+          value:
+            externalNullifier ??
+            generateSnarkMessageHash(originalSiteName).toString(),
+        },
+        group: {
+          argumentType: ArgumentTypeName.Object,
+          userProvided: false,
+          remoteUrl: urlToSemaphoreGroup,
+        },
+        identity: {
+          argumentType: ArgumentTypeName.PCD,
+          pcdType: SemaphoreGroupPCDPackage.name,
+          value: undefined,
+          userProvided: true,
+        },
+        signal: {
+          argumentType: ArgumentTypeName.BigInt,
+          userProvided: false,
+          value: signal ?? "1",
+        },
+      },
+      {
+        title: "Anon Voting Auth",
+        description: originalSiteName,
+      }
+    );
+
+    if (returnUrl) {
+      window.location.href = proofUrl;
+    } else {
+      openZupassPopup(popupUrl, proofUrl);
+    }
+  }
+  const generateTimestamp = () => {
+    const now = new Date();
+    return Math.floor(now.getTime() / 1000);
   };
 
   const signIn = () => {
@@ -189,9 +405,70 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
     //   undefined
     // );
     setMode('sign-in');
-    openGroupMembershipPopup('https://zupass.org/', window.location.origin + '/popup', 'https://api.zupass.org/semaphore/1', 'carbonvote', undefined, undefined);
-  };
+    console.log('signIn start');
+    return new Promise<void>((resolve, reject) => {
+      openGroupMembershipPopup(
+        'https://zupass.org/',
+        window.location.origin + '/popup',
+        'https://api.zupass.org/semaphore/1',
+        'carbonvote',
+        undefined,
+        undefined
+      );
+      console.log('signIn end');
+      const onPopupClosed = () => {
+        console.log('PopupClosed event triggered');
+        window.removeEventListener('popupClosed', onPopupClosed);
+        resolve();
+      };
+      window.addEventListener('popupClosed', onPopupClosed);
+    });
 
+  };
+  const verifyticket = () => {
+    console.log('verify start');
+    return new Promise((resolve, reject) => {
+      setMode('ticket');
+      const bigIntNonce = '0x' + generateTimestamp().toString();
+      openZKEdDSAEventTicketPopup(
+        {
+          revealAttendeeEmail: true,
+          revealEventId: true,
+          revealProductId: true,
+          revealAttendeeSemaphoreId: true
+        },
+        BigInt(bigIntNonce),
+        supportedEvents,
+        []
+      );
+      window.addEventListener('ticketpopupClosed', () => {
+        if (localStorage.getItem('event Id')) {
+          resolve('success');
+        } else {
+          reject(new Error("Verification failed"));
+        }
+      });
+    })
+  };
+  /*window.addEventListener('eventTicketpopupClosed', () => {
+    if (localStorage.getItem('event Id')) {
+      resolve('success');
+    } else {
+      reject(new Error("Verification failed"));
+    }
+  });*/
+  const signInAndVerify = async () => {
+    await signIn();
+
+    try {
+      const result = await verifyticket();
+      return result;
+    } catch (error) {
+
+      console.error('Verification failed:', error);
+      throw error;
+    }
+  };
   const signOut = () => {
     // Clear the PCD from local storage and state
     localStorage.removeItem(PCD_STORAGE_KEY);
@@ -206,6 +483,8 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
         signIn: signIn,
         isAuthenticated,
         signOut,
+        verifyticket,
+        signInAndVerify,
         pcd,
         isPassportConnected: isAuthenticated,
       }}

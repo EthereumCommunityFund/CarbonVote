@@ -20,7 +20,7 @@ export default function OptionVotingCountProgress({ description, votes }: IOptio
       <div className='flex justify-between text-black'>
         <Label className='pl-3'>{description}</Label>
         <Label></Label>
-        <Label>{votes}%</Label>
+        <Label style={{ marginRight: '10px' }}>{votes}</Label>
       </div>
       <Progress.Indicator
         className="bg-[#F84A4A] w-full h-full transition-transform duration-[660ms] ease-[cubic-bezier(0.65, 0, 0.35, 1)]"
