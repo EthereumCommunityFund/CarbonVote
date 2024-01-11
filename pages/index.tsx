@@ -10,8 +10,8 @@ import Button from '@/components/ui/buttons/Button';
 import { PlusCirceIcon } from '@/components/icons';
 import { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
-import VotingContract from './../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
-//import { contract_addresses } from './../carbonvote-contracts/artifacts/deployedAddresses.json';
+import VotingContract from './../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
+import { contract_addresses } from './../carbonvote-contracts/artifacts/deployedAddresses.json';
 import { toast } from '@/components/ui/use-toast';
 import Spinner from '@/components/ui/Spinner';
 
@@ -20,8 +20,8 @@ export default function Home() {
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
   const contractAbi = VotingContract.abi;
-  //const contractAddress = contract_addresses.VotingContract;
-  const contractAddress = "0x12B4b94e5d5D0a2433851f9B423CC0B5a4C71DEa";
+  const contractAddress = contract_addresses.VotingContract;
+  //const contractAddress = "0x12B4b94e5d5D0a2433851f9B423CC0B5a4C71DEa";
 
   const fetchPollsFromContract = async () => {
     if (window.ethereum) {

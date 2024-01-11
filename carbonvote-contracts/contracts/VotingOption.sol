@@ -72,6 +72,17 @@ contract VotingOption {
         hasVoted[voter] = true;
     }
 
+    function castTransactionVote(address voter) public {
+        require(block.timestamp < endTime, "Poll has ended");
+        VotingContract(mainContract).recordVote(voter, pollIndex, option_index);
+
+        if (!hasVoted[voter]) {
+            voters.push(voter);
+            voterIndex[voter] = voters.length - 1;
+        }
+        hasVoted[voter] = true;
+    }
+
     function removeVote(address voter) public {
         require(msg.sender == mainContract, "You don't have access");
         require(hasVoted[voter], "No vote to remove");
