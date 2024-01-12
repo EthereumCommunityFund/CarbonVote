@@ -4,7 +4,7 @@ export type PollRequestData = {
   title: string;
   description: string;
   time_limit: number;
-  voting_method: string;
+  votingMethod: string;
   options: OptionData[];
   credentials: string[];
 };

@@ -9,7 +9,7 @@ import { useUserPassportContext } from '@/context/PassportContext';
 import { PollStatusType, PollType, RemainingTime } from '@/types';
 import { getPollStatus } from '@/utils';
 
-export const PollCardTemplate = ({ id, title, description, options, voting_method, created_at, credentials, time_limit }: PollType) => {
+export const PollCardTemplate = ({ id, title, description, options, votingMethod, created_at, credentials, time_limit }: PollType) => {
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
   const [isClosed, setIsClosed] = useState<boolean>();
@@ -22,9 +22,9 @@ export const PollCardTemplate = ({ id, title, description, options, voting_metho
 
     // Define the base path
     let path = '/poll'; // Default path for API polls
-    const pollId = voting_method === 'headCount' ? id : id;
+    const pollId = votingMethod === 'headCount' ? id : id;
     // Update path if the voting method is 'ethholding' for contract polls
-    if (voting_method === 'ethholding') {
+    if (votingMethod === 'ethholding') {
       path = '/contract-poll';
     }
 
@@ -38,7 +38,7 @@ export const PollCardTemplate = ({ id, title, description, options, voting_metho
   useEffect(() => {
     console.log(id, 'id');
     const interval = setInterval(() => {
-      const pollStatus = getPollStatus({ id, title, description, options, voting_method, created_at, credentials, time_limit });
+      const pollStatus = getPollStatus({ id, title, description, options, votingMethod, created_at, credentials, time_limit });
       setRemainingTime(pollStatus.remainingTime);
       setIsClosed(pollStatus.closed);
     }, 1000)
@@ -49,7 +49,7 @@ export const PollCardTemplate = ({ id, title, description, options, voting_metho
   }, []);
   return (
     <div className="bg-white flex flex-col justify-between rounded-lg p-3 hover:cursor-pointer w-full gap-3.5" onClick={handleClickItem}>
-      <Label className="text-whilte/60">{voting_method?.toLocaleUpperCase()}</Label>
+      <Label className="text-whilte/60">{votingMethod?.toLocaleUpperCase()}</Label>
       <Label>{title}</Label>
       <span dangerouslySetInnerHTML={{ __html: description }} />
       <div className="flex gap-3.5">

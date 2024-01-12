@@ -3,25 +3,36 @@ import { useQuery } from 'react-query';
 import { fetchAllPolls as fetchAllPollsFromAPI } from '@/controllers/poll.controller';
 import { Label } from '@/components/ui/Label';
 import { useUserPassportContext } from '../context/PassportContext';
-
+import { mockpolls } from '@/constant/mockPolls';
 import { PollType } from '@/types';
 import { PollCardTemplate } from '@/components/templates/PollCard';
 import Button from '@/components/ui/buttons/Button';
 import { PlusCirceIcon } from '@/components/icons';
 import { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
-import VotingContract from './../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
-//import { contract_addresses } from './../carbonvote-contracts/artifacts/deployedAddresses.json';
+import VotingContract from './../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
+import { contract_addresses } from './../carbonvote-contracts/artifacts/deployedAddresses.json';
 import { toast } from '@/components/ui/use-toast';
 import Spinner from '@/components/ui/Spinner';
 
+interface Poll {
+  name: string;
+  title: string;
+  description: string;
+  options: string[];
+  endTime: number;
+  pollType: number;
+  pollMetadata: string;
+  votingMethod: string;
+  time_limit: number;
+}
 
 export default function Home() {
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
   const contractAbi = VotingContract.abi;
-  //const contractAddress = contract_addresses.VotingContract;
-  const contractAddress = "0x12B4b94e5d5D0a2433851f9B423CC0B5a4C71DEa";
+  const contractAddress = contract_addresses.VotingContract;
+  //const contractAddress = "0x12B4b94e5d5D0a2433851f9B423CC0B5a4C71DEa";
 
   const fetchPollsFromContract = async () => {
     if (window.ethereum) {
@@ -81,18 +92,24 @@ export default function Home() {
           </Button>
         </div>
         <div className="flex flex-col gap-2.5 h-[250px]">
-          {polls?.map((poll: PollType, index: number) => {
+          {polls?.map((poll: Poll, index: number) => {
             return (
               <PollCardTemplate
                 key={index}
-                id={`${poll.id}`}
-                title={poll.title}
+                id={`${index}`}
+                title={poll.name || poll.title}
+                creator={'Creator Name'}
                 description={poll.description}
+                endTime={new Date(Number(poll.endTime) * 1000)}
+                isLive={Date.now() < Number(poll.endTime) * 1000}
                 options={poll.options}
-                voting_method={poll.voting_method}
-                created_at={poll.created_at}
-                credentials={poll.credentials}
-                time_limit={poll.time_limit}
+                pollMetadata={poll.pollMetadata}
+                startDate={''}
+                topic={''}
+                subTopic={''}
+                isZuPassRequired={true}
+                votingMethod={poll.votingMethod || poll.votingMethod}
+                poll={poll}
               />
             );
           })}

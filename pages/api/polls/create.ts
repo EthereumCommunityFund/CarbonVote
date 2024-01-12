@@ -15,7 +15,7 @@ const createPoll = async (req: NextApiRequest, res: NextApiResponse) => {
         return;
     }
 
-    let { title, description, time_limit, voting_method, options, credentials } = value;
+    let { title, description, time_limit, votingMethod, options, credentials } = value;
 
     // time_limit = Math.floor(time_limit / 1000);
 
@@ -24,7 +24,7 @@ const createPoll = async (req: NextApiRequest, res: NextApiResponse) => {
 
         const { data, error: pollError } = await supabase
             .from('polls')
-            .insert([{ title, description, time_limit, voting_method }])
+            .insert([{ title, description, time_limit, votingMethod }])
             .select("*");
 
 

@@ -75,7 +75,7 @@ contract VotingContract {
         require(verified, "Signature verification failed");
         Poll storage poll = polls[_pollIndex];
         VotingOption option = VotingOption(payable(poll.options[_optionIndex]));
-        option.castVote(signature, message);
+        option.castVote(msg.sender, signature, message);
     }
 
     function verifyAndRecordVote(

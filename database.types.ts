@@ -102,7 +102,7 @@ export interface Database {
           id: string
           time_limit: string
           title: string
-          voting_method: string | null
+          votingMethod: string | null
         }
         Insert: {
           created_at?: string
@@ -110,7 +110,7 @@ export interface Database {
           id?: string
           time_limit: string
           title: string
-          voting_method?: string | null
+          votingMethod?: string | null
         }
         Update: {
           created_at?: string
@@ -118,7 +118,7 @@ export interface Database {
           id?: string
           time_limit?: string
           title?: string
-          voting_method?: string | null
+          votingMethod?: string | null
         }
         Relationships: []
       }

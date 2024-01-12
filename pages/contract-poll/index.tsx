@@ -9,9 +9,9 @@ import { Label } from '@/components/ui/Label';
 import { OptionType, PollType } from '@/types';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-//import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
-import VotingContract from '../../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
-import VotingOption from '../../carbonvote-contracts/deployment/contracts/VotingOption.sol/VotingOption.json';
+import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
+import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
+import VotingOption from '../../carbonvote-contracts/artifacts/contracts/VotingOption.sol/VotingOption.json';
 import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
 import { fetchPollById } from '@/controllers/poll.controller';
@@ -34,8 +34,9 @@ interface Poll {
 interface Option {
   optionName: string;
   votersCount: number;
-  totalEth: string;
-  votersData: any;
+  totalEth?: string;
+  votersData?: any;
+  address?: string;
 }
 
 const PollPage = () => {
@@ -47,9 +48,10 @@ const PollPage = () => {
   };
   const [poll, setPoll] = useState<Poll>();
   const contractAbi = VotingContract.abi;
-  //const contractAddress = contract_addresses.VotingContract;
-  const contractAddress = "0x12B4b94e5d5D0a2433851f9B423CC0B5a4C71DEa";
-  const [optionNames, setOptionNames] = useState<string[]>([]);
+  const contractAddress = contract_addresses.VotingContract;
+  //const contractAddress = "0x12B4b94e5d5D0a2433851f9B423CC0B5a4C71DEa";
+  //const [optionNames, setOptionNames] = useState<string[]>([]);
+  const [options, setOptions] = useState<Option[]>([]);
 
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
@@ -83,7 +85,8 @@ const PollPage = () => {
     if (window.ethereum && id && poll && poll.options) {
       let provider = new ethers.BrowserProvider(window.ethereum as any);
       let signer = await provider.getSigner();
-      const optionNames: any[] = [];
+      //const optionNames: any[] = [];
+      const newOptions: Option[] = [];
       console.log(poll.options, 'poll.options');
       for (const address of poll.options) {
         const contract = new ethers.Contract(address, optionContractAbi, signer);
@@ -91,12 +94,19 @@ const PollPage = () => {
 
         try {
           const optionName = await contract.name();
-          optionNames.push(optionName);
+          //optionNames.push(optionName);
+          newOptions.push({
+            optionName: optionName,
+            address: address,
+            votersCount: 0,         
+            totalEth: '0',          
+            votersData: []         
+          });
         } catch (error) {
           console.error('Error fetching options:', error);
         }
       }
-      setOptionNames(optionNames);
+      setOptions(newOptions);
       // console.log(optionNames, 'optionNames');
     }
   };
@@ -125,7 +135,8 @@ const PollPage = () => {
             const voterAddress = await contract.voters(i);
             const balance = await provider.getBalance(voterAddress);
             totalBalance += BigInt(balance.toString());
-
+            console.log(voterAddress,'voteraddress');
+            console.log(totalBalance,'balance');
             votersData.push({
               address: voterAddress,
               balance: ethers.formatEther(balance),
@@ -233,11 +244,20 @@ const PollPage = () => {
           <Label>
             This vote requires a <Label className="font-bold">zero-value transaction</Label> from your wallet
           </Label>
-          <div className="flex flex-col gap-2.5">
-            {optionNames.map((optionName, index) => (
-              <OptionButton key={index} index={index} optionName={optionName} onVote={(optionIndex) => handleVote(optionIndex as number)} isChecked={selectedOption === optionName} type="contract" />
-            ))}
-          </div>
+        <div className="flex flex-col gap-2.5">
+        {options.map((option, index) => (
+          <div key={index} className="option-item">
+            <OptionButton
+            index={index}
+            optionName={option.optionName}
+            onVote={() => handleVote(index)}
+            isChecked={selectedOption === option.optionName}
+            type="contract"
+          />
+          <div className="option-address">Address: {option.address}</div>
+        </div>
+      ))}
+      </div>
         </div>
       </div>
       <div className="flex flex-col gap-10 w-96">

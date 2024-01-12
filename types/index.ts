@@ -38,5 +38,5 @@ export type PollType = {
   options: OptionType[];
   time_limit: number;
   title: string;
-  voting_method: string;
+  votingMethod: string;
 }
