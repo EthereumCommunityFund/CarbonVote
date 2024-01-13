@@ -157,12 +157,10 @@ const CreatePollPage = () => {
         title: motionTitle,
         description: motionDescription,
         time_limit: durationInSeconds,
-        voting_method: "headCount",
-        options: options
-          .filter((option) => option.isChecked)
-          .map((option) => ({ description: option.name })),
+        votingMethod: 'headCount',
+        options: options.filter((option) => option.isChecked).map((option) => ({ option_description: option.name })),
         credentials: credentials,
-        poap_events: selectedPOAPEvents
+        poap_events: selectedPOAPEvents.map(event => event.id)
       };
 
       try {

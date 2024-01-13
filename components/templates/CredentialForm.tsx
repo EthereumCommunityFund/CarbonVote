@@ -81,10 +81,6 @@ export const CredentialForm = ({
         </div>
       </div>
 
-      {isPOAPsRequired && (
-        <POAPEvents />
-      )}
-
       {/* Protocol Guild Member Toggle */}
       <div className="flex flex-col gap-2">
         <div className="flex flex-5 gap-2">
@@ -110,24 +106,30 @@ export const CredentialForm = ({
       {/* Credentials Selector */}
       <div className="flex flex-col gap-2">
         <Label className="text-2xl font-semibold">Select Credentials</Label>
-        <select
-          className="..."
-          title="Credentials"
-          value={credential}
-          onChange={handleCredentialSelect}
-          disabled={!isProtocolGuildMemberRequired && !isZuPassRequired}
-        >
-          <option value="">Select Credential</option>
-          {isProtocolGuildMemberRequired && (
-            <option value={credentialsMapping['Protocol Guild Member']}>Protocol Guild Member</option>
-          )}
-          {isZuPassRequired && (
-            <>
-              <option value={credentialsMapping['ZuConnect Resident']}>ZuConnect Resident</option>
-              <option value={credentialsMapping['DevConnect']}>DevConnect</option>
-            </>
-          )}
-        </select>
+
+
+        {isPOAPsRequired ?
+          <POAPEvents />
+          :
+          <select
+            className="..."
+            title="Credentials"
+            value={credential}
+            onChange={handleCredentialSelect}
+            disabled={!isProtocolGuildMemberRequired && !isZuPassRequired}
+          >
+            <option value="">Select Credential</option>
+            {isProtocolGuildMemberRequired && (
+              <option value={credentialsMapping['Protocol Guild Member']}>Protocol Guild Member</option>
+            )}
+            {isZuPassRequired && (
+              <>
+                <option value={credentialsMapping['ZuConnect Resident']}>ZuConnect Resident</option>
+                <option value={credentialsMapping['DevConnect']}>DevConnect</option>
+              </>
+            )}
+          </select>
+        }
       </div>
     </div>
   );

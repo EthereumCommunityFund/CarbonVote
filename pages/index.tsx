@@ -24,7 +24,7 @@ interface Poll {
   pollType: number;
   pollMetadata: string;
   votingMethod: string;
-  voting_method: string;
+  votingMethod: string;
   time_limit: number;
 }
 
@@ -109,7 +109,7 @@ export default function Home() {
                 topic={''}
                 subTopic={''}
                 isZuPassRequired={true}
-                votingMethod={poll.votingMethod || poll.voting_method}
+                votingMethod={poll.votingMethod || poll.votingMethod}
                 poll={poll}
               />
             );
