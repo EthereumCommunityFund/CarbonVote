@@ -39,3 +39,7 @@ bun deploy_contracts
 ```
 
 Make sure to create an `.env` file following `.env.template`.
+
+Add Local Testnet to Metamask with:
+- ID: `1337`
+- RPC: `http://127.0.0.1:8545/`

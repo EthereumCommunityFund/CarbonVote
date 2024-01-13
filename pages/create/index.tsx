@@ -331,8 +331,8 @@ const CreatePollPage = () => {
                 <CredentialForm
                   selectedCredentials={credentials}
                   onCredentialsChange={(selectedUuids) => setCredentials(selectedUuids)}
-                  /*isZuPassRequired={isZuPassRequired}
-                  setIsZuPassRequired={setIsZuPassRequired}*/
+                /*isZuPassRequired={isZuPassRequired}
+                setIsZuPassRequired={setIsZuPassRequired}*/
                 />
               </div>
             )
