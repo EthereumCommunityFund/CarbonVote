@@ -8,7 +8,6 @@ import { PollType } from '@/types';
 import { PollCardTemplate } from '@/components/templates/PollCard';
 import Button from '@/components/ui/buttons/Button';
 import { PlusCirceIcon } from '@/components/icons';
-import { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import VotingContract from './../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
 import { contract_addresses } from './../carbonvote-contracts/artifacts/deployedAddresses.json';
