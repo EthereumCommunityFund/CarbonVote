@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, PlusCirceIcon, PlusIcon, StopCircleIcon, ThumbDownIcon, ThumbUpIcon } from '@/components/icons';
+import { ArrowLeftIcon, PlusCirceIcon, PlusIcon } from '@/components/icons';
 import { XMarkIcon } from '@/components/icons/xmark';
 import { CredentialForm } from '@/components/templates/CredentialForm';
 import Button from '@/components/ui/buttons/Button';
@@ -10,14 +10,14 @@ import { useRouter } from 'next/router';
 import { ChangeEvent, useState } from 'react';
 import { useEffect } from 'react';
 import { Contract, ethers } from 'ethers';
-import { convertToHoursAndMinutesToSeconds, convertToMinutes } from '@/utils';
+import { convertToHoursAndMinutesToSeconds } from '@/utils';
 import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
 import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
 import { toast } from '@/components/ui/use-toast';
 import { OptionType } from '@/types';
 import { useUserPassportContext } from '@/context/PassportContext';
-import { PollRequestData, createPoll } from '@/controllers/poll.controller';
-import axiosInstance from '@/src/axiosInstance';
+import { createPoll } from '@/controllers/poll.controller';
+import { useFormStore } from "@/zustand/create";
 
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
@@ -48,6 +48,10 @@ const CreatePollPage = () => {
     { name: "No", isChecked: false },
   ]);
   const [isZuPassRequired, setIsZuPassRequired] = useState(false);
+
+  // Zustand
+  const selectedPOAPEvents = useFormStore((state) => state.selectedEvents)
+  const removeAllPoapEvents = useFormStore((state) => state.removeAll)
 
   useEffect(() => {
     if (window.ethereum) {
@@ -95,6 +99,10 @@ const CreatePollPage = () => {
       setIsZuPassRequired(false);
     }
   }, [votingMethod]);
+
+  const cleanFormState = () => {
+    removeAllPoapEvents();
+  }
 
   const createNewPoll = async () => {
     if (!isPassportConnected) {
@@ -154,6 +162,7 @@ const CreatePollPage = () => {
           .filter((option) => option.isChecked)
           .map((option) => ({ description: option.name })),
         credentials: credentials,
+        poap_events: selectedPOAPEvents
       };
 
       try {
@@ -161,19 +170,7 @@ const CreatePollPage = () => {
 
         const response = await createPoll(pollData);
 
-        console.log('Poll created successfully', response);
-        toast({
-          title: 'Poll created successfully',
-        });
-
-        // const result = await createPoll(pollData);
-
-        // console.log(result, "result");
-
-        console.log("Poll created successfully", response);
-        toast({
-          title: "Poll created successfully",
-        });
+        cleanFormState();
         setTimeout(() => {
           router.push("/");
         }, 5000);

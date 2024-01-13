@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Label } from '@radix-ui/react-label';
 import ToggleSwitchButton from '../ui/buttons/ToggleSwitchButton';
 import POAPEvents from '../POAPEvents';
-import { Event } from '@/types'
+import { useFormStore } from "@/zustand/create";
 
 type CredentialFormProps = {
   selectedCredentials: string[];
@@ -22,6 +22,7 @@ export const CredentialForm = ({
   const [isZuPassRequired, setIsZuPassRequired] = useState(false);
 
   const [isPOAPsRequired, setIsPOAPsRequired] = useState(false);
+  const removeAllPoapEvents = useFormStore((state) => state.removeAll)
 
 
   const credentialsMapping: CredentialsMapping = {
@@ -36,11 +37,18 @@ export const CredentialForm = ({
       setCredential(uuid);
       onCredentialsChange([uuid]);
       setIsZuPassRequired(false);
+      removeAllPoapEvents();
     } else if (isZuPassRequired) {
       setCredential('');
+      removeAllPoapEvents();
+      removeAllPoapEvents();
+    } else if (isPOAPsRequired) {
+      setCredential('');
+      removeAllPoapEvents();
     } else {
       setCredential('')
       onCredentialsChange([]);
+      removeAllPoapEvents();
     }
   }, [isProtocolGuildMemberRequired, isZuPassRequired, onCredentialsChange]);
 
