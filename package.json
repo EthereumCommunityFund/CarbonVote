@@ -56,7 +56,8 @@
     "styled-components": "^5.3.6",
     "tailwind-merge": "^2.0.0",
     "yarn": "^1.22.21",
-    "zuauth": "^0.4.0"
+    "zuauth": "^0.4.0",
+    "zustand": "^4.4.7"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
@@ -66,6 +67,7 @@
     "@nomicfoundation/hardhat-verify": "^2.0.2",
     "@pcd/eslint-config-custom": "^0.7.2",
     "@pcd/tsconfig": "^0.7.2",
+    "@redux-devtools/extension": "^3.3.0",
     "@typechain/ethers-v6": "^0.5.1",
     "@typechain/hardhat": "^9.1.0",
     "@types/chai": "^4.3.11",

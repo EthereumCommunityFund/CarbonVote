@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Label } from '@radix-ui/react-label';
 import ToggleSwitchButton from '../ui/buttons/ToggleSwitchButton';
 import POAPEvents from '../POAPEvents';
+import { Event } from '@/types'
 
 type CredentialFormProps = {
   selectedCredentials: string[];
@@ -17,9 +18,11 @@ export const CredentialForm = ({
   onCredentialsChange,
 }: CredentialFormProps) => {
   const [credential, setCredential] = useState('');
-  const [isPOAPsRequired, setIsPOAPsRequired] = useState(false);
   const [isProtocolGuildMemberRequired, setIsProtocolGuildMemberRequired] = useState(false);
   const [isZuPassRequired, setIsZuPassRequired] = useState(false);
+
+  const [isPOAPsRequired, setIsPOAPsRequired] = useState(false);
+
 
   const credentialsMapping: CredentialsMapping = {
     'Protocol Guild Member': '635a93d1-4d2c-47d9-82f4-9acd8ff68350',
@@ -34,10 +37,9 @@ export const CredentialForm = ({
       onCredentialsChange([uuid]);
       setIsZuPassRequired(false);
     } else if (isZuPassRequired) {
-
       setCredential('');
     } else {
-      setCredential('');
+      setCredential('')
       onCredentialsChange([]);
     }
   }, [isProtocolGuildMemberRequired, isZuPassRequired, onCredentialsChange]);
