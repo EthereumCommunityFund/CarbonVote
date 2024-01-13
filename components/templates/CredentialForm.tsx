@@ -22,7 +22,9 @@ export const CredentialForm = ({
   const [isZuPassRequired, setIsZuPassRequired] = useState(false);
 
   const [isPOAPsRequired, setIsPOAPsRequired] = useState(false);
+  const selectedPOAPEvents = useFormStore((state) => state.selectedEvents)
   const removeAllPoapEvents = useFormStore((state) => state.removeAll)
+
 
 
   const credentialsMapping: CredentialsMapping = {
@@ -31,26 +33,34 @@ export const CredentialForm = ({
     'DevConnect': '3cc4b682-9865-47b0-aed8-ef1095e1c398',
   };
 
-  useEffect(() => {
-    if (isProtocolGuildMemberRequired) {
-      const uuid = credentialsMapping['Protocol Guild Member'];
-      setCredential(uuid);
-      onCredentialsChange([uuid]);
-      setIsZuPassRequired(false);
-      removeAllPoapEvents();
-    } else if (isZuPassRequired) {
-      setCredential('');
-      removeAllPoapEvents();
-      removeAllPoapEvents();
-    } else if (isPOAPsRequired) {
-      setCredential('');
-      removeAllPoapEvents();
-    } else {
-      setCredential('')
-      onCredentialsChange([]);
-      removeAllPoapEvents();
-    }
-  }, [isProtocolGuildMemberRequired, isZuPassRequired, onCredentialsChange]);
+
+  // TODO: Simplify and allow multi-credentials
+  const handleProtocolGuildMemberRequired = () => {
+    setIsZuPassRequired(false);
+    setIsPOAPsRequired(false);
+
+    const uuid = credentialsMapping['Protocol Guild Member'];
+    setCredential(uuid);
+    onCredentialsChange([uuid]);
+    removeAllPoapEvents();
+    setIsProtocolGuildMemberRequired(state => !state)
+  }
+
+  const handleZuPassRequired = () => {
+    setIsProtocolGuildMemberRequired(false);
+    setIsPOAPsRequired(false);
+
+    setIsZuPassRequired(state => !state);
+    setCredential('');
+  }
+
+  const handlePOAPsRequired = () => {
+    setIsProtocolGuildMemberRequired(false);
+    setIsZuPassRequired(false);
+
+    setIsPOAPsRequired(state => !state);
+    setCredential('');
+  }
 
   const handleCredentialSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedCredentialUUID = event.target.value;
@@ -65,7 +75,7 @@ export const CredentialForm = ({
         <div className="flex flex-5 gap-2">
           <ToggleSwitchButton
             checked={isPOAPsRequired}
-            onClick={() => setIsPOAPsRequired(!isPOAPsRequired)}
+            onClick={handlePOAPsRequired}
           />
           <Label className="text-lg">Add POAP Events</Label>
         </div>
@@ -80,7 +90,7 @@ export const CredentialForm = ({
         <div className="flex flex-5 gap-2">
           <ToggleSwitchButton
             checked={isProtocolGuildMemberRequired}
-            onClick={() => setIsProtocolGuildMemberRequired(!isProtocolGuildMemberRequired)}
+            onClick={handleProtocolGuildMemberRequired}
           />
           <Label className="text-lg">Add Protocol Guild Member Credential</Label>
         </div>
@@ -91,7 +101,7 @@ export const CredentialForm = ({
         <div className="flex flex-5 gap-2">
           <ToggleSwitchButton
             checked={isZuPassRequired}
-            onClick={() => setIsZuPassRequired(!isZuPassRequired)}
+            onClick={handleZuPassRequired}
           />
           <Label className="text-lg">Add ZuPass Credentials</Label>
         </div>
