@@ -15,6 +15,7 @@ import OptionVotingCountProgress from '@/components/OptionVotingCounts';
 import { PollOptionType, PollType, RemainingTime } from '@/types';
 import { getPollStatus } from '@/utils';
 import PieChartComponent from '@/components/ui/PieChart';
+import VotingOption from '../../carbonvote-contracts/artifacts/contracts/VotingOption.sol/VotingOption.json';
 
 const PollPage = () => {
   const router = useRouter();

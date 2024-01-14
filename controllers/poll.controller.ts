@@ -7,7 +7,7 @@ export type PollRequestData = {
     votingMethod: string;
     options: OptionData[];
     credentials: string[];
-    poap_events: string[];
+    poap_events: number[];
 };
 
 export type VoteRequestData = {
@@ -17,7 +17,7 @@ export type VoteRequestData = {
 };
 
 export type OptionData = {
-    description: string;
+    option_description: string;
 };
 
 export const fetchAllPolls = async () => {
