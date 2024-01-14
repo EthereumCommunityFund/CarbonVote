@@ -54,8 +54,3 @@ async function main() {
 
   // console.log(votingContract, await votingContract.owner());
 }
-
-main().catch(error => {
-  console.error(error);
-  process.exit(1);
-});
