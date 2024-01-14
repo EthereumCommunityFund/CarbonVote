@@ -314,18 +314,14 @@ const CreatePollPage = () => {
                   className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
                   value="ethholding"
                 >
-                  <option
-                    className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                    value="ethholding"
-                  >
-                    EthHolding
-                  </option>
-                  <option
-                    className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                    value="headcount"
-                  >
-                    HeadCount
-                  </option>
+                  EthHolding
+                </option>
+                <option
+                  className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                  value="headcount"
+                >
+                  HeadCount
+                </option>
               </select>
             </div>
           </div>
@@ -342,9 +338,74 @@ const CreatePollPage = () => {
                 setIsZuPassRequired={setIsZuPassRequired}*/
                 />
               </div>
-            )
-          )}
+
+              {options.map((option, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <CheckerButton
+                    option={option}
+                    onOptionChange={(updatedOption) => handleCheckboxChange(index, updatedOption.isChecked)}
+                    onInputChange={(e) => handleInputChange(index, e)} />
+                  <button onClick={() => removeOption(index)}>❌</button>
+                </div>
+              )}
+
+          <div className="flex justify-end">
+            <Button
+              className="rounded-full"
+              leftIcon={PlusIcon}
+              onClick={addOption}
+            >
+              Add Option
+            </Button>
+          </div>
         </div>
+        <div className="flex flex-col gap-2">
+          <Label className="text-2xl">Time Limit</Label>
+          <Input
+            value={timeLimit}
+            onChange={handleTimeLimitChange}
+            placeholder={"1hr 30m"}
+          ></Input>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label className="text-2xl">Voting Method</Label>
+          <div className="flex flex-col gap-1">
+            <Label className="text-base">Select a Method</Label>
+            <select
+              onChange={handleVotingSelect}
+              value={votingMethod}
+              className="flex w-full text-black outline-none rounded-lg py-2.5 pr-3 pl-2.5 bg-inputField gap-2.5 items-center border border-white/10 border-opacity-10"
+              title="Voting Method"
+            >
+              <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="ethholding">
+                EthHolding
+              </option>
+              <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="headcount">
+                HeadCount
+              </option>
+            </select>
+          </div>
+        </div>
+        {votingMethod === 'ethholding' ? (
+          <></>
+        ) : (
+          votingMethod === 'headcount' && (
+            <div className="flex flex-col gap-2">
+              <Label className="text-2xl">Access Rules</Label>
+              <CredentialForm
+                selectedCredentials={credentials}
+                onCredentialsChange={(selectedUuids) => setCredentials(selectedUuids)} />
+            </div>
+          )
+        )}
+      </div>
+      <div className="flex gap-2.5 justify-end">
+        <Button className="rounded-full" leftIcon={XMarkIcon}>
+          Discard
+        </Button>
+        <Button className="rounded-full" leftIcon={PlusCirceIcon} onClick={createNewPoll}>
+          Create Poll
+        </Button>
       </div>
       <div className="flex gap-2.5 justify-end">
         <Button className="rounded-full" leftIcon={XMarkIcon}>
@@ -381,7 +442,7 @@ const CreatePollPage = () => {
           <div className="flex flex-col gap-2.5 pl-5 pb-5"></div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 export default CreatePollPage;
