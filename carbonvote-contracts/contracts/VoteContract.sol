@@ -1,8 +1,9 @@
 pragma solidity ^0.8.0;
 import "./VotingOption.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract VotingContract {
-    address signer_public_key = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+contract VotingContract is Initializable {
+    address signer_public_key;
     enum PollType {
         EthCount
     }
@@ -11,10 +12,9 @@ contract VotingContract {
     event VoteRemoved(address voter, uint256 pollIndex, uint256 optionIndex);
     event VoteCasted(address voter, uint256 pollIndex, uint256 optionIndex);
 
-    // function initialize() public initializer {
-    //     __Ownable_init(msg.sender);
-    //     signer_public_key =
-    // }
+    function initialize() public initializer {
+        signer_public_key = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+    }
 
     struct Poll {
         string description;
@@ -75,7 +75,7 @@ contract VotingContract {
         require(verified, "Signature verification failed");
         Poll storage poll = polls[_pollIndex];
         VotingOption option = VotingOption(payable(poll.options[_optionIndex]));
-        option.castVote(signature, message);
+        option.castVote(msg.sender, signature, message);
     }
 
     function verifyAndRecordVote(
@@ -94,6 +94,28 @@ contract VotingContract {
         require(
             recoveredAddress == signer_public_key,
             "Signature cannot be verified"
+        );
+
+        // Then record the vote
+        recordVote(voter, _pollIndex, _optionIndex);
+    }
+
+    function verifyAndRecordVote(
+        address voter,
+        uint256 _pollIndex,
+        uint256 _optionIndex,
+        bytes memory signature,
+        string memory message
+    ) external {
+        // Verify the signature first
+        (bool verified, address recoveredAddress) = verifyServerSignature(
+            message,
+            signature
+        );
+        require(verified, "Signature verification failed");
+        require(
+            recoveredAddress == voter,
+            "Recovered address does not match the sender"
         );
 
         // Then record the vote

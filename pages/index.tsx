@@ -8,10 +8,9 @@ import { PollType } from '@/types';
 import { PollCardTemplate } from '@/components/templates/PollCard';
 import Button from '@/components/ui/buttons/Button';
 import { PlusCirceIcon } from '@/components/icons';
-import { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
-import VotingContract from './../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
-//import { contract_addresses } from './../carbonvote-contracts/artifacts/deployedAddresses.json';
+import VotingContract from './../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
+import { contract_addresses } from './../carbonvote-contracts/artifacts/deployedAddresses.json';
 import { toast } from '@/components/ui/use-toast';
 import Spinner from '@/components/ui/Spinner';
 
@@ -20,8 +19,8 @@ export default function Home() {
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
   const contractAbi = VotingContract.abi;
-  //const contractAddress = contract_addresses.VotingContract;
-  const contractAddress = "0x12B4b94e5d5D0a2433851f9B423CC0B5a4C71DEa";
+  const contractAddress = contract_addresses.VotingContract;
+  //const contractAddress = "0x12B4b94e5d5D0a2433851f9B423CC0B5a4C71DEa";
 
   const fetchPollsFromContract = async () => {
     if (window.ethereum) {
@@ -70,13 +69,19 @@ export default function Home() {
       <div className="flex gap-3 pt-5 px-5 bg-gradient-to-r from-red-400 to-white rounded-lg justify-center">
         <div className="flex flex-col gap-2.5 py-10 font-share-tech-mono lg:w-2/3">
           <Label className="text-[39px]">Carbonvote V 2.0</Label>
-          <Label className="lg:text-[69px] md:text-[59px]">Empowering Consensus for a Sustainable Future.</Label>
+          <Label className="lg:text-[69px] md:text-[59px]">
+            Empowering Consensus for a Sustainable Future.
+          </Label>
         </div>
       </div>
       <div className="px-[273px] flex flex-col gap-[30px]">
         {isLoading ? <Spinner /> : <></>}
         <div className="flex justify-end">
-          <Button className="rounded-full" leftIcon={PlusCirceIcon} onClick={handleCreatePoll}>
+          <Button
+            className="rounded-full"
+            leftIcon={PlusCirceIcon}
+            onClick={handleCreatePoll}
+          >
             Create a Poll
           </Button>
         </div>

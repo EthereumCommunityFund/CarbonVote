@@ -10,6 +10,7 @@ export const HeaderComponent = () => {
   const { signIn, isPassportConnected } = useUserPassportContext();
   const { connectToMetamask, account, isConnected } = useWallet();
 
+  const formattedAddy = account?.slice(0, 4) + '...' + account?.slice(-4)
   return (
     <div className="bg-white flex w-full h-16 justify-between items-center p-5 rounded-3xl">
       <div className="flex gap-1.5 items-center">
@@ -21,7 +22,7 @@ export const HeaderComponent = () => {
           {isPassportConnected ? 'Zupass Connected' : 'Connect Passport'}
         </Button>
         <Button className="outline-none h-10 items-center rounded-full" onClick={connectToMetamask}>
-          {isConnected ? 'Wallet Connected' : 'Connect Wallet'}
+          {isConnected ? formattedAddy : 'Connect Wallet'}
         </Button>
       </div>
     </div>

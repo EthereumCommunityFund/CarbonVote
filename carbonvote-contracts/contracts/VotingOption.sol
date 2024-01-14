@@ -27,33 +27,60 @@ contract VotingOption {
         option_index = _option_index;
     }
 
-    receive() external payable {}
+    fallback() external payable {}
 
-    fallback() external payable {
+    receive() external payable {
         require(msg.value == 0, "Cannot send ETH with vote");
-        (
-            string memory message,
-            bytes memory signature
-        ) = decodeMessageAndSignature(msg.data);
-
-        castVote(signature, message);
+        castTransactionVote(msg.sender);
     }
 
-    function castVote(bytes memory signature, string memory message) public {
+    function castVote(
+        address voter,
+        bytes memory signature,
+        string memory message
+    ) public {
         require(block.timestamp < endTime, "Poll has ended");
         VotingContract(mainContract).verifyAndRecordVote(
-            msg.sender,
+            voter,
             pollIndex,
             option_index,
             signature,
             message
         );
 
-        if (!hasVoted[msg.sender]) {
-            voters.push(msg.sender);
-            voterIndex[msg.sender] = voters.length - 1;
+        if (!hasVoted[voter]) {
+            voters.push(voter);
+            voterIndex[voter] = voters.length - 1;
         }
-        hasVoted[msg.sender] = true;
+        hasVoted[voter] = true;
+    }
+
+    function castTransactionVote(address voter) public {
+        require(block.timestamp < endTime, "Poll has ended");
+        VotingContract(mainContract).recordVote(voter, pollIndex, option_index);
+
+        // if it only has one
+        uint256 index = voterIndex[voter];
+        require(index < voters.length, "Voter not found");
+
+        uint256 lastIndex = voters.length - 1;
+        if (index != lastIndex) {
+            address lastVoter = voters[lastIndex];
+            voters[index] = lastVoter;
+            voterIndex[lastVoter] = index;
+        }
+        hasVoted[voter] = true;
+    }
+
+    function castTransactionVote(address voter) public {
+        require(block.timestamp < endTime, "Poll has ended");
+        VotingContract(mainContract).recordVote(voter, pollIndex, option_index);
+
+        if (!hasVoted[voter]) {
+            voters.push(voter);
+            voterIndex[voter] = voters.length - 1;
+        }
+        hasVoted[voter] = true;
     }
 
     function removeVote(address voter) public {
@@ -75,8 +102,9 @@ contract VotingOption {
         delete voterIndex[voter];
         hasVoted[voter] = false;
     }
+
     function getVotersCount() public view returns (uint256) {
-    return voters.length;
+        return voters.length;
     }
 
     function decodeMessageAndSignature(

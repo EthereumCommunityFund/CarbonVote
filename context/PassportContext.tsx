@@ -4,8 +4,11 @@ import { useZupassPopupMessages } from '@pcd/passport-interface/src/PassportPopu
 import { EdDSATicketFieldsToReveal } from '@pcd/zk-eddsa-event-ticket-pcd';
 import { useRouter } from 'next/router';
 
-import { openGroupMembershipPopup } from '../src/util';
-import { generate_signature, verifyProof } from '../controllers/auth.controller';
+import { openGroupMembershipPopup } from "../src/util";
+import {
+  generate_signature,
+  verifyProof,
+} from "../controllers/auth.controller";
 
 import { openSignedZuzaluSignInPopup } from '@pcd/passport-interface';
 import { useZuAuth, supportedEvents, supportedProducs } from 'zuauth';
@@ -24,10 +27,10 @@ type UserPassportProviderProps = {
 
 // export const UserPassportContext = createContext({} as UserPassportContextData);
 export const UserPassportContext = createContext<UserPassportContextData>({
-  signIn: () => {},
+  signIn: () => { },
   isAuthenticated: false,
   isPassportConnected: false,
-  signOut: () => {},
+  signOut: () => { },
   pcd: null,
 });
 const PCD_STORAGE_KEY = 'userPCD';
