@@ -205,7 +205,6 @@ const CreatePollPage = () => {
   };
 
   const handleTitleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    console.log("🚀 ~ handleTitleInputChange ~ event.target.value:", event.target.value)
     setMotionTitle(event.target.value);
   };
   const handleDescriptionChange = (value: string) => {

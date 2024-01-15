@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@openzeppelin/contracts-upgradeable": "^5.0.1",
     "@pcd/email-pcd": "^0.3.0",
     "@pcd/passport-interface": "^0.8.0",
     "@pcd/pcd-types": "^0.8.0",
