@@ -242,6 +242,7 @@ const CreatePollPage = () => {
 
   const handleBack = () => {
     router.push('/');
+    router.reload();
   };
 
   return (

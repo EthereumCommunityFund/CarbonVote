@@ -15,6 +15,7 @@ export type VoteRequestData = {
     poll_id: string;
 };
 
+
 export type ScoreRequestData = {
     address: string;
     scorerId: string[];
