@@ -3,9 +3,9 @@ import { useQuery } from 'react-query';
 import { fetchAllPolls as fetchAllPollsFromAPI } from '@/controllers/poll.controller';
 import { Label } from '@/components/ui/Label';
 import { useUserPassportContext } from '../context/PassportContext';
-import { mockpolls } from '@/constant/mockPolls';
-import { PollType } from '@/types';
-import { PollCardTemplate } from '@/components/templates/PollCard';
+
+import { HeadCountPollType, EthHoldingPollType } from '@/types';
+
 import Button from '@/components/ui/buttons/Button';
 import { PlusCirceIcon } from '@/components/icons';
 import { useEffect, useState } from 'react';
@@ -14,18 +14,8 @@ import VotingContract from './../carbonvote-contracts/artifacts/contracts/VoteCo
 import { contract_addresses } from './../carbonvote-contracts/artifacts/deployedAddresses.json';
 import { toast } from '@/components/ui/use-toast';
 import Spinner from '@/components/ui/Spinner';
-
-interface Poll {
-  name: string;
-  title: string;
-  description: string;
-  options: string[];
-  endTime: number;
-  pollType: number;
-  pollMetadata: string;
-  votingMethod: string;
-  time_limit: number;
-}
+import { EthHoldingPollCardComponent } from '@/components/templates/EthHoldingCard';
+import { HeadCountPollCardComponent } from '@/components/templates/HeadCountPollCard';
 
 export default function Home() {
   const router = useRouter();
@@ -92,26 +82,37 @@ export default function Home() {
           </Button>
         </div>
         <div className="flex flex-col gap-2.5 h-[250px]">
-          {polls?.map((poll: Poll, index: number) => {
-            return (
-              <PollCardTemplate
-                key={index}
-                id={`${index}`}
-                title={poll.name || poll.title}
-                creator={'Creator Name'}
-                description={poll.description}
-                endTime={new Date(Number(poll.endTime) * 1000)}
-                isLive={Date.now() < Number(poll.endTime) * 1000}
-                options={poll.options}
-                pollMetadata={poll.pollMetadata}
-                startDate={''}
-                topic={''}
-                subTopic={''}
-                isZuPassRequired={true}
-                votingMethod={poll.votingMethod || poll.votingMethod}
-                poll={poll}
-              />
-            );
+          {polls?.map((poll: any, index: number) => {
+            switch (poll.votingMethod) {
+              case 'ethholding':
+                return <EthHoldingPollCardComponent
+                  key={index}
+                  id={index}
+                  description={poll.description}
+                  votingMethod={poll.votingMethod}
+                  endTime={poll.endTime}
+                  name={poll.name}
+                  options={poll.options}
+                  pollMetadata={poll.pollMetadata}
+                  pollType={poll.pollType}
+                />;
+              case 'headCount':
+                return <HeadCountPollCardComponent
+                  key={index}
+                  id={poll.id}
+                  created_at={poll.created_at}
+                  credentials={poll.credentials}
+                  description={poll.description}
+                  options={poll.options}
+                  time_limit={poll.time_limit}
+                  title={poll.title}
+                  votingMethod={poll.votingMethod}
+                />;
+              // Add more cases if you have other poll types
+              default:
+                // Handle unknown poll type or return a default component
+                return <div key={index}>Unknown Poll Type</div>;
+            }
           })}
         </div>
       </div>

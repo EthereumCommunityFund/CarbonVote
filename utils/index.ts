@@ -1,4 +1,4 @@
-import { PollType, PollStatusType, RemainingTime } from "@/types";
+import { PollStatusType, RemainingTime, EthHoldingPollType, HeadCountPollType } from "@/types";
 
 export const calculateTimeRemaining = (endDate: Date): string | null => {
   const now = new Date().getTime();
@@ -71,7 +71,7 @@ const getRemainingTime = (remainingSeconds: number): RemainingTime => {
   return { days, hours, minutes, seconds };
 };
 
-export const getPollStatus = (poll: PollType): PollStatusType => {
+export const getHeadCountPollStatus = (poll: HeadCountPollType): PollStatusType => {
   const createdAt = new Date(poll.created_at).getTime();
   const expirationTime = createdAt + poll.time_limit * 1000;
   const currentTime = new Date().getTime();
@@ -85,3 +85,17 @@ export const getPollStatus = (poll: PollType): PollStatusType => {
 
   return { closed: false, remainingTime: getRemainingTime(remainingSeconds) };
 };
+
+export const getEthHoldingPollStatus = (poll: EthHoldingPollType): PollStatusType => {
+  const expirationTime = new Date(Number(poll.endTime)).getTime();
+  const currentTime = new Date().getTime();
+
+  if (currentTime > expirationTime) {
+    return { closed: true };
+  }
+
+  const remainingMilliseconds = expirationTime - currentTime;
+  const remainingSeconds = Math.floor(remainingMilliseconds / 1000);
+
+  return { closed: false, remainingTime: getRemainingTime(remainingSeconds) };
+}

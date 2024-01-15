@@ -6,10 +6,20 @@ import CountdownTimer from '../ui/CountDownTimer';
 import { Label } from '../ui/Label';
 import { useRouter } from 'next/router';
 import { useUserPassportContext } from '@/context/PassportContext';
-import { PollStatusType, PollType, RemainingTime } from '@/types';
-import { getPollStatus } from '@/utils';
+import { HeadCountPollType, RemainingTime } from '@/types';
+import { getHeadCountPollStatus } from '@/utils';
 
-export const PollCardTemplate = ({ id, title, description, options, votingMethod, created_at, credentials, time_limit }: PollType) => {
+
+export const HeadCountPollCardComponent: React.FC<HeadCountPollType> = ({
+  id,
+  title,
+  description,
+  options,
+  votingMethod,
+  created_at,
+  credentials,
+  time_limit,
+}) => {
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
   const [isClosed, setIsClosed] = useState<boolean>();
@@ -38,7 +48,7 @@ export const PollCardTemplate = ({ id, title, description, options, votingMethod
   useEffect(() => {
     console.log(id, 'id');
     const interval = setInterval(() => {
-      const pollStatus = getPollStatus({ id, title, description, options, votingMethod, created_at, credentials, time_limit });
+      const pollStatus = getHeadCountPollStatus({ id, title, description, options, votingMethod, created_at, credentials, time_limit });
       setRemainingTime(pollStatus.remainingTime);
       setIsClosed(pollStatus.closed);
     }, 1000)

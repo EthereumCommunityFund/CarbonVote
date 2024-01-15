@@ -6,7 +6,7 @@ import CheckerButton from '@/components/ui/buttons/CheckerButton';
 import CountdownTimer from '@/components/ui/CountDownTimer';
 import HtmlString from '@/components/ui/Html';
 import { Label } from '@/components/ui/Label';
-import { OptionType, PollType } from '@/types';
+
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
@@ -98,9 +98,9 @@ const PollPage = () => {
           newOptions.push({
             optionName: optionName,
             address: address,
-            votersCount: 0,         
-            totalEth: '0',          
-            votersData: []         
+            votersCount: 0,
+            totalEth: '0',
+            votersData: []
           });
         } catch (error) {
           console.error('Error fetching options:', error);
@@ -135,8 +135,8 @@ const PollPage = () => {
             const voterAddress = await contract.voters(i);
             const balance = await provider.getBalance(voterAddress);
             totalBalance += BigInt(balance.toString());
-            console.log(voterAddress,'voteraddress');
-            console.log(totalBalance,'balance');
+            console.log(voterAddress, 'voteraddress');
+            console.log(totalBalance, 'balance');
             votersData.push({
               address: voterAddress,
               balance: ethers.formatEther(balance),
@@ -244,20 +244,20 @@ const PollPage = () => {
           <Label>
             This vote requires a <Label className="font-bold">zero-value transaction</Label> from your wallet
           </Label>
-        <div className="flex flex-col gap-2.5">
-        {options.map((option, index) => (
-          <div key={index} className="option-item">
-            <OptionButton
-            index={index}
-            optionName={option.optionName}
-            onVote={() => handleVote(index)}
-            isChecked={selectedOption === option.optionName}
-            type="contract"
-          />
-          <div className="option-address">Address: {option.address}</div>
-        </div>
-      ))}
-      </div>
+          <div className="flex flex-col gap-2.5">
+            {options.map((option, index) => (
+              <div key={index} className="option-item">
+                <OptionButton
+                  index={index}
+                  optionName={option.optionName}
+                  onVote={() => handleVote(index)}
+                  isChecked={selectedOption === option.optionName}
+                  type="contract"
+                />
+                <div className="option-address">Address: {option.address}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
       <div className="flex flex-col gap-10 w-96">

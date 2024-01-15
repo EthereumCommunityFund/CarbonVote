@@ -30,7 +30,7 @@ export type PollOptionType = {
   votes: number;
 }
 
-export type PollType = {
+export type HeadCountPollType = {
   id: string;
   created_at: string;
   credentials: CredentialType[];
@@ -38,5 +38,16 @@ export type PollType = {
   options: OptionType[];
   time_limit: number;
   title: string;
+  votingMethod: string;
+}
+
+export type EthHoldingPollType = {
+  id: number;
+  description: string;
+  endTime: bigint;
+  name: string;
+  options: Object;
+  pollMetadata: string;
+  pollType: string;
   votingMethod: string;
 }
