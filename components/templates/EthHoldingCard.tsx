@@ -24,6 +24,7 @@ export const EthHoldingPollCardComponent: React.FC<EthHoldingPollType> = ({
   const { signIn, isPassportConnected } = useUserPassportContext();
   const [isClosed, setIsClosed] = useState<boolean>();
   const [remainingTime, setRemainingTime] = useState<RemainingTime>();
+  const [expirationTime, setExpirationTime] = useState<string>();
   const handleClickItem = () => {
     if (!isPassportConnected) {
       signIn();
@@ -44,7 +45,7 @@ export const EthHoldingPollCardComponent: React.FC<EthHoldingPollType> = ({
     console.log(id, 'id');
     const interval = setInterval(() => {
       const pollStatus = getEthHoldingPollStatus({ id, description, options, votingMethod, endTime, name, pollMetadata, pollType });
-      setRemainingTime(pollStatus.remainingTime);
+      pollStatus.closed ? setExpirationTime(pollStatus.expirationTime) : setRemainingTime(pollStatus.remainingTime);
       setIsClosed(pollStatus.closed);
     }, 1000)
 
@@ -66,7 +67,10 @@ export const EthHoldingPollCardComponent: React.FC<EthHoldingPollType> = ({
             <CountdownTimer remainingTime={remainingTime} />
           </div>
         ) : (
-          <></>
+          <div className="flex flex-2 items-center">
+            <ClockIcon />
+            <Label>{expirationTime}</Label>
+          </div>
         )}
       </div>
     </div>

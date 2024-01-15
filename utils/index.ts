@@ -77,7 +77,13 @@ export const getHeadCountPollStatus = (poll: HeadCountPollType): PollStatusType 
   const currentTime = new Date().getTime();
 
   if (currentTime > expirationTime) {
-    return { closed: true };
+    return {
+      closed: true, expirationTime: new Date(expirationTime).toLocaleDateString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric',
+      })
+    };
   }
 
   const remainingMilliseconds = expirationTime - currentTime;
@@ -91,7 +97,13 @@ export const getEthHoldingPollStatus = (poll: EthHoldingPollType): PollStatusTyp
   const currentTime = new Date().getTime();
 
   if (currentTime > expirationTime) {
-    return { closed: true };
+    return {
+      closed: true, expirationTime: new Date(expirationTime).toLocaleDateString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric',
+      })
+    };
   }
 
   const remainingMilliseconds = expirationTime - currentTime;

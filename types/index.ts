@@ -6,6 +6,7 @@ export type OptionType = {
 export interface PollStatusType {
   closed: boolean;
   remainingTime?: RemainingTime;
+  expirationTime?: string;
 }
 
 export interface RemainingTime {
@@ -46,7 +47,7 @@ export type EthHoldingPollType = {
   description: string;
   endTime: bigint;
   name: string;
-  options: Object;
+  options: string[];
   pollMetadata: string;
   pollType: string;
   votingMethod: string;

@@ -24,6 +24,7 @@ export const HeadCountPollCardComponent: React.FC<HeadCountPollType> = ({
   const { signIn, isPassportConnected } = useUserPassportContext();
   const [isClosed, setIsClosed] = useState<boolean>();
   const [remainingTime, setRemainingTime] = useState<RemainingTime>();
+  const [expirationTime, setExpirationTime] = useState<string>();
   const handleClickItem = () => {
     if (!isPassportConnected) {
       signIn();
@@ -49,7 +50,7 @@ export const HeadCountPollCardComponent: React.FC<HeadCountPollType> = ({
     console.log(id, 'id');
     const interval = setInterval(() => {
       const pollStatus = getHeadCountPollStatus({ id, title, description, options, votingMethod, created_at, credentials, time_limit });
-      setRemainingTime(pollStatus.remainingTime);
+      pollStatus.closed ? setExpirationTime(pollStatus.expirationTime) : setRemainingTime(pollStatus.remainingTime);
       setIsClosed(pollStatus.closed);
     }, 1000)
 
@@ -71,7 +72,10 @@ export const HeadCountPollCardComponent: React.FC<HeadCountPollType> = ({
             <CountdownTimer remainingTime={remainingTime} />
           </div>
         ) : (
-          <></>
+          <div className="flex flex-2 items-center">
+            <ClockIcon />
+            <Label>{expirationTime}</Label>
+          </div>
         )}
       </div>
     </div>

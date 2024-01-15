@@ -15,21 +15,10 @@ import VotingOption from '../../carbonvote-contracts/artifacts/contracts/VotingO
 import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
 import { fetchPollById } from '@/controllers/poll.controller';
+import { EthHoldingPollType, RemainingTime } from '@/types';
+import { getEthHoldingPollStatus } from '@/utils';
 
-interface Poll {
-  id: string;
-  name: string;
-  startDate: string | Date;
-  endDate: string | Date;
-  isLive: boolean;
-  creator: string;
-  topic: string;
-  subTopic: string;
-  isZuPassRequired: boolean;
-  description: string;
-  options: string[];
-  pollMetadata: string;
-}
+
 
 interface Option {
   optionName: string;
@@ -46,7 +35,7 @@ const PollPage = () => {
   const handleBack = () => {
     router.push('/');
   };
-  const [poll, setPoll] = useState<Poll>();
+  const [poll, setPoll] = useState<EthHoldingPollType>();
   const contractAbi = VotingContract.abi;
   const contractAddress = contract_addresses.VotingContract;
   //const contractAddress = "0x12B4b94e5d5D0a2433851f9B423CC0B5a4C71DEa";
@@ -54,6 +43,9 @@ const PollPage = () => {
   const [options, setOptions] = useState<Option[]>([]);
 
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [isClosed, setIsClosed] = useState<boolean>(true);
+  const [remainingTime, setRemainingTime] = useState<RemainingTime>();
+  const [expirationTime, setExpirationTime] = useState<string>();
 
   useEffect(() => {
     fetchPollFromContract();
@@ -72,6 +64,15 @@ const PollPage = () => {
         console.log(pollData, 'pollData');
 
         setPoll(pollData);
+        const interval = setInterval(() => {
+          const pollStatus = getEthHoldingPollStatus(pollData);
+          pollStatus.closed ? setExpirationTime(pollStatus.expirationTime) : setRemainingTime(pollStatus.remainingTime);
+          setIsClosed(pollStatus.closed);
+        }, 1000);
+
+        return () => {
+          clearInterval(interval);
+        };
       } catch (error) {
         console.error('Error fetching poll:', error);
       }
@@ -219,14 +220,17 @@ const PollPage = () => {
         </div>
         <div className="bg-white flex flex-col gap-2.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
-            <div className="bg-[#F84A4A20] px-2.5 rounded-lg items-center">{poll?.isLive ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-white/70">Ended</Label>}</div>
-            {poll?.isLive ? (
+            <div className={`${!isClosed ? `bg-[#F84A4A20]` : `bg-[#F8F8F8]`} px-2.5 rounded-lg items-center`}>{!isClosed ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-black/70">Ended</Label>}</div>
+            {!isClosed && remainingTime ? (
               <div className="flex gap-2">
                 <ClockIcon />
-                {/* <CountdownTimer remainingTime={new Date(poll.startDate).toLocaleString()} /> */}
+                <CountdownTimer remainingTime={remainingTime} />
               </div>
             ) : (
-              <></>
+              <div className="flex flex-2 items-center">
+                <ClockIcon />
+                <Label>{expirationTime}</Label>
+              </div>
             )}
           </div>
           <div className="flex flex-col gap-1">
@@ -261,37 +265,40 @@ const PollPage = () => {
         </div>
       </div>
       <div className="flex flex-col gap-10 w-96">
-        <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
-          <Label className="text-2xl">Details</Label>
-        </div>
-        {/* <div className="flex flex-col bg-white rounded-xl gap-5">
-          <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
+        <div className="flex flex-col bg-white rounded-xl gap-5 text-black/60">
+          <div className="px-2.5 py-5 border-b-2 border-b-black/10 pb-5">
             <Label className="text-2xl">Details</Label>
           </div>
-          <div className="flex flex-col gap-2.5 pl-5 pb-5">
-            <Label>No of voters {}</Label>
-            <Label>Total Eth of Voters {}</Label>
+          <div className="flex flex-col gap-2.5 pl-5 pb-5 border-b-2 border-b-black/10">
+            <Label>Voting Method: Eth Holdings</Label>
+            <Label>End Date: {expirationTime}</Label>
+            <Label>Main Contract : { }</Label>
           </div>
-        </div> */}
-        {optionsData &&
+          <div className="flex flex-col gap-2.5 pl-5 pb-5">
+            <Label className='text-lg text-black/60'>Requirements to Vote: </Label>
+            <div>
+
+            </div>
+            <div></div>
+          </div>
+        </div>
+        {/* {optionsData &&
           optionsData.map((option, index) => (
             <div key={index} className="flex flex-col bg-white rounded-xl gap-5">
-              <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
-                <Label className="text-2xl">{option.optionName}</Label>
-              </div>
+
               <div className="flex flex-col gap-2.5 pl-5 pb-5">
                 <Label>No of voters: {option.votersCount.toString()}</Label>
                 <Label>Total Eth of Voters: {option.totalEth} ETH</Label>
-                {/* You can also iterate over votersData if needed */}
-                {/* {option.votersData.map((voter, voterIndex) => (
+                
+                 {option.votersData.map((voter, voterIndex) => (
               <div key={voterIndex}>
                 <Label>Voter Address: {voter.address}</Label>
                 <Label>Voter Balance: {voter.balance}</Label>
               </div>
-            ))} */}
+            ))}
               </div>
             </div>
-          ))}
+          ))} */}
       </div>
     </div>
   );
