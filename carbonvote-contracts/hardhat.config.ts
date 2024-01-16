@@ -9,8 +9,8 @@ const config: HardhatUserConfig = {
       chainId: 1337,
     },
     /*sepolia: {
-      url: process.env.SEPOLIA_API_URL,
-      accounts: [`0x${process.env.PRIVATE_SEPOLIA_KEY}`],
+      url: '',
+      accounts: [`0x`],
     },*/
   },
 };
