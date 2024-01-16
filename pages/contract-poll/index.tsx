@@ -6,29 +6,32 @@ import CheckerButton from '@/components/ui/buttons/CheckerButton';
 import CountdownTimer from '@/components/ui/CountDownTimer';
 import HtmlString from '@/components/ui/Html';
 import { Label } from '@/components/ui/Label';
+import { useWallet } from '@/context/WalletContext';
 import { OptionType, PollType } from '@/types';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
-import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
-import VotingOption from '../../carbonvote-contracts/artifacts/contracts/VotingOption.sol/VotingOption.json';
+//import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
+//import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
+//import VotingOption from '../../carbonvote-contracts/artifacts/contracts/VotingOption.sol/VotingOption.json';
+import VotingContract from '../../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
+import VotingOption from '../../carbonvote-contracts/deployment/contracts/VotingOption.sol/VotingOption.json';
 import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
 import { fetchPollById } from '@/controllers/poll.controller';
-
+import { calculateTimeRemaining } from '@/utils/index';
 interface Poll {
   id: string;
   name: string;
   startDate: string | Date;
-  endDate: string | Date;
-  isLive: boolean;
+  endTime: string | bigint | number;
+  startTime: string | bigint | number;
   creator: string;
   topic: string;
   subTopic: string;
-  isZuPassRequired: boolean;
   description: string;
   options: string[];
   pollMetadata: string;
+  poll_type: number | bigint | string;
 }
 
 interface Option {
@@ -48,30 +51,42 @@ const PollPage = () => {
   };
   const [poll, setPoll] = useState<Poll>();
   const contractAbi = VotingContract.abi;
-  const contractAddress = contract_addresses.VotingContract;
-  //const contractAddress = "0x12B4b94e5d5D0a2433851f9B423CC0B5a4C71DEa";
+  //const contractAddress = contract_addresses.VotingContract;
+  const contractAddress = "0x5092F0161B330A7B2128Fa39a93b10ff32c0AE3e";
   //const [optionNames, setOptionNames] = useState<string[]>([]);
   const [options, setOptions] = useState<Option[]>([]);
-
+  const [remainingTime, settimeRemaining] = useState('');
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-
+  const [pollType, setPollType] = useState<string | number | bigint>();
+  const { connectToMetamask, isConnected, account } = useWallet();
   useEffect(() => {
     fetchPollFromContract();
   }, [id, source]);
 
   const fetchPollFromContract = async () => {
     if (window.ethereum && id) {
-      let provider = new ethers.BrowserProvider(window.ethereum as any);
-      let signer = await provider.getSigner();
-
-      const contract = new ethers.Contract(contractAddress, contractAbi, signer);
-
+      //let provider = new ethers.BrowserProvider(window.ethereum as any);
+      //let signer = await provider.getSigner();
+      //const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+      const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
+      const contract = new ethers.Contract(contractAddress, contractAbi, provider);
       try {
         const pollData = await contract.getPoll(id);
         // console.log(contract);
         console.log(pollData, 'pollData');
 
         setPoll(pollData);
+        setPollType(pollData.pollType);
+        //pollType = pollData.pollType;
+        if (pollType) { console.log(pollType.toString(), 'poll_type123'); } else { console.log('no poll type'); }
+        let startdate = new Date(Number(pollData.startTime) * 1000);
+        console.log(startdate, 'start time', pollData.endTime, 'end time');
+        const timeleft = calculateTimeRemaining(Number(pollData.endTime) * 1000);
+        if (!timeleft) { }
+        else {
+          settimeRemaining(timeleft);
+          console.log(timeleft, 'time left');
+        }
       } catch (error) {
         console.error('Error fetching poll:', error);
       }
@@ -83,13 +98,14 @@ const PollPage = () => {
 
   const fetchVotingOptions = async () => {
     if (window.ethereum && id && poll && poll.options) {
-      let provider = new ethers.BrowserProvider(window.ethereum as any);
-      let signer = await provider.getSigner();
+      //let provider = new ethers.BrowserProvider(window.ethereum as any);
+      //let signer = await provider.getSigner();
       //const optionNames: any[] = [];
+      const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
       const newOptions: Option[] = [];
       console.log(poll.options, 'poll.options');
       for (const address of poll.options) {
-        const contract = new ethers.Contract(address, optionContractAbi, signer);
+        const contract = new ethers.Contract(address, optionContractAbi, provider);
         // console.log(contract, 'contract');
 
         try {
@@ -98,9 +114,9 @@ const PollPage = () => {
           newOptions.push({
             optionName: optionName,
             address: address,
-            votersCount: 0,         
-            totalEth: '0',          
-            votersData: []         
+            votersCount: 0,
+            totalEth: '0',
+            votersData: []
           });
         } catch (error) {
           console.error('Error fetching options:', error);
@@ -121,7 +137,7 @@ const PollPage = () => {
     const optionContractAbi = VotingOption.abi;
     const getOptionVoteCounts = async () => {
       if (window.ethereum && id && poll && poll.options) {
-        let provider = new ethers.BrowserProvider(window.ethereum as any);
+        const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
         let aggregatedData = [];
 
         for (const address of poll.options) {
@@ -135,8 +151,8 @@ const PollPage = () => {
             const voterAddress = await contract.voters(i);
             const balance = await provider.getBalance(voterAddress);
             totalBalance += BigInt(balance.toString());
-            console.log(voterAddress,'voteraddress');
-            console.log(totalBalance,'balance');
+            console.log(voterAddress, 'voteraddress');
+            console.log(totalBalance, 'balance');
             votersData.push({
               address: voterAddress,
               balance: ethers.formatEther(balance),
@@ -160,6 +176,10 @@ const PollPage = () => {
   }, [id, poll]);
 
   const handleVote = async (optionIndex: number) => {
+    if (!isConnected) {
+      connectToMetamask();
+      return;
+    }
     const signature = localStorage.getItem('signature');
     const message = localStorage.getItem('message');
 
@@ -180,6 +200,7 @@ const PollPage = () => {
     try {
       let provider = new ethers.BrowserProvider(window.ethereum as any);
       let signer = await provider.getSigner();
+      //let provider = ethers.getDefaultProvider("http://localhost:8545/");
       const contract = new ethers.Contract(contractAddress, contractAbi, signer);
       const pollIndex = Number(id);
       const newOptionIndex = Number(optionIndex);
@@ -219,15 +240,20 @@ const PollPage = () => {
         </div>
         <div className="bg-white flex flex-col gap-2.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
-            <div className="bg-[#F84A4A20] px-2.5 rounded-lg items-center">{poll?.isLive ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-white/70">Ended</Label>}</div>
-            {poll?.isLive ? (
-              <div className="flex gap-2">
-                <ClockIcon />
-                {/* <CountdownTimer remainingTime={new Date(poll.startDate).toLocaleString()} /> */}
-              </div>
-            ) : (
-              <></>
-            )}
+            <div className={`${remainingTime !== null && remainingTime !== 'Time is up!' ? 'bg-[#F84A4A20]' : 'bg-[#F8F8F8]'
+              } px-2.5 rounded-lg items-center`}>
+              {remainingTime !== null && remainingTime !== 'Time is up!' ? (
+                <Label className="text-[#F84A4A]">Live</Label>
+              ) : (
+                <Label className="text-[#656565]">Closed</Label>
+              )}
+              {remainingTime !== null && remainingTime !== 'Time is up!' ? (
+                <div className="flex gap-2">
+                  <ClockIcon />
+                  <CountdownTimer endTime={Number(poll.endTime) * 1000} />
+                </div>
+              ) : null}
+            </div>
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-black/60 text-lg">Motion: </Label>
@@ -244,35 +270,52 @@ const PollPage = () => {
           <Label>
             This vote requires a <Label className="font-bold">zero-value transaction</Label> from your wallet
           </Label>
-        <div className="flex flex-col gap-2.5">
-        {options.map((option, index) => (
-          <div key={index} className="option-item">
-            <OptionButton
-            index={index}
-            optionName={option.optionName}
-            onVote={() => handleVote(index)}
-            isChecked={selectedOption === option.optionName}
-            type="contract"
-          />
-          <div className="option-address">Address: {option.address}</div>
-        </div>
-      ))}
-      </div>
+          {
+            pollType?.toString() === "1"
+              ? <Label className="text-sm">You can not vote if your address is not on this list: <a href="https://app.splits.org/accounts/0x84af3D5824F0390b9510440B6ABB5CC02BB68ea1" style={{ color: 'blue' }}>link</a></Label>
+              : <Label className="text-sm">(You can also make a zero-value transaction from your wallet to given options addresses to vote)</Label>
+          }
+          <div className="flex flex-col gap-2.5">
+            {options.map((option, index) => (
+              <div key={index} className="option-item">
+                <OptionButton
+                  index={index}
+                  optionName={option.optionName}
+                  onVote={() => handleVote(index)}
+                  isChecked={selectedOption === option.optionName}
+                  type="contract"
+                />
+                {pollType?.toString() !== '1' && (
+                  <div className="option-address">Address: {option.address}</div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
       <div className="flex flex-col gap-10 w-96">
-        <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
+        <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
           <Label className="text-2xl">Details</Label>
+          <hr></hr>
+          <div className='flex flex-col gap-4 pt-3 text-base'>
+            <Label>Voting Method: HeadCounting</Label>
+            <Label>
+              {(() => {
+                return `Start Date: ${new Date(Number(poll.startTime) * 1000)}`;
+              })()}
+            </Label>
+            <Label>
+              {(() => {
+                return `End Date: ${new Date(Number(poll.endTime) * 1000)}`;
+              })()}
+            </Label>
+            <Label>
+              {(() => {
+                return `Requirement: ${pollType?.toString() === '1' ? 'Protocol Guild Member' : 'No requirement'}`;
+              })()}
+            </Label>
+          </div>
         </div>
-        {/* <div className="flex flex-col bg-white rounded-xl gap-5">
-          <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
-            <Label className="text-2xl">Details</Label>
-          </div>
-          <div className="flex flex-col gap-2.5 pl-5 pb-5">
-            <Label>No of voters {}</Label>
-            <Label>Total Eth of Voters {}</Label>
-          </div>
-        </div> */}
         {optionsData &&
           optionsData.map((option, index) => (
             <div key={index} className="flex flex-col bg-white rounded-xl gap-5">
@@ -281,7 +324,10 @@ const PollPage = () => {
               </div>
               <div className="flex flex-col gap-2.5 pl-5 pb-5">
                 <Label>No of voters: {option.votersCount.toString()}</Label>
-                <Label>Total Eth of Voters: {option.totalEth} ETH</Label>
+                {pollType?.toString() !== '1' && (
+                  <Label>Total Eth of Voters: {option.totalEth} ETH</Label>
+                )}
+
                 {/* You can also iterate over votersData if needed */}
                 {/* {option.votersData.map((voter, voterIndex) => (
               <div key={voterIndex}>

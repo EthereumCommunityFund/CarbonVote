@@ -1,4 +1,4 @@
-import { constructZupassPcdGetRequestUrl } from "@pcd/passport-interface/src/PassportInterface";
+/*import { constructZupassPcdGetRequestUrl } from "@pcd/passport-interface/src/PassportInterface";
 import { openZupassPopup } from "@pcd/passport-interface/src/PassportPopup";
 import { ArgumentTypeName } from "@pcd/pcd-types";
 import { SemaphoreGroupPCDPackage } from "@pcd/semaphore-group-pcd";
@@ -60,7 +60,7 @@ export function openGroupMembershipPopup(
     openZupassPopup(popupUrl, proofUrl);
   }
 }
-
+*/
 
 // export function zuzalupopup(
 //   zupassClientUrl: string,

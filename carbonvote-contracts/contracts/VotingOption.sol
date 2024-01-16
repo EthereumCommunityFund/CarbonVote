@@ -30,15 +30,20 @@ contract VotingOption {
     fallback() external payable {}
 
     receive() external payable {
-        require(msg.value == 0, "Cannot send ETH with vote");
+        require(msg.value == 0 && isAllowedToReceive(), "Cannot send ETH with vote");
         castTransactionVote(msg.sender);
     }
 
-    function castVote(
-        address voter,
-        bytes memory signature,
-        string memory message
-    ) public {
+    function isAllowedToReceive() private view returns (bool) {
+        VotingContract main = VotingContract(mainContract);
+        VotingContract.PollType pollType = main.getPollType(pollIndex);
+        if (pollType == VotingContract.PollType.Protocol_Guild) {
+            return false;
+        }
+        return true;
+    }
+
+    function castVote(address voter, bytes memory signature, string memory message) public {
         require(block.timestamp < endTime, "Poll has ended");
         VotingContract(mainContract).verifyAndRecordVote(
             voter,
@@ -57,24 +62,10 @@ contract VotingOption {
 
     function castTransactionVote(address voter) public {
         require(block.timestamp < endTime, "Poll has ended");
-        VotingContract(mainContract).recordVote(voter, pollIndex, option_index);
-
-        // if it only has one
-        uint256 index = voterIndex[voter];
-        require(index < voters.length, "Voter not found");
-
-        uint256 lastIndex = voters.length - 1;
-        if (index != lastIndex) {
-            address lastVoter = voters[lastIndex];
-            voters[index] = lastVoter;
-            voterIndex[lastVoter] = index;
-        }
-        hasVoted[voter] = true;
-    }
-
-    function castTransactionVote(address voter) public {
-        require(block.timestamp < endTime, "Poll has ended");
-        VotingContract(mainContract).recordVote(voter, pollIndex, option_index);
+        VotingContract(mainContract).recordVote(            
+            voter,
+            pollIndex,
+            option_index);
 
         if (!hasVoted[voter]) {
             voters.push(voter);
@@ -82,6 +73,7 @@ contract VotingOption {
         }
         hasVoted[voter] = true;
     }
+
 
     function removeVote(address voter) public {
         require(msg.sender == mainContract, "You don't have access");
@@ -102,9 +94,8 @@ contract VotingOption {
         delete voterIndex[voter];
         hasVoted[voter] = false;
     }
-
     function getVotersCount() public view returns (uint256) {
-        return voters.length;
+    return voters.length;
     }
 
     function decodeMessageAndSignature(

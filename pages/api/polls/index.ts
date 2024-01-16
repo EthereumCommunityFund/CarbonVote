@@ -17,11 +17,15 @@ const viewAllPolls = async (req: NextApiRequest, res: NextApiResponse) => {
 
         // Fetch options and credentials for each poll
         for (let poll of polls as any) {
+            let durationInMilliseconds = poll.time_limit;
+            let startTime = new Date(poll.created_at + 'Z').getTime();
+            let endTime = startTime + durationInMilliseconds * 1000;
+            poll.endTime = endTime;
+            poll.startTime = startTime;
             let { data: options, error: optionsError } = await supabase
                 .from('options')
                 .select('*')
                 .eq('poll_id', poll.id);
-
             if (optionsError) throw optionsError;
 
             // Fetch credential details for each poll
@@ -50,7 +54,6 @@ const viewAllPolls = async (req: NextApiRequest, res: NextApiResponse) => {
             }
 
         }
-
         // Send response with all polls and their associated data
         res.status(200).json(polls);
     } catch (error: any) {

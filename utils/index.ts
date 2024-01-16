@@ -1,9 +1,46 @@
-import { PollType, PollStatusType, RemainingTime } from "@/types";
+/*export const calculateTimeRemaining = (endDate: string | bigint | number): string | null => {
+  let endTime: Date | null = null;
 
-export const calculateTimeRemaining = (endDate: Date): string | null => {
-  const now = new Date().getTime();
-  const distance = endDate.getTime() - now;
+  if (typeof endDate === 'string') {
+    endTime = new Date(endDate + 'Z');
+  } else if (typeof endDate === 'bigint') {
+    endTime = new Date(Number(endDate) * 1000);
+  } else {
+    endTime = new Date(endDate);
+  }
+  if (!endTime) {
+    return null;
+  }
 
+  const now = new Date();
+  const utcNow = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+    now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds());
+
+  const distance = endTime.getTime() - utcNow.getTime();
+
+  if (distance < 0) {
+    return 'Time is up!';
+  }
+
+  const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+  return `${days} days ${hours} hours ${minutes} mins and ${seconds} seconds remaining`;
+};*/
+export const calculateTimeRemaining = (endDate: number): string | null => {
+
+  let endTime = new Date(endDate);
+
+  if (!endTime) {
+    return null;
+  }
+  const now = new Date();
+  const utcNow = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+    now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds());
+
+  const distance = endTime.getTime() - now.getTime();
   if (distance < 0) {
     return 'Time is up!';
   }
@@ -45,9 +82,7 @@ export const convertToHoursAndMinutesToSeconds = (timeLimitString: string): numb
 
   let seconds = 0;
   timeParts.forEach((part: string) => {
-    const value = parseInt(part, 10); time_limit
-    :
-    72000
+    const value = parseInt(part, 10);
 
     if (part.includes('d') || part.includes('day') || part.includes('days')) {
       seconds += value * HOURS_IN_DAY * MINUTES_IN_HOUR * SECONDS_IN_MINUTE;
@@ -59,29 +94,4 @@ export const convertToHoursAndMinutesToSeconds = (timeLimitString: string): numb
   });
 
   return seconds;
-};
-
-
-const getRemainingTime = (remainingSeconds: number): RemainingTime => {
-  const days = Math.floor(remainingSeconds / (3600 * 24));
-  const hours = Math.floor((remainingSeconds % (3600 * 24)) / 3600);
-  const minutes = Math.floor((remainingSeconds % 3600) / 60);
-  const seconds = Math.floor(remainingSeconds % 60);
-
-  return { days, hours, minutes, seconds };
-};
-
-export const getPollStatus = (poll: PollType): PollStatusType => {
-  const createdAt = new Date(poll.created_at).getTime();
-  const expirationTime = createdAt + poll.time_limit * 1000;
-  const currentTime = new Date().getTime();
-
-  if (currentTime > expirationTime) {
-    return { closed: true };
-  }
-
-  const remainingMilliseconds = expirationTime - currentTime;
-  const remainingSeconds = Math.floor(remainingMilliseconds / 1000);
-
-  return { closed: false, remainingTime: getRemainingTime(remainingSeconds) };
 };

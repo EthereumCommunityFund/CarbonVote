@@ -6,62 +6,90 @@ import CountdownTimer from '../ui/CountDownTimer';
 import { Label } from '../ui/Label';
 import { useRouter } from 'next/router';
 import { useUserPassportContext } from '@/context/PassportContext';
-import { PollStatusType, PollType, RemainingTime } from '@/types';
-import { getPollStatus } from '@/utils';
 
-export const PollCardTemplate = ({ id, title, description, options, voting_method, created_at, credentials, time_limit }: PollType) => {
+interface IPollCard {
+  id: string;
+  title: string;
+  startTime: number;
+  creator: string;
+  topic: string;
+  subTopic: string;
+  description: string;
+  options: string[];
+  polltype: string;
+  pollMetadata: string;
+  votingMethod: string;
+  poll: any;
+  endTime: number;
+}
+
+export const PollCardTemplate = ({ id, title, topic, subTopic, description, options, votingMethod, polltype, pollMetadata, poll, startTime, endTime }: IPollCard) => {
+
+  /*useEffect(() => {
+    console.log(id, 'id');
+    console.log(poll.id, 'poll.id');
+    console.log(polltype, 'poll type');
+    console.log(startTime, 'start time');
+    console.log(endTime, 'end time');
+  }, []);*/
+  console.log(endTime);
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
-  const [isClosed, setIsClosed] = useState<boolean>();
-  const [remainingTime, setRemainingTime] = useState<RemainingTime>();
-  const handleClickItem = () => {
-    if (!isPassportConnected) {
-      signIn();
-      return;
+  const getEndDate = (time: string | bigint | number): Date => {
+    if (typeof time === 'string') {
+      return new Date(time);
+    } else if (typeof time === 'bigint') {
+      return new Date(Number(time) * 1000);
+    } else {
+      return new Date(time);
     }
+  };
+  const [isLive, setIsLive] = useState(false);
+  useEffect(() => {
+    const checkIfLive = () => {
+      const now = new Date();
+      const endDate = getEndDate(endTime);
+      setIsLive(endDate > now);
+    };
+    checkIfLive();
+    const interval = setInterval(checkIfLive, 60000);
+    return () => clearInterval(interval);
+  }, [endTime]);
+  const handleClickItem = () => {
 
     // Define the base path
     let path = '/poll'; // Default path for API polls
-    const pollId = voting_method === 'headCount' ? id : id;
     // Update path if the voting method is 'ethholding' for contract polls
-    if (voting_method === 'ethholding') {
+    console.log(polltype, 'poll type');
+    const biginteth = BigInt(1);
+    if (votingMethod === 'EthHolding' || polltype === '1n') {
       path = '/contract-poll';
     }
-
+    const pollId = votingMethod === 'headCount' ? poll.id : id;
     // Navigate to the appropriate path with the poll ID
     router.push({
       pathname: path,
       query: { id: pollId },
     });
   };
-
-  useEffect(() => {
-    console.log(id, 'id');
-    const interval = setInterval(() => {
-      const pollStatus = getPollStatus({ id, title, description, options, voting_method, created_at, credentials, time_limit });
-      setRemainingTime(pollStatus.remainingTime);
-      setIsClosed(pollStatus.closed);
-    }, 1000)
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
+  function removeImageTags(text: string) {
+    const regex = /<img[^>]*>/g;
+    return text.replace(regex, '');
+  }
   return (
     <div className="bg-white flex flex-col justify-between rounded-lg p-3 hover:cursor-pointer w-full gap-3.5" onClick={handleClickItem}>
-      <Label className="text-whilte/60">{voting_method?.toLocaleUpperCase()}</Label>
+      <Label className="text-whilte/60">{votingMethod.toLocaleUpperCase()}</Label>
       <Label>{title}</Label>
-      <span dangerouslySetInnerHTML={{ __html: description }} />
+      <span dangerouslySetInnerHTML={{ __html: removeImageTags(description) }} />
       <div className="flex gap-3.5">
-        {credentials && credentials[0]?.credential_type === "zupass" ? <LockClosedIcon /> : <LockOpenIcon />}
-        <div className={`${!isClosed ? `bg-[#F84A4A20]` : `bg-[#F8F8F8]`} px-2.5 rounded-lg items-center`}>{!isClosed ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-[#656565]">Closed</Label>}</div>
-        {!isClosed && remainingTime ? (
+        <div className={`${isLive ? `bg-[#F84A4A20]` : `bg-[#F8F8F8]`} px-2.5 rounded-lg items-center`}>
+          {isLive ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-[#656565]">Closed</Label>}
+        </div>
+        {isLive && (
           <div className="flex flex-2">
             <ClockIcon />
-            <CountdownTimer remainingTime={remainingTime} />
+            <CountdownTimer endTime={endTime} />
           </div>
-        ) : (
-          <></>
         )}
       </div>
     </div>

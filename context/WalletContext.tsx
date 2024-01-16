@@ -1,11 +1,5 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
-import { ethers } from "ethers";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { ethers } from 'ethers';
 
 interface WalletContextType {
   provider: ethers.Provider | null;
@@ -27,7 +21,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const [provider, setProvider] = useState<ethers.Provider | null>(null);
   const [account, setAccount] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-
+  const [isConnecting, setIsConnecting] = useState(false);
   useEffect(() => {
     const init = async () => {
       if (window.ethereum) {
@@ -113,31 +107,35 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       console.log('MetaMask not installed; using read-only defaults');
       return;
     }
-
+    if (isConnecting) {
+      console.log('Already connecting to MetaMask, please wait.');
+      return;
+    }
+    setIsConnecting(true);
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum as any);
-      const signer = await provider.getSigner();
-      const account = await signer.getAddress();
+      const newProvider = new ethers.BrowserProvider(window.ethereum as any);
+      const signer = await newProvider.getSigner();
+      const newAccount = await signer.getAddress();
+      setAccount(newAccount);
+      setProvider(newProvider);
+      setIsConnected(true);
     } catch (error) {
       console.error('Error connecting to MetaMask or generating signature:', error);
+    } finally {
+      setIsConnecting(false);
     }
   };
 
+
   // Provide the context
-  return (
-    <WalletContext.Provider
-      value={{ provider, account, isConnected, connectToMetamask }}
-    >
-      {children}
-    </WalletContext.Provider>
-  );
+  return <WalletContext.Provider value={{ provider, account, isConnected, connectToMetamask }}>{children}</WalletContext.Provider>;
 };
 
 // Custom hook to use the wallet context
 export const useWallet = () => {
   const context = useContext(WalletContext);
   if (!context) {
-    throw new Error("useWallet must be used within a WalletProvider");
+    throw new Error('useWallet must be used within a WalletProvider');
   }
   return context;
 };

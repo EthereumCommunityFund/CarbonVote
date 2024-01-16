@@ -24,6 +24,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
         if (pollError) throw pollError;
 
+        let durationInMilliseconds = poll.time_limit;
+        let startTime = new Date(poll.created_at + 'Z').getTime();
+        let endTime = startTime + durationInMilliseconds * 1000;
+        poll.endTime = endTime;
+        poll.startTime = startTime;
+        console.log(startTime);
         // Fetch options for the poll
         let { data: options, error: optionsError } = await supabase
             .from('options')

@@ -2,16 +2,16 @@ import { HardhatUserConfig } from 'hardhat/config';
 import '@nomicfoundation/hardhat-toolbox';
 
 const config: HardhatUserConfig = {
-  solidity: '0.8.19',
+  solidity: '0.8.20',
   defaultNetwork: 'hardhat',
   networks: {
     hardhat: {
       chainId: 1337,
     },
-    // goerli: {
-    //   url: GOERLI_API_URL,
-    //   accounts: [`0x${PRIVATE_KEY}`],
-    // },
+    /*sepolia: {
+      url: '',
+      accounts: [`0x`],
+    },*/
   },
 };
 
