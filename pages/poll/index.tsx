@@ -13,6 +13,7 @@ import { VoteRequestData, castVote, fetchPollById, ScoreRequestData } from '@/co
 import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
 import { useWallet } from '@/context/WalletContext';
+// FIXME: Move to a serverless function
 import { submitAndFetchScore } from '@/utils/getPassportScore';
 import { useZupassPopupMessages } from '@pcd/passport-interface/src/PassportPopup';
 import { ethers } from "ethers";

@@ -1,5 +1,5 @@
 const API_BASE_URL = 'https://api.scorer.gitcoin.co/registry';
-const key = process.env.GITCOIN_API_KEY;
+const gitcoinApiKey = process.env.GITCOIN_API_KEY ?? '';
 
 export function submitAndFetchScore(address: string, scorerId: string) {
     const scoreData = { address, scorerId };
@@ -10,7 +10,7 @@ export function submitAndFetchScore(address: string, scorerId: string) {
 
     const headers = new Headers({
         'Content-Type': 'application/json',
-        'X-API-KEY': 'ipSrm0px.pxWq0ah9gXBHlCXzosAI6MzaeWAESo0O'
+        'X-API-KEY': gitcoinApiKey
     });
     console.log(headers, 'headers');
     return fetch(`${API_BASE_URL}/submit-passport`, {
