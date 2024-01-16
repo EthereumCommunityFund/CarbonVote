@@ -205,7 +205,6 @@ const CreatePollPage = () => {
           setTimeout(() => {
             router.push('/');
           }, 1000);
-          router.reload();
         }
       } catch (error: any) {
         console.error('Error creating poll:', error);
@@ -243,7 +242,6 @@ const CreatePollPage = () => {
 
   const handleBack = () => {
     router.push('/');
-    router.reload();
   };
 
   return (
