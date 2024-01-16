@@ -8,10 +8,10 @@ const config: HardhatUserConfig = {
     hardhat: {
       chainId: 1337,
     },
-    // goerli: {
-    //   url: GOERLI_API_URL,
-    //   accounts: [`0x${PRIVATE_KEY}`],
-    // },
+    /*sepolia: {
+      url: process.env.SEPOLIA_API_URL,
+      accounts: [`0x${process.env.PRIVATE_SEPOLIA_KEY}`],
+    },*/
   },
 };
 
