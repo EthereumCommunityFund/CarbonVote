@@ -17,7 +17,7 @@ export default function Home() {
           height={37}
           priority
         />
-        <div className="m-10 bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
+        <div className="m-10 bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t lg:static lg:h-auto lg:w-auto lg:bg-none">
           V 2.0 coming soon...
         </div>
       </div>
