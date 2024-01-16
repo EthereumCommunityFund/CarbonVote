@@ -50,7 +50,7 @@ export const calculateTimeRemaining = (endDate: number): string | null => {
   const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-  return `${days} days ${hours} hours ${minutes} mins and ${seconds} seconds remaining`;
+  return `${days}d ${hours}h ${minutes}m remaining`;
 };
 
 export const convertToMinutes = (timeString: any) => {

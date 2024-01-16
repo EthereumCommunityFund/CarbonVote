@@ -40,6 +40,7 @@ const CreatePollPage = () => {
     { name: 'Yes', isChecked: false },
     { name: 'No', isChecked: false },
   ]);
+  const [isLoading, setIsLoading] = useState(false);
   const [isZuPassRequired, setIsZuPassRequired] = useState(false);
 
   useEffect(() => {
@@ -87,6 +88,7 @@ const CreatePollPage = () => {
   };
 
   const createNewPoll = async () => {
+    setIsLoading(true)
     if (!motionTitle || !motionDescription || !timeLimit) {
       toast({
         title: 'Error',
@@ -168,6 +170,7 @@ const CreatePollPage = () => {
         }, 1000);*/
       } catch (error) {
         console.error('Error creating poll:', error);
+        setIsLoading(false)
         toast({
           title: 'Error',
           description: 'Failed to create poll',
@@ -202,12 +205,14 @@ const CreatePollPage = () => {
           });
           console.log('Poll created successfully');
           setCredentials([]);
+          setIsLoading(false)
           setTimeout(() => {
             router.push('/');
           }, 1000);
         }
       } catch (error: any) {
         console.error('Error creating poll:', error);
+        setIsLoading(false)
         toast({
           title: 'Error',
           description: error.message,
@@ -325,7 +330,7 @@ const CreatePollPage = () => {
           <Button className="rounded-full" leftIcon={XMarkIcon}>
             Discard
           </Button>
-          <Button className="rounded-full" leftIcon={PlusCirceIcon} onClick={createNewPoll}>
+          <Button className="rounded-full" leftIcon={PlusCirceIcon} isLoading={isLoading} onClick={createNewPoll}>
             Create Poll
           </Button>
         </div>
