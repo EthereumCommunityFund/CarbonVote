@@ -1,29 +1,43 @@
-/*import { NextApiRequest, NextApiResponse } from 'next';
-import { getPassportScore } from '../../../utils/getPassportScore';
-import { submitPassport } from '../../../utils/getPassportScore';
+import { NextApiRequest, NextApiResponse } from 'next';
 
-export default async function getscore(req: NextApiRequest, res: NextApiResponse) {
-    try {
-        const { address, scorerId } = req.query;
-        const apiKey = process.env.GITCOIN_API_KEY;
+const API_BASE_URL = 'https://api.scorer.gitcoin.co/registry';
+const gitcoinApiKey = process.env.GITCOIN_API_KEY ?? '';
 
-        let scorerIdStr = Array.isArray(scorerId) ? scorerId[0] : scorerId;
-        console.log(address, scorerIdStr);
-        if (!address || !scorerId || !apiKey) {
-            return res.status(400).json({ message: 'Missing required parameters' });
-        }
+async function handler(req: NextApiRequest, res: NextApiResponse) {
 
-
-        await submitPassport(address, scorerId, apiKey);
-
-        const score = await getPassportScore(address, scorerIdStr, apiKey);
-
-        res.status(200).json(score);
-    } catch (error) {
-        if (error instanceof Error) {
-            res.status(500).json({ message: error.message });
-        } else {
-            res.status(500).json({ message: 'An error occurred' });
-        }
+    if (req.method !== 'POST') {
+        res.setHeader('Allow', ['POST']);
+        return res.status(405).end(`Method ${req.method} Not Allowed`);
     }
-}*/
+
+    const { address, scorerId } = req.body;
+    const requestBody = {
+        address,
+        scorer_id: scorerId
+    };
+    console.log(gitcoinApiKey);
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-API-KEY': gitcoinApiKey
+    };
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/submit-passport`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        res.status(200).json(data);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send("Server error occurred while checking gitcoin passport score.");
+    }
+}
+
+export default handler;

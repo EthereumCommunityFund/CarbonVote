@@ -9,18 +9,17 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
-import { VoteRequestData, castVote, fetchPollById, ScoreRequestData } from '@/controllers/poll.controller';
+import { VoteRequestData, castVote, fetchPollById, } from '@/controllers/poll.controller';
 import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
 import { useWallet } from '@/context/WalletContext';
 // FIXME: Move to a serverless function
-import { submitAndFetchScore } from '@/utils/getPassportScore';
 import { useZupassPopupMessages } from '@pcd/passport-interface/src/PassportPopup';
 import { ethers } from "ethers";
 import contractABI from '@/carbonvote-contracts/deployment/contracts/poapsverification.json';
 import { calculateTimeRemaining } from '@/utils/index';
 import { v4 as uuidv4 } from 'uuid';
-
+import { ScoreRequestData, fetchScore } from '@/controllers';
 interface Poll {
   id: string;
   name: string;
@@ -58,7 +57,7 @@ const PollPage = () => {
   const [options, setOptions] = useState<Option[]>([]);
   const [credentialId, setCredentialId] = useState("");
   const [passportScore, setPassportScore] = useState('');
-  const [score, setScore] = useState('');
+  const [score, setScore] = useState('0');
   const [isTicketVerified, setTicketVerify] = useState(false);
   const [remainingTime, settimeRemaining] = useState('');
   const [startDate, setstartDate] = useState<Date>();
@@ -143,20 +142,26 @@ const PollPage = () => {
     //Gitcoin
     else if (credentialId == '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2') {
       if (!isConnected) {
+        console.error('You need to connect to Metamask to get your score, please try again');
+        toast({
+          title: 'Error',
+          description: 'You need to connect to Metamask to get your score, please try again',
+          variant: 'destructive',
+        });
         connectToMetamask();
+        return;
       }
       if (account !== null) {
-        submitAndFetchScore(account, '6347')
-          .then(response => {
-            let score = response.score;
-            if (score > 0) { canVote = true; }
-            console.log('Score:', score);
-          })
-          .catch(error => {
-            console.error('Error:', error);
-          });
+        let fetchScoreData = { address: account, scorerId: '6347' };
+        let scoreResponse = await fetchScore(fetchScoreData);
+        let scoreData = scoreResponse.data;
+        console.log(scoreData.score.toString(), 'score');
+        setScore(scoreData.score.toString());
+        if (scoreData.score.toString() != '0') {
+          canVote = true;
+        }
       }
-      voter_identifier = localStorage.getItem('userId');
+      voter_identifier = account;
     }
     //POAPS
     else if (credentialId == '600d1865-1441-4e36-bb13-9345c94c4dfb') {
@@ -212,12 +217,22 @@ const PollPage = () => {
         await fetchPollFromApi(id);
       }
     } catch (error: any) {
-      console.error('Error casting vote:', error);
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      if (error.response && error.response.status === 409) {
+        console.error('You have already voted for this option');
+        toast({
+          title: 'Warning',
+          description: 'You have already voted for this option',
+          variant: 'destructive',
+        });
+      }
+      else {
+        console.error('Error casting vote:', error);
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive',
+        });
+      }
     }
   };
 

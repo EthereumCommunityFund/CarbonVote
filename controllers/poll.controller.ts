@@ -16,11 +16,6 @@ export type VoteRequestData = {
 };
 
 
-export type ScoreRequestData = {
-    address: string;
-    scorerId: string[];
-};
-
 export type OptionData = {
     option_description: string;
 };
