@@ -90,6 +90,21 @@ const PollPage = () => {
     }
   };
 
+  const getRequirement = () => {
+    switch (credentialId) {
+      case '76118436-886f-4690-8a54-ab465d08fa0d':
+        return 'Zuconnect Resident';
+      case '3cc4b682-9865-47b0-aed8-ef1095e1c398':
+        return 'Devconnect Resident';
+      case '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2':
+        return 'Gitcoin Passport';
+      case '600d1865-1441-4e36-bb13-9345c94c4dfb':
+        return 'POAPS Verification';
+      default:
+        return '';
+    }
+  }
+
   const handleVote = async (optionId: string) => {
     let canVote = false;
     let voter_identifier: any = '';
@@ -326,21 +341,22 @@ const PollPage = () => {
               {(poll?.poap_events?.length > 0) && (
                 <PoapDetails poapEvents={poll?.poap_events} account={account} />
               )}
-              {(() => {
-                console.log(credentialId);
-                switch (credentialId) {
-                  case '76118436-886f-4690-8a54-ab465d08fa0d':
-                    return 'Zuconnect Resident';
-                  case '3cc4b682-9865-47b0-aed8-ef1095e1c398':
-                    return 'Devconnect Resident';
-                  case '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2':
-                    return 'Gitcoin Passport';
-                  case '600d1865-1441-4e36-bb13-9345c94c4dfb':
-                    return 'POAPS Verification';
-                  default:
-                    return '';
-                }
-              })()}
+              <div>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  border: '1px solid #ccc',
+                  borderRadius: '9999px',
+                  padding: '4px 8px',
+                  margin: '4px',
+                }}>
+                  <img src={'/images/carbonvote.png'} alt="Requirement image" style={{ width: '30px', height: '30px', marginRight: '8px', borderRadius: 100 }} />
+                  <span>{getRequirement()}</span>
+                  {/* TODO: Check if this is complied */}
+                  <div style={{ marginLeft: 10 }}>⚪️</div>
+                  {/* <div style={{ marginLeft: 10 }}>{true ? "✅" : "🔴"}</div> */}
+                </div>
+              </div>
             </Label>
           </div>
         </div>
