@@ -7,6 +7,7 @@ export type PollRequestData = {
     votingMethod: string;
     options: OptionData[];
     credentials: string[];
+    poap_events: number[];
 };
 
 export type VoteRequestData = {

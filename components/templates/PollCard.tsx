@@ -82,8 +82,8 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
       <Label>{title}</Label>
       <span dangerouslySetInnerHTML={{ __html: removeImageTags(description) }} />
       <div className="flex gap-3.5">
-        <div className={`${isLive ? `bg-[#F84A4A20]` : `bg-[#F8F8F8]`} px-2.5 rounded-lg items-center`}>
-          {isLive ? <Label className="text-[#F84A4A]">Live</Label> : <Label className="text-[#656565]">Closed</Label>}
+        <div className={`${isLive ? `bg-[#96ecbd]` : `bg-[#F8F8F8]`} px-2.5 rounded-lg self-center`}>
+          {isLive ? <Label className="text-[#44b678]">Live</Label> : <Label className="text-[#656565]">Closed</Label>}
         </div>
         {isLive && (
           <div className="flex flex-2">

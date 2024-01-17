@@ -21,6 +21,7 @@ import { OptionType } from '@/types';
 import { useUserPassportContext } from '@/context/PassportContext';
 import { PollRequestData, createPoll } from '@/controllers/poll.controller';
 import axiosInstance from '@/src/axiosInstance';
+import { useFormStore } from "@/zustand/create";
 
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
@@ -37,10 +38,14 @@ const CreatePollPage = () => {
   const [pollType, setpollType] = useState<0 | 1>(0);
   const { connectToMetamask, isConnected, account } = useWallet();
   const [options, setOptions] = useState<OptionType[]>([
-    { name: 'Yes', isChecked: false },
-    { name: 'No', isChecked: false },
+    { name: 'Yes', isChecked: true },
+    { name: 'No', isChecked: true },
   ]);
-  const [isZuPassRequired, setIsZuPassRequired] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Zustand
+  const selectedPOAPEvents = useFormStore((state) => state.selectedEvents)
+  const removeAllPoapEvents = useFormStore((state) => state.removeAll)
 
   useEffect(() => {
     const doConnect = async () => {
@@ -67,7 +72,7 @@ const CreatePollPage = () => {
   };
 
   const addOption = () => {
-    setOptions([...options, { name: '', isChecked: false }]);
+    setOptions([...options, { name: '', isChecked: true }]);
   };
 
   const removeOption = (index: number) => {
@@ -87,6 +92,7 @@ const CreatePollPage = () => {
   };
 
   const createNewPoll = async () => {
+    setIsLoading(true)
     if (!motionTitle || !motionDescription || !timeLimit) {
       toast({
         title: 'Error',
@@ -138,6 +144,7 @@ const CreatePollPage = () => {
         votingMethod: 'headCount',
         options: options.filter((option) => option.isChecked).map((option) => ({ option_description: option.name })),
         credentials: credentials,
+        poap_events: selectedPOAPEvents.map(event => event.id)
       };
 
       const isProtocolGuildMember = credentials.includes(credentialsMapping['Protocol Guild Member']);
@@ -168,6 +175,7 @@ const CreatePollPage = () => {
         }, 1000);*/
       } catch (error) {
         console.error('Error creating poll:', error);
+        setIsLoading(false)
         toast({
           title: 'Error',
           description: 'Failed to create poll',
@@ -202,12 +210,14 @@ const CreatePollPage = () => {
           });
           console.log('Poll created successfully');
           setCredentials([]);
+          setIsLoading(false)
           setTimeout(() => {
             router.push('/');
           }, 1000);
         }
       } catch (error: any) {
         console.error('Error creating poll:', error);
+        setIsLoading(false)
         toast({
           title: 'Error',
           description: error.message,
@@ -325,7 +335,7 @@ const CreatePollPage = () => {
           <Button className="rounded-full" leftIcon={XMarkIcon}>
             Discard
           </Button>
-          <Button className="rounded-full" leftIcon={PlusCirceIcon} onClick={createNewPoll}>
+          <Button className="rounded-full" leftIcon={PlusCirceIcon} isLoading={isLoading} onClick={createNewPoll}>
             Create Poll
           </Button>
         </div>
