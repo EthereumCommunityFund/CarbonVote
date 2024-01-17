@@ -81,9 +81,7 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
   const shortDescription = cleanDescription.length > 200 ? cleanDescription.substring(0, 200) + '...' : cleanDescription;
 
   return (
-    <div className="bg-white rounded-lg p-3 hover:cursor-pointer w-full flex flex-col justify-between">
-
-
+    <div className="bg-white rounded-lg p-3 hover:cursor-pointer w-full flex flex-col justify-between" onClick={handleClickItem}>
       {/* <!-- Header with Title and Live/Closed Status --> */}
       <div className="flex justify-between">
         <Label className="text-xl font-bold">{title}

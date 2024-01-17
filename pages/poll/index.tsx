@@ -348,9 +348,6 @@ const PollPage = () => {
             <Label className="text-1xl">
               Requirements:
             </Label>
-            {(poll?.poap_events?.length > 0) && (
-              <PoapDetails poapEvents={poll?.poap_events} account={account} />
-            )}
             <div>
               <div style={{
                 display: 'inline-flex',
@@ -367,6 +364,9 @@ const PollPage = () => {
                 {/* <div style={{ marginLeft: 10 }}>{true ? "✅" : "🔴"}</div> */}
               </div>
             </div>
+            {(poll?.poap_events?.length > 0) && (
+              <PoapDetails poapEvents={poll?.poap_events} account={account} />
+            )}
           </div>
         </div>
         <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">

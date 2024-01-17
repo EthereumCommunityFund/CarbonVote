@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getPoapEventDetails } from '../controllers/poap.controller';
+import { Loader } from '@/components/ui/Loader';
 
 type PoapEventsIds = {
   poapEvents: number[]
@@ -30,9 +31,7 @@ const PoapDetails = ({ poapEvents, account }: PoapEventsIds) => {
   return (
     <div>
       {isLoading ?
-        <div>
-          Loading ...
-        </div>
+        <Loader />
         : eventDetails.map(({ data }) => {
           const { event, tokenId, owner } = data;
           return (
@@ -45,9 +44,9 @@ const PoapDetails = ({ poapEvents, account }: PoapEventsIds) => {
                 padding: '4px 8px',
                 margin: '4px',
               }}>
-                <img src={`${event.image_url}?size=small`} alt="" style={{ width: '30px', height: '30px', marginRight: '8px', borderRadius: 100 }} />
-                <span>{event.name}</span>
-                <div style={{ marginLeft: 10 }}>{!!owner ? "✅" : "🔴"}</div>
+                <img src={`${event.image_url}?size=small`} alt="" style={{ width: '20px', height: '20px', borderRadius: 100 }} />
+                <span className="text-sm mx-2">{event.name}</span>
+                <div>{!!owner ? "✅" : "🔴"}</div>
               </div>
             </div>
           )
