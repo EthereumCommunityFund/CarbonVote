@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ethers } from 'ethers';
-
+import { toast } from '@/components/ui/use-toast';
 interface WalletContextType {
   provider: ethers.Provider | null;
   account: string | null;
@@ -105,6 +105,11 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const connectToMetamask = async () => {
     if (!window.ethereum) {
       console.log('MetaMask not installed; using read-only defaults');
+      toast({
+        title: 'Error',
+        description: 'You need to install Metamask, please try again',
+        variant: 'destructive',
+      });
       return;
     }
     if (isConnecting) {
