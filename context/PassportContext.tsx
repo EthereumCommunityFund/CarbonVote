@@ -2,6 +2,7 @@ import { createContext, ReactNode, useState, useContext, useEffect } from 'react
 import { SemaphoreIdentityPCDPackage } from "@pcd/semaphore-identity-pcd";
 import { useZupassPopupMessages } from '@pcd/passport-interface/src/PassportPopup';
 import { EdDSATicketFieldsToReveal } from '@pcd/zk-eddsa-event-ticket-pcd';
+import { toast } from '@/components/ui/use-toast';
 import { useRouter } from 'next/router';
 import {
   ZKEdDSAEventTicketPCDPackage,
@@ -109,7 +110,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
         try {
           let _pcd = processPcd(pcdStr);
           await verifyProof(_pcd);
-          const userId = _pcd.claim.externalNullifier; // Extract the unique identifier 'id'
+          const userId = _pcd.claim.nullifierHash; // Extract the unique identifier 'id'
           console.log(userId, _pcd);
           console.log(pcdStr);
           //const eventId = eventpcd.claim.partialTicket.eventId;
@@ -242,6 +243,11 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
       }, 1000);
     } else {
       console.error("Popup was blocked by the browser");
+      toast({
+        title: 'Error',
+        description: 'Popup was blocked by the browser',
+        variant: 'destructive',
+      });
     }
   }
 
@@ -258,6 +264,11 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
       }, 1000);
     } else {
       console.error("Popup was blocked by the browser");
+      toast({
+        title: 'Error',
+        description: 'Popup was blocked by the browser',
+        variant: 'destructive',
+      });
     }
   }
 
