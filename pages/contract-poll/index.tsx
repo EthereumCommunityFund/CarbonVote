@@ -19,6 +19,7 @@ import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
 import { fetchPollById } from '@/controllers/poll.controller';
 import { calculateTimeRemaining } from '@/utils/index';
+import { Loader } from '@/components/ui/Loader';
 interface Poll {
   id: string;
   name: string;
@@ -233,7 +234,7 @@ const PollPage = () => {
   };
 
   if (!poll) {
-    return <div>Loading...</div>; // Add loading state handling
+    return <Loader />; // Add loading state handling
   }
 
   return (
