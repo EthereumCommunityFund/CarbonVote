@@ -132,7 +132,7 @@ export const CredentialForm = ({
             checked={isPOAPapiRequired}
             onClick={handlePOAPapiSelect}
           />
-          <Label className="text-lg">Add POAPs (offchain Verification)</Label>
+          <Label className="text-lg">Add POAPs (Offchain Verification)</Label>
         </div>
       </div>
 

@@ -10,7 +10,8 @@ const pollSchema = Joi.object({
     time_limit: Joi.number().required(),
     votingMethod: Joi.string().valid('headCount').required(),
     options: Joi.array().items(optionSchema).required(),
-    credentials: Joi.array().items(Joi.string().guid({ version: 'uuidv4' })).required()
+    credentials: Joi.array().items(Joi.string().guid({ version: 'uuidv4' })).required(),
+    poap_events: Joi.array()
 });
 
 export default pollSchema;

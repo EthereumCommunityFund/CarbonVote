@@ -1,25 +1,23 @@
-import { ArrowLeftIcon, StopCircleIcon, ThumbDownIcon, ThumbUpIcon } from '@/components/icons';
+import { useEffect, useState } from 'react';
+import { ArrowLeftIcon } from '@/components/icons';
 import { ClockIcon } from '@/components/icons/clock';
 import Button from '@/components/ui/buttons/Button';
-import CheckerButton from '@/components/ui/buttons/CheckerButton';
 import CountdownTimer from '@/components/ui/CountDownTimer';
-import HtmlString from '@/components/ui/Html';
 import { Label } from '@/components/ui/Label';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
 import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
 import { VoteRequestData, castVote, fetchPollById, } from '@/controllers/poll.controller';
 import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
 import { useWallet } from '@/context/WalletContext';
-// FIXME: Move to a serverless function
-import { useZupassPopupMessages } from '@pcd/passport-interface/src/PassportPopup';
 import { ethers } from "ethers";
 import contractABI from '@/carbonvote-contracts/deployment/contracts/poapsverification.json';
 import { calculateTimeRemaining } from '@/utils/index';
 import { v4 as uuidv4 } from 'uuid';
-import { ScoreRequestData, fetchScore } from '@/controllers';
+import PoapDetails from '@/components/POAPDetails'
+import { fetchScore } from '@/controllers';
+
 interface Poll {
   id: string;
   name: string;
@@ -33,6 +31,7 @@ interface Poll {
   description: string;
   options: string[];
   pollMetadata: string;
+  poap_events: number[]
 }
 
 interface Option {
@@ -250,20 +249,20 @@ const PollPage = () => {
         </div>
         <div className="bg-white flex flex-col gap-1.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
-            <div className={`${remainingTime !== null && remainingTime !== 'Time is up!' ? 'bg-[#F84A4A20]' : 'bg-[#F8F8F8]'
+            <div className={`${remainingTime !== null && remainingTime !== 'Time is up!' ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
               } px-2.5 rounded-lg items-center`}>
               {remainingTime !== null && remainingTime !== 'Time is up!' ? (
-                <Label className="text-[#F84A4A]">Live</Label>
+                <Label className="text-[#44b678]">Live</Label>
               ) : (
                 <Label className="text-[#656565]">Closed</Label>
               )}
-              {remainingTime !== null && remainingTime !== 'Time is up!' ? (
-                <div className="flex gap-2">
-                  <ClockIcon />
-                  <CountdownTimer endTime={poll.endTime} />
-                </div>
-              ) : null}
             </div>
+            {remainingTime !== null && remainingTime !== 'Time is up!' ? (
+              <div className="flex gap-2">
+                <ClockIcon />
+                <CountdownTimer endTime={poll.endTime} />
+              </div>
+            ) : null}
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-black/60 text-base">Motion: </Label>
@@ -296,25 +295,6 @@ const PollPage = () => {
             ))}
           </div>
         </div>
-        {/*<div className=''>
-          <select
-            id="vidSelect"
-            onChange={(e) => setSelectedVid(e.target.value)}
-            value={selectedVid}
-            className="border p-2 rounded-md"
-          >
-            <option value="0">India 2018</option>
-            <option value="1">Denver 2018</option>
-            <option value="2">Berlin 2018</option>
-            <option value="3">ETHCC 2018</option>
-            <option value="4">Dappcon 2018</option>
-            <option value="5">EDCON 2018</option>
-            <option value="6">India 2019</option>
-            <option value="7">Denver 2019</option>
-            <option value="8">Berlin 2019</option>
-            <option value="9">ETHCC 2019</option>
-          </select>
-        </div>*/}
       </div>
       <div className="flex flex-col gap-8 w-96">
         <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
@@ -333,7 +313,11 @@ const PollPage = () => {
               })()}
             </Label>
             <Label>
-              Requirements: {(() => {
+              Requirements:
+              {(poll?.poap_events?.length > 0) && (
+                <PoapDetails poapEvents={poll?.poap_events} account={account} />
+              )}
+              {(() => {
                 console.log(credentialId);
                 switch (credentialId) {
                   case '76118436-886f-4690-8a54-ab465d08fa0d':

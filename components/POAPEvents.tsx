@@ -1,8 +1,9 @@
 import { useState } from "react";
-import axios from 'axios';
 import { XMarkIcon } from '@/components/icons/xmark';
 import { Event, PillInputs } from '@/types'
 import { useFormStore } from "@/zustand/create";
+import { searchPoaps } from '../controllers/poap.controller';
+
 
 const POAPEvents = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,7 +19,7 @@ const POAPEvents = () => {
     setSearchTerm(event.target.value);
     if (event.target.value !== "") {
 
-      const response = await axios.get(`/api/poap/searchPoaps?searchText=${event.target.value}`)
+      const response = await searchPoaps(event.target.value);
       setSearchResults(response?.data?.items);
     } else {
       setSearchResults([]);

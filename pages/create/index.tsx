@@ -21,6 +21,7 @@ import { OptionType } from '@/types';
 import { useUserPassportContext } from '@/context/PassportContext';
 import { PollRequestData, createPoll } from '@/controllers/poll.controller';
 import axiosInstance from '@/src/axiosInstance';
+import { useFormStore } from "@/zustand/create";
 
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
@@ -37,11 +38,14 @@ const CreatePollPage = () => {
   const [pollType, setpollType] = useState<0 | 1>(0);
   const { connectToMetamask, isConnected, account } = useWallet();
   const [options, setOptions] = useState<OptionType[]>([
-    { name: 'Yes', isChecked: false },
-    { name: 'No', isChecked: false },
+    { name: 'Yes', isChecked: true },
+    { name: 'No', isChecked: true },
   ]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isZuPassRequired, setIsZuPassRequired] = useState(false);
+
+  // Zustand
+  const selectedPOAPEvents = useFormStore((state) => state.selectedEvents)
+  const removeAllPoapEvents = useFormStore((state) => state.removeAll)
 
   useEffect(() => {
     const doConnect = async () => {
@@ -68,7 +72,7 @@ const CreatePollPage = () => {
   };
 
   const addOption = () => {
-    setOptions([...options, { name: '', isChecked: false }]);
+    setOptions([...options, { name: '', isChecked: true }]);
   };
 
   const removeOption = (index: number) => {
@@ -140,6 +144,7 @@ const CreatePollPage = () => {
         votingMethod: 'headCount',
         options: options.filter((option) => option.isChecked).map((option) => ({ option_description: option.name })),
         credentials: credentials,
+        poap_events: selectedPOAPEvents.map(event => event.id)
       };
 
       const isProtocolGuildMember = credentials.includes(credentialsMapping['Protocol Guild Member']);
