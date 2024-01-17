@@ -20,6 +20,7 @@ import { toast } from '@/components/ui/use-toast';
 import { fetchPollById } from '@/controllers/poll.controller';
 import { calculateTimeRemaining } from '@/utils/index';
 import { Loader } from '@/components/ui/Loader';
+import { useUserPassportContext } from '@/context/PassportContext';
 interface Poll {
   id: string;
   name: string;
@@ -60,12 +61,13 @@ const PollPage = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [pollType, setPollType] = useState<string | number | bigint>();
   const { connectToMetamask, isConnected, account } = useWallet();
+  const { signIn, isPassportConnected } = useUserPassportContext();
   useEffect(() => {
     fetchPollFromContract();
   }, [id, source]);
 
   const fetchPollFromContract = async () => {
-    if (window.ethereum && id) {
+    if (id) {
       //let provider = new ethers.BrowserProvider(window.ethereum as any);
       //let signer = await provider.getSigner();
       //const contract = new ethers.Contract(contractAddress, contractAbi, signer);
@@ -98,7 +100,7 @@ const PollPage = () => {
   // const optionNames: any[] = [];
 
   const fetchVotingOptions = async () => {
-    if (window.ethereum && id && poll && poll.options) {
+    if (id && poll && poll.options) {
       //let provider = new ethers.BrowserProvider(window.ethereum as any);
       //let signer = await provider.getSigner();
       //const optionNames: any[] = [];
@@ -137,7 +139,7 @@ const PollPage = () => {
   useEffect(() => {
     const optionContractAbi = VotingOption.abi;
     const getOptionVoteCounts = async () => {
-      if (window.ethereum && id && poll && poll.options) {
+      if (id && poll && poll.options) {
         const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
         let aggregatedData = [];
 
@@ -176,6 +178,15 @@ const PollPage = () => {
     getOptionVoteCounts();
   }, [id, poll]);
 
+  function canOpenPopup() {
+    let windowReference = window.open('', '_blank');
+    if (!windowReference || windowReference.closed || typeof windowReference.closed == 'undefined') {
+      // Pop-up was blocked
+      return false;
+    }
+    windowReference.close();
+    return true;
+  }
   const handleVote = async (optionIndex: number) => {
     if (!isConnected) {
       console.error('You need to connect to Metamask to vote, please try again');
@@ -187,15 +198,41 @@ const PollPage = () => {
       connectToMetamask();
       return;
     }
+    const generateSignature = async (message: string) => {
+      const response = await fetch('/api/auth/generate_signature', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({ message }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate signature');
+      }
+
+      const data = await response.json();
+      console.log(data.data.message, 'message');
+      console.log(data.data.signed_message, 'signature');
+      return data.data.signed_message;
+    };
+    if (!isPassportConnected) {
+      const signature = await generateSignature(account as string);
+      const message = account as string;
+      if (signature) {
+        localStorage.setItem('signature', signature);
+        localStorage.setItem('message', message);
+      }
+    }
     const signature = localStorage.getItem('signature');
     const message = localStorage.getItem('message');
-
     if (!signature) {
-      console.error('No signature found. Please connect your passport');
+      console.error('No signature found. Please connect your wallet');
       return;
     }
     if (!message) {
-      console.error('No message found. Please connect your passport');
+      console.error('No message found. Please connect your wallet');
       return;
     }
 
@@ -215,15 +252,35 @@ const PollPage = () => {
       // console.log(newOptionIndex, 'newOptionIndex');
       // console.log(signature, 'signature');
       // console.log(message, 'message');
-      const transactionResponse = await contract.vote(pollIndex, newOptionIndex, signature, message);
-      await transactionResponse.wait(); // Wait for the transaction to be mined
-      console.log('Vote cast successfully');
-      toast({
-        title: 'Vote cast successfully',
-      });
-      await fetchPollFromContract();
-      await fetchVotingOptions();
-    } catch (error: any) {
+      const network = await provider.getNetwork();
+      if (!canOpenPopup()) {
+        toast({
+          title: 'Error',
+          description: 'Please enable pop-ups in your browser settings to proceed with the transaction.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      if (Number(network.chainId) === 11155111) {
+        console.log('Connected to Sepolia');
+        const transactionResponse = await contract.vote(pollIndex, newOptionIndex, signature, message);
+        await transactionResponse.wait(); // Wait for the transaction to be mined
+        console.log('Vote cast successfully');
+        toast({
+          title: 'Vote cast successfully',
+        });
+        await fetchPollFromContract();
+        await fetchVotingOptions();
+      } else {
+        console.error('You should connect to Sepolia, please try again');
+        toast({
+          title: 'Error',
+          description: 'You should connect to Sepolia, please try again',
+          variant: 'destructive',
+        });
+      }
+    }
+    catch (error: any) {
       console.error('Error casting vote:', error);
       toast({
         title: 'Error',
@@ -305,7 +362,11 @@ const PollPage = () => {
           <Label className="text-2xl">Details</Label>
           <hr></hr>
           <div className='flex flex-col gap-4 pt-3 text-base'>
-            <Label>Voting Method: HeadCounting</Label>
+            <Label>
+              {(() => {
+                return `Voting Method: ${pollType?.toString() === '1' ? 'HeadCounting' : 'EthHolding'}`;
+              })()}
+            </Label>
             <Label>
               {(() => {
                 return `Start Date: ${new Date(Number(poll.startTime) * 1000)}`;
