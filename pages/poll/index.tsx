@@ -17,6 +17,7 @@ import { calculateTimeRemaining } from '@/utils/index';
 import { v4 as uuidv4 } from 'uuid';
 import PoapDetails from '@/components/POAPDetails'
 import { fetchScore } from '@/controllers';
+import { Loader } from '@/components/ui/Loader';
 
 interface Poll {
   id: string;
@@ -243,7 +244,7 @@ const PollPage = () => {
   };
 
   if (!poll) {
-    return <div>Loading...</div>; // Add loading state handling
+    return <Loader />; // Add loading state handling
   }
 
   return (
