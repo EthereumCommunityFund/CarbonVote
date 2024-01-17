@@ -16,7 +16,7 @@ interface IPollCard {
   subTopic: string;
   description: string;
   options: string[];
-  polltype: string;
+  polltype: any;
   pollMetadata: string;
   votingMethod: string;
   poll: any;
@@ -62,7 +62,7 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
     // Update path if the voting method is 'ethholding' for contract polls
     console.log(polltype, 'poll type');
     const biginteth = BigInt(1);
-    if (votingMethod === 'EthHolding' || polltype === '1n') {
+    if (votingMethod === 'EthHolding' || (polltype && polltype.toString() == '1')) {
       path = '/contract-poll';
     }
     const pollId = votingMethod === 'headCount' ? poll.id : id;
@@ -76,11 +76,15 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
     const regex = /<img[^>]*>/g;
     return text.replace(regex, '');
   }
+  const cleanDescription = removeImageTags(description);
+
+  const shortDescription = cleanDescription.length > 200 ? cleanDescription.substring(0, 200) + '...' : cleanDescription;
+
   return (
     <div className="bg-white flex flex-col justify-between rounded-lg p-3 hover:cursor-pointer w-full gap-3.5" onClick={handleClickItem}>
       <Label className="text-whilte/60">{votingMethod.toLocaleUpperCase()}</Label>
       <Label>{title}</Label>
-      <span dangerouslySetInnerHTML={{ __html: removeImageTags(description) }} />
+      <span dangerouslySetInnerHTML={{ __html: removeImageTags(shortDescription) }} />
       <div className="flex gap-3.5">
         <div className={`${isLive ? `bg-[#96ecbd]` : `bg-[#F8F8F8]`} px-2.5 rounded-lg self-center`}>
           {isLive ? <Label className="text-[#44b678]">Live</Label> : <Label className="text-[#656565]">Closed</Label>}

@@ -51,6 +51,7 @@ export const CredentialForm = ({
     setIsZuPassRequired(false);
     setIsGitcoinPassportRequired(false);
     setIsProtocolGuildMemberRequired(false);
+    updateCredentials('POAPS Verification');
   }
 
   const handlePOAPapiSelect = () => {
@@ -59,6 +60,7 @@ export const CredentialForm = ({
     setIsZuPassRequired(false);
     setIsGitcoinPassportRequired(false);
     setIsProtocolGuildMemberRequired(false);
+    updateCredentials('POAPS Verification');
   }
   const handleGitCoinSelect = () => {
     setIsGitcoinPassportRequired(!isGitcoinPassportRequired);
@@ -66,6 +68,7 @@ export const CredentialForm = ({
     setIsPOAPsRequired(false);
     setIsZuPassRequired(false);
     setIsProtocolGuildMemberRequired(false);
+    updateCredentials('Gitcoin Passport');
   }
 
   const handleProtocolGuildMemberSelect = () => {
@@ -74,6 +77,7 @@ export const CredentialForm = ({
     setIsPOAPsRequired(false);
     setIsZuPassRequired(false);
     setIsProtocolGuildMemberRequired(!isProtocolGuildMemberRequired);
+    updateCredentials('Protocol Guild Member');
   }
 
   const handleZuPassSelect = () => {
@@ -85,7 +89,7 @@ export const CredentialForm = ({
   }
 
   const CredentialSelector = () => {
-    if (isPOAPapiRequired) {
+    if (isPOAPsRequired) {
       return (
         <div className="flex flex-col gap-2">
           <Label className="text-2xl font-semibold">Select Event</Label>
@@ -132,7 +136,7 @@ export const CredentialForm = ({
             checked={isPOAPapiRequired}
             onClick={handlePOAPapiSelect}
           />
-          <Label className="text-lg">Add POAPs (Offchain Verification)</Label>
+          <Label className="text-lg">Add Ethereum POAPs (Offchain Verification) (The test version stores only 2 events)</Label>
         </div>
       </div>
 
