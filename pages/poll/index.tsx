@@ -120,6 +120,7 @@ const PollPage = () => {
         return;
       }
       voter_identifier = localStorage.getItem('userId');
+      console.log(voter_identifier);
     }
     //Devconnect
     else if (credentialId == '3cc4b682-9865-47b0-aed8-ef1095e1c398') {
@@ -166,6 +167,12 @@ const PollPage = () => {
     //POAPS
     else if (credentialId == '600d1865-1441-4e36-bb13-9345c94c4dfb') {
       if (!isConnected) {
+        console.error('You need to connect to Metamask to get your POAPS number, please try again');
+        toast({
+          title: 'Error',
+          description: 'You need to connect to Metamask to get your POAPS number, please try again',
+          variant: 'destructive',
+        });
         connectToMetamask();
         return;
       }
@@ -184,7 +191,7 @@ const PollPage = () => {
       if (Number(poapsNumber) > 4) {
         canVote = true;
       }
-      voter_identifier = localStorage.getItem('userId');
+      voter_identifier = account;
     }
     else {
       voter_identifier = localStorage.getItem('userUniqueId');
@@ -277,9 +284,14 @@ const PollPage = () => {
         </div>
         <div className="bg-white/40 p-2.5 flex flex-col gap-3.5">
           <Label className="text-2xl">Vote on Poll</Label>
-          {credentialId === "600d1865-1441-4e36-bb13-9345c94c4dfb" && (
-            <Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label>
-          )}
+          {
+            credentialId === "600d1865-1441-4e36-bb13-9345c94c4dfb" && (
+              <div>
+                <div><Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label></div>
+                <div><Label className="text-sm">Please notice that for now in this test version, we only stored the participation list of 2 Ethereum events.</Label></div>
+              </div>
+            )
+          }
           {credentialId === "6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2" && (
             <Label className="text-sm">Your gitcoin passport score is: {score}/100 (Your score must be higher than 0 to vote)</Label>
           )}

@@ -177,6 +177,12 @@ const PollPage = () => {
 
   const handleVote = async (optionIndex: number) => {
     if (!isConnected) {
+      console.error('You need to connect to Metamask to vote, please try again');
+      toast({
+        title: 'Error',
+        description: 'You need to connect to Metamask to vote, please try again',
+        variant: 'destructive',
+      });
       connectToMetamask();
       return;
     }
@@ -273,7 +279,7 @@ const PollPage = () => {
           {
             pollType?.toString() === "1"
               ? <Label className="text-sm">You can not vote if your address is not on this list: <a href="https://app.splits.org/accounts/0x84af3D5824F0390b9510440B6ABB5CC02BB68ea1" style={{ color: 'blue' }}>link</a></Label>
-              : <Label className="text-sm">(You can also make a zero-value transaction from your wallet to given options addresses to vote)</Label>
+              : <Label className="text-sm">(You can also make a zero-value transaction from your wallet (in Sepolia) to given options addresses to vote)</Label>
           }
           <div className="flex flex-col gap-2.5">
             {options.map((option, index) => (

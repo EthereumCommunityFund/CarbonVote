@@ -178,6 +178,12 @@ const CreatePollPage = () => {
       try {
         if (pollContract) {
           if (!isConnected) {
+            console.error('You need to connect to Metamask to vote, please try again');
+            toast({
+              title: 'Error',
+              description: 'You need to connect to Metamask to vote, please try again',
+              variant: 'destructive',
+            });
             connectToMetamask();
             return;
           }
@@ -195,16 +201,30 @@ const CreatePollPage = () => {
           const signer = await provider.getSigner();
           const contract = new ethers.Contract(contractAddress, contractAbi, signer);
           console.log(provider, signer, contract);
-          const tx = await contract.createPoll(motionTitle, motionDescription, durationInSeconds, optionNames, poll_type, pollMetadata);
-          await tx.wait();
-          toast({
-            title: 'Poll created successfully',
-          });
-          console.log('Poll created successfully');
-          setCredentials([]);
-          setTimeout(() => {
-            router.push('/');
-          }, 1000);
+          const network = await provider.getNetwork();
+
+          if (Number(network.chainId) === 11155111) {
+            console.log('Connected to Sepolia');
+
+            const tx = await contract.createPoll(motionTitle, motionDescription, durationInSeconds, optionNames, poll_type, pollMetadata);
+            await tx.wait();
+            toast({
+              title: 'Poll created successfully, please wait',
+            });
+            console.log('Poll created successfully');
+            setCredentials([]);
+            setTimeout(() => {
+              router.push('/');
+            }, 1000);
+          }
+          else {
+            console.error('You should connect to Sepolia, please try again');
+            toast({
+              title: 'Error',
+              description: 'You should connect to Sepolia, please try again',
+              variant: 'destructive',
+            });
+          }
         }
       } catch (error: any) {
         console.error('Error creating poll:', error);

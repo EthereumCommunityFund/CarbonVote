@@ -40,6 +40,7 @@ export default function Home() {
 
   const contractAddress = "0x5092F0161B330A7B2128Fa39a93b10ff32c0AE3e";
 
+
   const fetchPollsFromContract = async () => {
     /*let provider;
     console.log(process.env.PROVIDER as string, 'process env');
@@ -56,7 +57,7 @@ export default function Home() {
     const { names, descriptions, options, endTimes, pollTypes, pollMetadatas, startTimes } = await contract.getAllPolls();
     const polls = names.map((name: any, index: string | number) => {
       const pollType = pollTypes[index];
-      const votingMethod = pollType === '1' ? 'HeadCounting' : 'EthHolding';
+      const votingMethod = pollType.toString() == '0' ? 'EthHolding' : 'HeadCounting';
       return {
         name,
         description: descriptions[index],
