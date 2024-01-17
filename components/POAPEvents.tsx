@@ -1,36 +1,44 @@
-/*import { useState } from "react";
-import axios from 'axios';
+import { useState } from "react";
 import { XMarkIcon } from '@/components/icons/xmark';
+import { Event, PillInputs } from '@/types'
+import { useFormStore } from "@/zustand/create";
+import { searchPoaps } from '../controllers/poap.controller';
+
 
 const POAPEvents = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [selectedOptions, setSelectedOptions] = useState([]);
+  const [searchResults, setSearchResults] = useState<Event[]>([]);
 
-  const handleSearch = async (event) => {
+  // Zustand
+  const selectedEvents = useFormStore((state) => state.selectedEvents)
+  const addEvent = useFormStore((state) => state.addEvent)
+  const removeEvent = useFormStore((state) => state.removeEvent)
+
+
+  const handleSearch = async (event: any) => {
     setSearchTerm(event.target.value);
     if (event.target.value !== "") {
 
-      const response = await axios.get(`/api/poap/searchPoaps?searchText=${event.target.value}`)
+      const response = await searchPoaps(event.target.value);
       setSearchResults(response?.data?.items);
     } else {
       setSearchResults([]);
     }
   };
 
-  const handleSelectOption = (option) => {
-    if (selectedOptions.length < 5) {
+  const handleSelectOption = (event: Event) => {
+    if (selectedEvents.length < 5) {
       setSearchTerm("");
       setSearchResults([]);
-      setSelectedOptions(prev => [...prev, option]);
+      addEvent(event)
     }
   };
 
-  const removeOption = (id) => {
-    setSelectedOptions(prev => prev.filter(option => option.id !== id));
+  const removeOption = (id: number) => {
+    removeEvent(id)
   };
 
-  const Pill = ({ option, onRemove }) => (
+  const Pill = ({ event, onRemove }: PillInputs) => (
     <div style={{
       display: 'inline-flex',
       alignItems: 'center',
@@ -38,16 +46,15 @@ const POAPEvents = () => {
       borderRadius: '9999px',
       padding: '4px 8px',
       margin: '4px',
-      backgroundColor: option.color,
     }}>
-      <img src={`${option.image_url}?size=small`} alt="" style={{ width: '30px', height: '30px', marginRight: '8px', borderRadius: 100 }} />
-      <span>{option.name}</span>
-      <button onClick={() => onRemove(option.id)} style={{ marginLeft: '8px' }}>{<XMarkIcon />}</button>
+      <img src={`${event.image_url}?size=small`} alt="" style={{ width: '30px', height: '30px', marginRight: '8px', borderRadius: 100 }} />
+      <span>{event.name}</span>
+      <button onClick={() => onRemove(event?.id)} style={{ marginLeft: '8px' }}>{<XMarkIcon />}</button>
     </div>
   );
 
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col justify-center">
       <div className="w-full">
         <div className="flex border-2 border-gray-300 rounded-lg">
           <input
@@ -77,28 +84,27 @@ const POAPEvents = () => {
       </div>
 
       <div>
-        {searchTerm && searchResults.map(option => (
-          <div key={option.id} onClick={() => handleSelectOption(option)} style={{
+        {searchTerm && searchResults.map(event => (
+          <div key={event.id} onClick={() => handleSelectOption(event)} style={{
             display: 'flex',
             alignItems: 'center',
             border: '1px solid #ccc',
             padding: '4px 8px',
             borderRadius: 4,
-            margin: '4px',
-            backgroundColor: option.color,
+            margin: '4px'
           }}>
-            <img src={`${option.image_url}?size=small`} alt="" style={{ width: '20px', height: '20px', marginRight: '8px', borderRadius: 100 }} />
-            {option.name} - Id: {option.id}
+            <img src={`${event.image_url}?size=small`} alt="" style={{ width: '20px', height: '20px', marginRight: '8px', borderRadius: 100 }} />
+            {event.name} - Id: {event.id}
           </div>
         ))}
       </div>
       <div>
-        {selectedOptions.map(option => (
-          <Pill key={option.id} option={option} onRemove={() => removeOption(option.id)} />
+        {selectedEvents.map(event => (
+          <Pill key={event?.id} event={event} onRemove={() => removeOption(event?.id)} />
         ))}
       </div>
     </div>
   )
 }
 
-export default POAPEvents;*/
+export default POAPEvents;

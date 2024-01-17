@@ -12,7 +12,7 @@ const getEventVerification = async (address: any, eventId: number) => {
             url: `https://api.poap.tech/actions/scan/${address}/${eventId}`,
             headers: {
                 accept: 'application/json',
-                Authorization: `Bearer ${poapApiKey}`
+                'x-api-key': poapApiKey
             }
         };
 

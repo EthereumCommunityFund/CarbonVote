@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Label } from '@radix-ui/react-label';
 import ToggleSwitchButton from '../ui/buttons/ToggleSwitchButton';
-//import POAPEvents from '../POAPEvents';
+import POAPEvents from '../POAPEvents';
+import { useFormStore } from "@/zustand/create";
 
 type CredentialFormProps = {
   selectedCredentials: string[];
@@ -17,6 +18,7 @@ export const CredentialForm = ({
   onCredentialsChange,
 }: CredentialFormProps) => {
   const [credential, setCredential] = useState('');
+  const [isPOAPapiRequired, setIsPOAPapiRequired] = useState(false);
   const [isPOAPsRequired, setIsPOAPsRequired] = useState(false);
   const [isProtocolGuildMemberRequired, setIsProtocolGuildMemberRequired] = useState(false);
   const [isZuPassRequired, setIsZuPassRequired] = useState(false);
@@ -29,11 +31,6 @@ export const CredentialForm = ({
     'Gitcoin Passport': '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2',
     'POAPS Verification': '600d1865-1441-4e36-bb13-9345c94c4dfb',
   };
-
-  useEffect(() => {
-
-  }, [isProtocolGuildMemberRequired, isZuPassRequired, isGitcoinPassportRequired, isPOAPsRequired, onCredentialsChange]);
-
 
   const updateCredentials = (credentialKey: string) => {
     const uuid = credentialsMapping[credentialKey];
@@ -50,30 +47,73 @@ export const CredentialForm = ({
 
   const handlePOAPSelect = () => {
     setIsPOAPsRequired(!isPOAPsRequired);
+    setIsPOAPapiRequired(false);
     setIsZuPassRequired(false);
     setIsGitcoinPassportRequired(false);
     setIsProtocolGuildMemberRequired(false);
+    updateCredentials('POAPS Verification');
   }
 
+  const handlePOAPapiSelect = () => {
+    setIsPOAPapiRequired(!isPOAPapiRequired);
+    setIsPOAPsRequired(false);
+    setIsZuPassRequired(false);
+    setIsGitcoinPassportRequired(false);
+    setIsProtocolGuildMemberRequired(false);
+    updateCredentials('POAPS Verification');
+  }
   const handleGitCoinSelect = () => {
     setIsGitcoinPassportRequired(!isGitcoinPassportRequired);
+    setIsPOAPapiRequired(false);
     setIsPOAPsRequired(false);
     setIsZuPassRequired(false);
     setIsProtocolGuildMemberRequired(false);
+    updateCredentials('Gitcoin Passport');
   }
 
   const handleProtocolGuildMemberSelect = () => {
     setIsGitcoinPassportRequired(false);
+    setIsPOAPapiRequired(false);
     setIsPOAPsRequired(false);
     setIsZuPassRequired(false);
     setIsProtocolGuildMemberRequired(!isProtocolGuildMemberRequired);
+    updateCredentials('Protocol Guild Member');
   }
 
   const handleZuPassSelect = () => {
     setIsGitcoinPassportRequired(false);
+    setIsPOAPapiRequired(false);
     setIsPOAPsRequired(false);
     setIsZuPassRequired(!isZuPassRequired);
     setIsProtocolGuildMemberRequired(false);
+  }
+
+  const CredentialSelector = () => {
+    if (isPOAPsRequired) {
+      return (
+        <div className="flex flex-col gap-2">
+          <Label className="text-2xl font-semibold">Select Event</Label>
+          <POAPEvents />
+        </div>)
+    } else if (isZuPassRequired) {
+      return (
+        <div className="flex flex-col gap-2">
+          <Label className="text-2xl font-semibold">Select Credential</Label>
+          <select
+            title="Credentials"
+            value={selectedCredentialText}
+            onChange={handleCredentialSelect}
+            disabled={!isProtocolGuildMemberRequired && !isZuPassRequired && !isGitcoinPassportRequired && !isPOAPsRequired}
+          >
+            <option value="">Select an option</option>
+            <>
+              <option value="ZuConnect Resident">ZuConnect Resident</option>
+              <option value="DevConnect">DevConnect</option>
+            </>
+          </select>
+        </div>
+      )
+    }
   }
 
   return (
@@ -86,6 +126,17 @@ export const CredentialForm = ({
             onClick={handlePOAPSelect}
           />
           <Label className="text-lg">Add Ethereum POAPS Checking (The test version stores only 10 events)</Label>
+        </div>
+      </div>
+
+      {/* POAP Event - w/ API */}
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-5 gap-2">
+          <ToggleSwitchButton
+            checked={isPOAPapiRequired}
+            onClick={handlePOAPapiSelect}
+          />
+          <Label className="text-lg">Add Ethereum POAPs (Offchain Verification) (The test version stores only 2 events)</Label>
         </div>
       </div>
 
@@ -121,34 +172,7 @@ export const CredentialForm = ({
         </div>
       </div>
 
-      {/* Credentials Selector */}
-      <div className="flex flex-col gap-2">
-        <Label className="text-2xl font-semibold">{selectedCredentialText}</Label>
-        <select
-          className="..."
-          title="Credentials"
-          value={credential}
-          onChange={handleCredentialSelect}
-          disabled={!isProtocolGuildMemberRequired && !isZuPassRequired && !isGitcoinPassportRequired && !isPOAPsRequired}
-        >
-          <option value="">Select Credential</option>
-          {isProtocolGuildMemberRequired && (
-            <option value="Protocol Guild Member">Protocol Guild Member</option>
-          )}
-          {isZuPassRequired && (
-            <>
-              <option value="ZuConnect Resident">ZuConnect Resident</option>
-              <option value="DevConnect">DevConnect</option>
-            </>
-          )}
-          {isPOAPsRequired && (
-            <option value="POAPS Verification">POAPS Verification</option>
-          )}
-          {isGitcoinPassportRequired && (
-            <option value="Gitcoin Passport">Gitcoin Passport</option>
-          )}
-        </select>
-      </div>
+      <CredentialSelector />
     </div>
   );
 };
