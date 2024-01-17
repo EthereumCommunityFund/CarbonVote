@@ -109,6 +109,8 @@ const PollPage = () => {
     }
   }
 
+  const pollIsLive = remainingTime !== null && remainingTime !== 'Time is up!';
+
   const handleVote = async (optionId: string) => {
     let canVote = false;
     let voter_identifier: any = '';
@@ -272,15 +274,15 @@ const PollPage = () => {
         </div>
         <div className="bg-white flex flex-col gap-1.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
-            <div className={`${remainingTime !== null && remainingTime !== 'Time is up!' ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
+            <div className={`${pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
               } px-2.5 rounded-lg items-center`}>
-              {remainingTime !== null && remainingTime !== 'Time is up!' ? (
+              {pollIsLive ? (
                 <Label className="text-[#44b678]">Live</Label>
               ) : (
                 <Label className="text-[#656565]">Closed</Label>
               )}
             </div>
-            {remainingTime !== null && remainingTime !== 'Time is up!' ? (
+            {pollIsLive ? (
               <div className="flex gap-2">
                 <ClockIcon />
                 <CountdownTimer endTime={poll.endTime} />
@@ -297,31 +299,38 @@ const PollPage = () => {
             <span dangerouslySetInnerHTML={{ __html: poll?.description }} />
           </div>
         </div>
+
         <div className="bg-white/40 p-2.5 flex flex-col gap-3.5">
-          <Label className="text-2xl">Vote on Poll</Label>
-          {
-            credentialId === "600d1865-1441-4e36-bb13-9345c94c4dfb" && (
-              <div>
-                <div><Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label></div>
-                <div><Label className="text-sm">Please notice that for now in this test version, we only stored the participation list of 2 Ethereum events.</Label></div>
+          {pollIsLive ? (
+            <>
+              <Label className="text-2xl">Vote on Poll</Label>
+              {
+                credentialId === "600d1865-1441-4e36-bb13-9345c94c4dfb" && (
+                  <div>
+                    <div><Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label></div>
+                    <div><Label className="text-sm">Please notice that for now in this test version, we only stored the participation list of 2 Ethereum events.</Label></div>
+                  </div>
+                )
+              }
+              {credentialId === "6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2" && (
+                <Label className="text-sm">Your gitcoin passport score is: {score}/100 (Your score must be higher than 0 to vote)</Label>
+              )}
+              <div className="flex flex-col gap-2.5">
+                {options?.map((option) => (
+                  <OptionButton
+                    key={option.id}
+                    id={option.id}
+                    optionName={option.option_description}
+                    onVote={(optionId) => handleVote(optionId as string)}
+                    isChecked={selectedOption === option.option_description}
+                    type="api"
+                  />
+                ))}
               </div>
-            )
-          }
-          {credentialId === "6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2" && (
-            <Label className="text-sm">Your gitcoin passport score is: {score}/100 (Your score must be higher than 0 to vote)</Label>
+            </>
+          ) : (
+            <Label className="text-2xl">Poll pinished</Label>
           )}
-          <div className="flex flex-col gap-2.5">
-            {options?.map((option) => (
-              <OptionButton
-                key={option.id}
-                id={option.id}
-                optionName={option.option_description}
-                onVote={(optionId) => handleVote(optionId as string)}
-                isChecked={selectedOption === option.option_description}
-                type="api"
-              />
-            ))}
-          </div>
         </div>
       </div>
       <div className="flex flex-col gap-8 w-96">
@@ -340,28 +349,28 @@ const PollPage = () => {
                 return `End Date: ${new Date(Number(poll.endTime))}`;
               })()}
             </Label>
-            <Label>
+            <Label className="text-1xl">
               Requirements:
-              {(poll?.poap_events?.length > 0) && (
-                <PoapDetails poapEvents={poll?.poap_events} account={account} />
-              )}
-              <div>
-                <div style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  border: '1px solid #ccc',
-                  borderRadius: '9999px',
-                  padding: '4px 8px',
-                  margin: '4px',
-                }}>
-                  <img src={'/images/carbonvote.png'} alt="Requirement image" style={{ width: '30px', height: '30px', marginRight: '8px', borderRadius: 100 }} />
-                  <span>{getRequirement()}</span>
-                  {/* TODO: Check if this is complied */}
-                  <div style={{ marginLeft: 10 }}>⚪️</div>
-                  {/* <div style={{ marginLeft: 10 }}>{true ? "✅" : "🔴"}</div> */}
-                </div>
-              </div>
             </Label>
+            {(poll?.poap_events?.length > 0) && (
+              <PoapDetails poapEvents={poll?.poap_events} account={account} />
+            )}
+            <div>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                border: '1px solid #ccc',
+                borderRadius: '9999px',
+                padding: '4px 8px',
+                margin: '4px',
+              }}>
+                <img src={'/images/carbonvote.png'} alt="Requirement image" style={{ width: '30px', height: '30px', marginRight: '8px', borderRadius: 100 }} />
+                <span>{getRequirement()}</span>
+                {/* TODO: Check if this is complied */}
+                <div style={{ marginLeft: 10 }}>⚪️</div>
+                {/* <div style={{ marginLeft: 10 }}>{true ? "✅" : "🔴"}</div> */}
+              </div>
+            </div>
           </div>
         </div>
         <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
