@@ -81,21 +81,34 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
   const shortDescription = cleanDescription.length > 200 ? cleanDescription.substring(0, 200) + '...' : cleanDescription;
 
   return (
-    <div className="bg-white flex flex-col justify-between rounded-lg p-3 hover:cursor-pointer w-full gap-3.5" onClick={handleClickItem}>
-      <Label className="text-whilte/60">{votingMethod.toLocaleUpperCase()}</Label>
-      <Label>{title}</Label>
-      <span dangerouslySetInnerHTML={{ __html: removeImageTags(shortDescription) }} />
-      <div className="flex gap-3.5">
-        <div className={`${isLive ? `bg-[#96ecbd]` : `bg-[#F8F8F8]`} px-2.5 rounded-lg self-center`}>
-          {isLive ? <Label className="text-[#44b678]">Live</Label> : <Label className="text-[#656565]">Closed</Label>}
+    <div className="bg-white rounded-lg p-3 hover:cursor-pointer w-full flex flex-col justify-between">
+
+
+      {/* <!-- Header with Title and Live/Closed Status --> */}
+      <div className="flex justify-between">
+        <Label className="text-xl font-bold">{title}
+        </Label>
+        <div className={`${isLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'} px-2.5 py-1 rounded-lg`}>
+          <Label className={`${isLive ? 'text-[#44b678]' : 'text-[#656565]'}`}>
+            {isLive ? 'Live' : 'Closed'}
+          </Label>
         </div>
-        {isLive && (
-          <div className="flex flex-2">
-            <ClockIcon />
-            <CountdownTimer endTime={endTime} />
-          </div>
-        )}
       </div>
+
+      <span className="text-xs" style={{ color: votingMethod === 'EthHolding' ? "orange" : "blue" }}>{votingMethod.toUpperCase()}</span>
+
+      {/* <!-- Description --> */}
+      <span dangerouslySetInnerHTML={{ __html: removeImageTags(shortDescription) }} />
+
+
+      {/* <!-- Time Remaining (Shown only if Live) --> */}
+      {isLive && (
+        <div className="flex items-center gap-3.5 mt-3 text-gray-500">
+          <ClockIcon />
+          <CountdownTimer endTime={endTime} />
+        </div>
+      )}
     </div>
+
   );
 };

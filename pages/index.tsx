@@ -71,12 +71,18 @@ export default function Home() {
     });
     return polls;
   };
+
   const fetchPolls = async () => {
     const pollsFromContract = await fetchPollsFromContract();
     const { data: pollsFromAPI } = await fetchAllPollsFromAPI();
-    return [...pollsFromContract, ...pollsFromAPI];
+    // TODO: Improve sorting to show most relevant Polls first
+    // Combine and sort the polls based on endTime
+    return [...pollsFromContract, ...pollsFromAPI].sort((a, b) => {
+      return b.startTime - a.startTime;
+    });
   };
 
+  // TODO: Order 
   const { data: polls, isLoading, error } = useQuery('polls', fetchPolls);
 
   const handleCreatePoll = () => {
