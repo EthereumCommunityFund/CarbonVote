@@ -285,6 +285,8 @@ const PollPage = () => {
     }
   };
 
+  const isHeadcount = pollType?.toString() === '1';
+
   if (!poll) {
     return <Loader />; // Add loading state handling
   }
@@ -359,7 +361,7 @@ const PollPage = () => {
           <div className='flex flex-col gap-4 pt-3 text-base'>
             <Label>
               {(() => {
-                return `Voting Method: ${pollType?.toString() === '1' ? 'HeadCounting' : 'EthHolding'}`;
+                return `Voting Method: ${isHeadcount ? 'HeadCounting' : 'EthHolding'}`;
               })()}
             </Label>
             <Label>
@@ -374,7 +376,7 @@ const PollPage = () => {
             </Label>
             <Label>
               {(() => {
-                return `Requirement: ${pollType?.toString() === '1' ? 'Protocol Guild Member' : 'No requirement'}`;
+                return `Requirement: ${isHeadcount ? 'Protocol Guild Member' : 'No requirement'}`;
               })()}
             </Label>
           </div>
