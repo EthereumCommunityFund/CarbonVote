@@ -33,7 +33,7 @@ const PoapDetails = ({ poapEvents, account, eventDetails, setEventDetails }: Poa
     <div>
       {isLoading ?
         <Loader />
-        : eventDetails.map(({ data }) => {
+        : eventDetails.map(({ data }: { data: any }) => {
           const { event, tokenId, owner } = data;
           return (
             <div>
