@@ -2,6 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../../utils/supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
+import getPoapOwnership from 'utils/getPoapOwnership'
+const poapApiKey = process.env.POAP_API_KEY ?? "";
 
 const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
     if (req.method !== 'POST') {
@@ -17,6 +19,30 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     try {
+
+        // Check requirements from database
+        const { data: pollData } = await supabase
+            .from('votes')
+            .select('*')
+            .eq('poll_id', poll_id)
+            .single();
+
+        if (pollData?.poap_events && pollData?.poap_events.length) {
+            // voter_identifier should be the user's address
+            const ownershipPromises = pollData.poap_events.map((eventId: any) =>
+                getPoapOwnership(poapApiKey, voter_identifier, eventId)
+            );
+            const responses = await Promise.all(ownershipPromises);
+
+            for (const response of responses) {
+                if (!response?.data?.owner) {
+                    console.error("Error: User doesn't own this POAP");
+                    res.status(409).send("You don't qualify to vote for this poll.");
+                    return; // Exit the function if an event without an owner is found
+                }
+            }
+        }
+
         const vote_hash = crypto.createHash('sha256').update(voter_identifier).digest('hex');
 
         // Check if the user has already voted for the same option in the same poll
@@ -33,6 +59,9 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
             return;
         }
 
+        //  FIXME: Needs to check if any of the requirements has been used before 
+        // (so a user can't transfer and vote with another account)
+
         // Check if this voter has already voted in the poll
         const { data, error: existingVoteError } = await supabase
             .from('votes')
@@ -47,11 +76,17 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
             existingVote = data[0]
         }
 
-
-
         if (existingVoteError) throw existingVoteError;
 
         if (existingVote) {
+            // Delete the previous vote
+            const { error: deleteError } = await supabase
+                .from('votes')
+                .delete()
+                .match({ vote_hash, poll_id });
+
+            if (deleteError) throw deleteError;
+
             // If they voted for a different option, update the previous option's vote count
             if (existingVote.option_id !== option_id) {
                 const { error: decrementError } = await supabase
@@ -62,16 +97,7 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
                     throw decrementError;
 
                 }
-
             }
-
-            // Delete the previous vote
-            const { error: deleteError } = await supabase
-                .from('votes')
-                .delete()
-                .match({ vote_hash, poll_id });
-
-            if (deleteError) throw deleteError;
         }
 
         // Insert the new vote

@@ -56,13 +56,12 @@ const PollPage = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [options, setOptions] = useState<Option[]>([]);
   const [credentialId, setCredentialId] = useState("");
-  const [passportScore, setPassportScore] = useState('');
   const [score, setScore] = useState('0');
-  const [isTicketVerified, setTicketVerify] = useState(false);
   const [remainingTime, settimeRemaining] = useState('');
   const [startDate, setstartDate] = useState<Date>();
-  const [selectedVid, setSelectedVid] = useState('0');
   const [poapsNumber, setPoapsNumber] = useState('0');
+  const [eventDetails, setEventDetails] = useState<any[]>([])
+
   const contractAddress = "0xD07E11aeA30DC68E42327F116e47f12C7E434d77";
   useEffect(() => {
     fetchPollFromApi(id);
@@ -107,6 +106,16 @@ const PollPage = () => {
       default:
         return '';
     }
+  }
+
+  const warnAndConnect = () => {
+    console.error('You need to connect to Metamask to get your POAPs, please try again');
+    toast({
+      title: 'Error',
+      description: 'You need to connect to Metamask to get your POAPS number, please try again',
+      variant: 'destructive',
+    });
+    connectToMetamask();
   }
 
   const pollIsLive = remainingTime !== null && remainingTime !== 'Time is up!';
@@ -160,13 +169,7 @@ const PollPage = () => {
     //Gitcoin
     else if (credentialId == '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2') {
       if (!isConnected) {
-        console.error('You need to connect to Metamask to get your score, please try again');
-        toast({
-          title: 'Error',
-          description: 'You need to connect to Metamask to get your score, please try again',
-          variant: 'destructive',
-        });
-        connectToMetamask();
+        warnAndConnect();
         return;
       }
       if (account !== null) {
@@ -181,16 +184,36 @@ const PollPage = () => {
       }
       voter_identifier = account;
     }
-    //POAPS
+    // POAPS API
+    else if (poll?.poap_events && poll?.poap_events.length) {
+      if (!isConnected) {
+        warnAndConnect();
+        return;
+      }
+
+      if (!eventDetails || !Array.isArray(eventDetails)) {
+        console.error('Invalid or empty event details');
+        return; // Exit if eventDetails is not an array
+      }
+
+      for (let detail of eventDetails) {
+        if (!detail?.owner) {
+          console.error('Error: An event is missing an owner');
+          toast({
+            title: 'Error',
+            description: 'You need to own all required POAPs',
+            variant: 'destructive',
+          });
+          return; // Exit the function if an event without an owner is found
+        }
+      }
+      voter_identifier = account;
+      canVote = true;
+    }
+    //POAPS ONCHAIN
     else if (credentialId == '600d1865-1441-4e36-bb13-9345c94c4dfb') {
       if (!isConnected) {
-        console.error('You need to connect to Metamask to get your POAPS number, please try again');
-        toast({
-          title: 'Error',
-          description: 'You need to connect to Metamask to get your POAPS number, please try again',
-          variant: 'destructive',
-        });
-        connectToMetamask();
+        warnAndConnect();
         return;
       }
       try {
@@ -209,8 +232,7 @@ const PollPage = () => {
         canVote = true;
       }
       voter_identifier = account;
-    }
-    else {
+    } else {
       voter_identifier = localStorage.getItem('userUniqueId');
       canVote = true;
     }
@@ -233,6 +255,8 @@ const PollPage = () => {
         });
       }
       else {
+        // FIXME: We need to add signature to validate vote even if it's only checked by the backend
+        // this way we avoit injection of accounts
         const response = await castVote(voteData as VoteRequestData);
         console.log(response, 'response');
         toast({
@@ -265,7 +289,7 @@ const PollPage = () => {
   }
 
   return (
-    <div className="flex gap-20 px-20 pt-5 text-black w-full justify-center">
+    <div className="flex flex-col md:flex-row gap-20 px-20 pt-5 text-black w-full justify-center">
       <div className="flex flex-col gap-2.5 max-w-[1000px] w-full">
         <div>
           <Button className="rounded-full" leftIcon={ArrowLeftIcon} onClick={handleBack}>
@@ -369,7 +393,7 @@ const PollPage = () => {
               </div>
             </div>
             {(poll?.poap_events?.length > 0) && (
-              <PoapDetails poapEvents={poll?.poap_events} account={account} />
+              <PoapDetails poapEvents={poll?.poap_events} account={account} eventDetails={eventDetails} setEventDetails={setEventDetails} />
             )}
           </div>
         </div>

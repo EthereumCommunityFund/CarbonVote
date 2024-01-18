@@ -5,11 +5,12 @@ import { Loader } from '@/components/ui/Loader';
 type PoapEventsIds = {
   poapEvents: number[]
   account: string | null
+  eventDetails: any
+  setEventDetails: (prevDetails: any) => void;
 }
 
-const PoapDetails = ({ poapEvents, account }: PoapEventsIds) => {
+const PoapDetails = ({ poapEvents, account, eventDetails, setEventDetails }: PoapEventsIds) => {
   const [isLoading, setIsLoading] = useState(true)
-  const [eventDetails, setEventDetails] = useState<any[]>([])
 
   useEffect(() => {
     const fetchEventDetails = async () => {
@@ -17,7 +18,7 @@ const PoapDetails = ({ poapEvents, account }: PoapEventsIds) => {
         const responses = await Promise.all(
           poapEvents.map(eventId => getPoapEventDetails(eventId, account))
         );
-        setEventDetails(prevDetails => [...prevDetails, ...responses]);
+        setEventDetails((prevDetails: any) => [...prevDetails, ...responses]);
         setIsLoading(false);
       } catch (error) {
         console.error(error);
