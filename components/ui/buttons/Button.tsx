@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { IconType } from 'react-icons';
-import { ImSpinner2 } from 'react-icons/im';
+import { Loader } from '@/components/ui/Loader';
 
 import { cn } from '@/lib/utils';
 
@@ -83,7 +83,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
               }
             )}
           >
-            <ImSpinner2 className='animate-spin' />
+            <Loader />
           </div>
         )}
         {LeftIcon && (

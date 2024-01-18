@@ -56,13 +56,12 @@ const PollPage = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [options, setOptions] = useState<Option[]>([]);
   const [credentialId, setCredentialId] = useState("");
-  const [passportScore, setPassportScore] = useState('');
   const [score, setScore] = useState('0');
-  const [isTicketVerified, setTicketVerify] = useState(false);
   const [remainingTime, settimeRemaining] = useState('');
   const [startDate, setstartDate] = useState<Date>();
-  const [selectedVid, setSelectedVid] = useState('0');
   const [poapsNumber, setPoapsNumber] = useState('0');
+  const [eventDetails, setEventDetails] = useState<any[]>([])
+
   const contractAddress = "0xD07E11aeA30DC68E42327F116e47f12C7E434d77";
   useEffect(() => {
     fetchPollFromApi(id);
@@ -93,6 +92,33 @@ const PollPage = () => {
       console.error('Error fetching poll from API:', error);
     }
   };
+
+  const getRequirement = () => {
+    switch (credentialId) {
+      case '76118436-886f-4690-8a54-ab465d08fa0d':
+        return 'Zuconnect Resident';
+      case '3cc4b682-9865-47b0-aed8-ef1095e1c398':
+        return 'Devconnect Resident';
+      case '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2':
+        return 'Gitcoin Passport';
+      case '600d1865-1441-4e36-bb13-9345c94c4dfb':
+        return 'POAPS Verification';
+      default:
+        return '';
+    }
+  }
+
+  const warnAndConnect = () => {
+    console.error('You need to connect to Metamask to get your POAPs, please try again');
+    toast({
+      title: 'Error',
+      description: 'You need to connect to Metamask to get your POAPS number, please try again',
+      variant: 'destructive',
+    });
+    connectToMetamask();
+  }
+
+  const pollIsLive = remainingTime !== null && remainingTime !== 'Time is up!';
 
   const handleVote = async (optionId: string) => {
     let canVote = false;
@@ -143,13 +169,7 @@ const PollPage = () => {
     //Gitcoin
     else if (credentialId == '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2') {
       if (!isConnected) {
-        console.error('You need to connect to Metamask to get your score, please try again');
-        toast({
-          title: 'Error',
-          description: 'You need to connect to Metamask to get your score, please try again',
-          variant: 'destructive',
-        });
-        connectToMetamask();
+        warnAndConnect();
         return;
       }
       if (account !== null) {
@@ -164,16 +184,36 @@ const PollPage = () => {
       }
       voter_identifier = account;
     }
-    //POAPS
+    // POAPS API
+    else if (poll?.poap_events && poll?.poap_events.length) {
+      if (!isConnected) {
+        warnAndConnect();
+        return;
+      }
+
+      if (!eventDetails || !Array.isArray(eventDetails)) {
+        console.error('Invalid or empty event details');
+        return; // Exit if eventDetails is not an array
+      }
+
+      for (let detail of eventDetails) {
+        if (!detail?.data?.owner) {
+          console.error('Error: An event is missing an owner');
+          toast({
+            title: 'Error',
+            description: 'You need to own all required POAPs',
+            variant: 'destructive',
+          });
+          return; // Exit the function if an event without an owner is found
+        }
+      }
+      voter_identifier = account;
+      canVote = true;
+    }
+    //POAPS ONCHAIN
     else if (credentialId == '600d1865-1441-4e36-bb13-9345c94c4dfb') {
       if (!isConnected) {
-        console.error('You need to connect to Metamask to get your POAPS number, please try again');
-        toast({
-          title: 'Error',
-          description: 'You need to connect to Metamask to get your POAPS number, please try again',
-          variant: 'destructive',
-        });
-        connectToMetamask();
+        warnAndConnect();
         return;
       }
       try {
@@ -192,8 +232,7 @@ const PollPage = () => {
         canVote = true;
       }
       voter_identifier = account;
-    }
-    else {
+    } else {
       voter_identifier = localStorage.getItem('userUniqueId');
       canVote = true;
     }
@@ -216,6 +255,8 @@ const PollPage = () => {
         });
       }
       else {
+        // FIXME: We need to add signature to validate vote even if it's only checked by the backend
+        // this way we avoit injection of accounts
         const response = await castVote(voteData as VoteRequestData);
         console.log(response, 'response');
         toast({
@@ -248,7 +289,7 @@ const PollPage = () => {
   }
 
   return (
-    <div className="flex gap-20 px-20 pt-5 text-black w-full justify-center">
+    <div className="flex flex-col md:flex-row gap-20 px-20 pt-5 text-black w-full justify-center">
       <div className="flex flex-col gap-2.5 max-w-[1000px] w-full">
         <div>
           <Button className="rounded-full" leftIcon={ArrowLeftIcon} onClick={handleBack}>
@@ -257,15 +298,15 @@ const PollPage = () => {
         </div>
         <div className="bg-white flex flex-col gap-1.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
-            <div className={`${remainingTime !== null && remainingTime !== 'Time is up!' ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
+            <div className={`${pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
               } px-2.5 rounded-lg items-center`}>
-              {remainingTime !== null && remainingTime !== 'Time is up!' ? (
+              {pollIsLive ? (
                 <Label className="text-[#44b678]">Live</Label>
               ) : (
                 <Label className="text-[#656565]">Closed</Label>
               )}
             </div>
-            {remainingTime !== null && remainingTime !== 'Time is up!' ? (
+            {pollIsLive ? (
               <div className="flex gap-2">
                 <ClockIcon />
                 <CountdownTimer endTime={poll.endTime} />
@@ -282,31 +323,38 @@ const PollPage = () => {
             <span dangerouslySetInnerHTML={{ __html: poll?.description }} />
           </div>
         </div>
+
         <div className="bg-white/40 p-2.5 flex flex-col gap-3.5">
-          <Label className="text-2xl">Vote on Poll</Label>
-          {
-            credentialId === "600d1865-1441-4e36-bb13-9345c94c4dfb" && (
-              <div>
-                <div><Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label></div>
-                <div><Label className="text-sm">Please notice that for now in this test version, we only stored the participation list of 2 Ethereum events.</Label></div>
+          {pollIsLive ? (
+            <>
+              <Label className="text-2xl">Vote on Poll</Label>
+              {
+                credentialId === "600d1865-1441-4e36-bb13-9345c94c4dfb" && (
+                  <div>
+                    <div><Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label></div>
+                    <div><Label className="text-sm">Please notice that for now in this test version, we only stored the participation list of 2 Ethereum events.</Label></div>
+                  </div>
+                )
+              }
+              {credentialId === "6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2" && (
+                <Label className="text-sm">Your gitcoin passport score is: {score}/100 (Your score must be higher than 0 to vote)</Label>
+              )}
+              <div className="flex flex-col gap-2.5">
+                {options?.map((option) => (
+                  <OptionButton
+                    key={option.id}
+                    id={option.id}
+                    optionName={option.option_description}
+                    onVote={(optionId) => handleVote(optionId as string)}
+                    isChecked={selectedOption === option.option_description}
+                    type="api"
+                  />
+                ))}
               </div>
-            )
-          }
-          {credentialId === "6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2" && (
-            <Label className="text-sm">Your gitcoin passport score is: {score}/100 (Your score must be higher than 0 to vote)</Label>
+            </>
+          ) : (
+            <Label className="text-2xl">Poll pinished</Label>
           )}
-          <div className="flex flex-col gap-2.5">
-            {options?.map((option) => (
-              <OptionButton
-                key={option.id}
-                id={option.id}
-                optionName={option.option_description}
-                onVote={(optionId) => handleVote(optionId as string)}
-                isChecked={selectedOption === option.option_description}
-                type="api"
-              />
-            ))}
-          </div>
         </div>
       </div>
       <div className="flex flex-col gap-8 w-96">
@@ -325,27 +373,28 @@ const PollPage = () => {
                 return `End Date: ${new Date(Number(poll.endTime))}`;
               })()}
             </Label>
-            <Label>
+            <Label className="text-1xl">
               Requirements:
-              {(poll?.poap_events?.length > 0) && (
-                <PoapDetails poapEvents={poll?.poap_events} account={account} />
-              )}
-              {(() => {
-                console.log(credentialId);
-                switch (credentialId) {
-                  case '76118436-886f-4690-8a54-ab465d08fa0d':
-                    return 'Zuconnect Resident';
-                  case '3cc4b682-9865-47b0-aed8-ef1095e1c398':
-                    return 'Devconnect Resident';
-                  case '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2':
-                    return 'Gitcoin Passport';
-                  case '600d1865-1441-4e36-bb13-9345c94c4dfb':
-                    return 'POAPS Verification';
-                  default:
-                    return '';
-                }
-              })()}
             </Label>
+            <div>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                border: '1px solid #ccc',
+                borderRadius: '9999px',
+                padding: '4px 8px',
+                margin: '4px',
+              }}>
+                <img src={'/images/carbonvote.png'} alt="Requirement image" style={{ width: '30px', height: '30px', marginRight: '8px', borderRadius: 100 }} />
+                <span>{getRequirement()}</span>
+                {/* TODO: Check if this is complied */}
+                <div style={{ marginLeft: 10 }}>⚪️</div>
+                {/* <div style={{ marginLeft: 10 }}>{true ? "✅" : "🔴"}</div> */}
+              </div>
+            </div>
+            {(poll?.poap_events?.length > 0) && (
+              <PoapDetails poapEvents={poll?.poap_events} account={account} eventDetails={eventDetails} setEventDetails={setEventDetails} />
+            )}
           </div>
         </div>
         <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">

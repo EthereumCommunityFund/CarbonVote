@@ -1,27 +1,19 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 const axios = require('axios');
-
+import getPoapOwnership from 'utils/getPoapOwnership'
 const poapApiKey = process.env.POAP_API_KEY;
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
     let response;
 
     try {
-        const eventId = req.query.eventId; // Event Id
-        const address = req.query.address; // Address text
+        const eventId = req.query.eventId as string; // Event Id
+        const address = req.query.address as string; // Address text
 
         // We check ownership and receive the event's details
-        if (!!address) {
+        if (!!address && poapApiKey) {
             try {
-                const eventOwnership = {
-                    method: 'GET',
-                    url: `https://api.poap.tech/actions/scan/${address}/${eventId}`,
-                    headers: {
-                        accept: 'application/json',
-                        'x-api-key': poapApiKey
-                    }
-                };
-                response = await axios.request(eventOwnership);
+                response = await getPoapOwnership(poapApiKey, address, eventId);
             } catch (error: any) {
                 console.log("🚀 ~ handler ~ error:", error)
                 // Check if error is not 404, then throw
