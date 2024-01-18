@@ -193,7 +193,7 @@ const PollPage = () => {
       }
 
       for (let detail of eventDetails) {
-        if (!detail?.owner) {
+        if (!detail?.data?.owner) {
           console.error('Error: An event is missing an owner');
           toast({
             title: 'Error',
