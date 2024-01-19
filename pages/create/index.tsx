@@ -45,7 +45,7 @@ const CreatePollPage = () => {
 
   // Zustand
   const selectedPOAPEvents = useFormStore((state) => state.selectedEvents)
-  const removeAllPoapEvents = useFormStore((state) => state.removeAll)
+  const resetFormStore = useFormStore((state) => state.reset)
 
   useEffect(() => {
     const doConnect = async () => {
@@ -63,7 +63,7 @@ const CreatePollPage = () => {
       setPollContract(contract);
     };
     doConnect();
-    removeAllPoapEvents();
+    resetFormStore();
   }, []);
 
   // const [options, setOptions] = useState<OptionType[]>([]);
@@ -173,7 +173,7 @@ const CreatePollPage = () => {
           title: 'Poll created successfully',
         });
         setCredentials([]);
-        removeAllPoapEvents();
+        resetFormStore();
         router.push('/').then(() => window.location.reload());
         /*setTimeout(() => {
           router.push('/');
@@ -181,7 +181,7 @@ const CreatePollPage = () => {
       } catch (error) {
         console.error('Error creating poll:', error);
         setIsLoading(false);
-        removeAllPoapEvents();
+        resetFormStore();
         toast({
           title: 'Error',
           description: 'Failed to create poll',
@@ -228,7 +228,7 @@ const CreatePollPage = () => {
             });
             console.log('Poll created successfully');
             setCredentials([]);
-            removeAllPoapEvents();
+            resetFormStore();
             router.push('/').then(() => window.location.reload());
           }
           else {
@@ -244,7 +244,7 @@ const CreatePollPage = () => {
       } catch (error: any) {
         console.error('Error creating poll:', error);
         setIsLoading(false);
-        removeAllPoapEvents();
+        resetFormStore();
         toast({
           title: 'Error',
           description: error.message,
@@ -278,7 +278,7 @@ const CreatePollPage = () => {
   };
 
   const handleBack = () => {
-    removeAllPoapEvents();
+    resetFormStore();
     router.push('/');
   };
 
