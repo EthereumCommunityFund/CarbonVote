@@ -19,8 +19,7 @@ import VotingContract from '../../carbonvote-contracts/deployment/contracts/Vote
 import { toast } from '@/components/ui/use-toast';
 import { OptionType } from '@/types';
 import { useUserPassportContext } from '@/context/PassportContext';
-import { PollRequestData, createPoll } from '@/controllers/poll.controller';
-import axiosInstance from '@/src/axiosInstance';
+import { createPoll } from '@/controllers/poll.controller';
 import { useFormStore } from "@/zustand/create";
 
 const CreatePollPage = () => {
@@ -45,7 +44,7 @@ const CreatePollPage = () => {
 
   // Zustand
   const selectedPOAPEvents = useFormStore((state) => state.selectedEvents)
-  const removeAllPoapEvents = useFormStore((state) => state.removeAll)
+  const resetFormStore = useFormStore((state) => state.reset)
 
   useEffect(() => {
     const doConnect = async () => {
@@ -63,6 +62,7 @@ const CreatePollPage = () => {
       setPollContract(contract);
     };
     doConnect();
+    resetFormStore();
   }, []);
 
   // const [options, setOptions] = useState<OptionType[]>([]);
@@ -172,13 +172,15 @@ const CreatePollPage = () => {
           title: 'Poll created successfully',
         });
         setCredentials([]);
+        resetFormStore();
         router.push('/').then(() => window.location.reload());
         /*setTimeout(() => {
           router.push('/');
         }, 1000);*/
       } catch (error) {
         console.error('Error creating poll:', error);
-        setIsLoading(false)
+        setIsLoading(false);
+        resetFormStore();
         toast({
           title: 'Error',
           description: 'Failed to create poll',
@@ -225,6 +227,7 @@ const CreatePollPage = () => {
             });
             console.log('Poll created successfully');
             setCredentials([]);
+            resetFormStore();
             router.push('/').then(() => window.location.reload());
           }
           else {
@@ -239,7 +242,8 @@ const CreatePollPage = () => {
         }
       } catch (error: any) {
         console.error('Error creating poll:', error);
-        setIsLoading(false)
+        setIsLoading(false);
+        resetFormStore();
         toast({
           title: 'Error',
           description: error.message,
@@ -273,6 +277,7 @@ const CreatePollPage = () => {
   };
 
   const handleBack = () => {
+    resetFormStore();
     router.push('/');
   };
 
