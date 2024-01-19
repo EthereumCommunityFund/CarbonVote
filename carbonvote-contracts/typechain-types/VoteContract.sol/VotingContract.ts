@@ -26,10 +26,12 @@ import type {
 export interface VotingContractInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "allowedVoters"
       | "createPoll"
       | "getAllPolls"
       | "getMessageHash"
       | "getPoll"
+      | "getPollType"
       | "polls"
       | "recordVote"
       | "verifyAndRecordVote"
@@ -41,6 +43,10 @@ export interface VotingContractInterface extends Interface {
     nameOrSignatureOrTopic: "VoteCasted" | "VoteChanged" | "VoteRemoved"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "allowedVoters",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "createPoll",
     values: [string, string, BigNumberish, string[], BigNumberish, string]
@@ -55,6 +61,10 @@ export interface VotingContractInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getPoll",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getPollType",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "polls", values: [BigNumberish]): string;
@@ -75,6 +85,10 @@ export interface VotingContractInterface extends Interface {
     values: [BigNumberish, BigNumberish, BytesLike, string]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "allowedVoters",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "createPoll", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getAllPolls",
@@ -85,6 +99,10 @@ export interface VotingContractInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getPoll", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getPollType",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "polls", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "recordVote", data: BytesLike): Result;
   decodeFunctionResult(
@@ -207,6 +225,8 @@ export interface VotingContract extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  allowedVoters: TypedContractMethod<[arg0: BigNumberish], [string], "view">;
+
   createPoll: TypedContractMethod<
     [
       _name: string,
@@ -223,13 +243,22 @@ export interface VotingContract extends BaseContract {
   getAllPolls: TypedContractMethod<
     [],
     [
-      [string[], string[], string[][], bigint[], bigint[], string[]] & {
+      [
+        string[],
+        string[],
+        string[][],
+        bigint[],
+        bigint[],
+        string[],
+        bigint[]
+      ] & {
         names: string[];
         descriptions: string[];
         options: string[][];
         endTimes: bigint[];
         pollTypes: bigint[];
         pollMetadatas: string[];
+        startTimes: bigint[];
       }
     ],
     "view"
@@ -240,27 +269,35 @@ export interface VotingContract extends BaseContract {
   getPoll: TypedContractMethod<
     [_pollIndex: BigNumberish],
     [
-      [string, string, string[], bigint, bigint, string] & {
+      [string, string, string[], bigint, bigint, string, bigint] & {
         name: string;
         description: string;
         options: string[];
         endTime: bigint;
         pollType: bigint;
         pollMetadata: string;
+        startTime: bigint;
       }
     ],
+    "view"
+  >;
+
+  getPollType: TypedContractMethod<
+    [_pollIndex: BigNumberish],
+    [bigint],
     "view"
   >;
 
   polls: TypedContractMethod<
     [arg0: BigNumberish],
     [
-      [string, string, bigint, bigint, string] & {
+      [string, string, bigint, bigint, string, bigint] & {
         description: string;
         name: string;
         endTime: bigint;
         poll_type: bigint;
         poll_metadata: string;
+        startTime: bigint;
       }
     ],
     "view"
@@ -306,6 +343,9 @@ export interface VotingContract extends BaseContract {
   ): T;
 
   getFunction(
+    nameOrSignature: "allowedVoters"
+  ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
+  getFunction(
     nameOrSignature: "createPoll"
   ): TypedContractMethod<
     [
@@ -324,13 +364,22 @@ export interface VotingContract extends BaseContract {
   ): TypedContractMethod<
     [],
     [
-      [string[], string[], string[][], bigint[], bigint[], string[]] & {
+      [
+        string[],
+        string[],
+        string[][],
+        bigint[],
+        bigint[],
+        string[],
+        bigint[]
+      ] & {
         names: string[];
         descriptions: string[];
         options: string[][];
         endTimes: bigint[];
         pollTypes: bigint[];
         pollMetadatas: string[];
+        startTimes: bigint[];
       }
     ],
     "view"
@@ -343,28 +392,33 @@ export interface VotingContract extends BaseContract {
   ): TypedContractMethod<
     [_pollIndex: BigNumberish],
     [
-      [string, string, string[], bigint, bigint, string] & {
+      [string, string, string[], bigint, bigint, string, bigint] & {
         name: string;
         description: string;
         options: string[];
         endTime: bigint;
         pollType: bigint;
         pollMetadata: string;
+        startTime: bigint;
       }
     ],
     "view"
   >;
   getFunction(
+    nameOrSignature: "getPollType"
+  ): TypedContractMethod<[_pollIndex: BigNumberish], [bigint], "view">;
+  getFunction(
     nameOrSignature: "polls"
   ): TypedContractMethod<
     [arg0: BigNumberish],
     [
-      [string, string, bigint, bigint, string] & {
+      [string, string, bigint, bigint, string, bigint] & {
         description: string;
         name: string;
         endTime: bigint;
         poll_type: bigint;
         poll_metadata: string;
+        startTime: bigint;
       }
     ],
     "view"

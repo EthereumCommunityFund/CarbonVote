@@ -42,6 +42,7 @@ interface Option {
   totalEth?: string;
   votersData?: any;
   address?: string;
+  optionindex: number;
 }
 
 const PollPage = () => {
@@ -115,15 +116,18 @@ const PollPage = () => {
 
         try {
           const optionName = await contract.name();
+          const index = await contract.option_index();
+          console.log(index, 'index');
           //optionNames.push(optionName);
           newOptions.push({
             optionName: optionName,
             address: address,
             votersCount: 0,
             totalEth: '0',
-            votersData: []
+            votersData: [],
+            optionindex: Number(index)
           });
-          newOptions.sort((a, b) => (a.optionName).localeCompare(b.optionName));
+          newOptions.sort((a, b) => a.optionindex - b.optionindex);
         } catch (error) {
           console.error('Error fetching options:', error);
         }
@@ -166,14 +170,17 @@ const PollPage = () => {
           }
 
           const optionName = await contract.name();
+          const index = await contract.option_index();
           aggregatedData.push({
             optionName,
             votersCount,
             totalEth: ethers.formatEther(totalBalance),
             votersData,
+            optionindex: Number(index)
           });
         }
         console.log(aggregatedData, 'aggregatedData');
+        aggregatedData.sort((a, b) => a.optionindex - b.optionindex);
         setOptionsData(aggregatedData);
       }
     };
@@ -352,9 +359,9 @@ const PollPage = () => {
                 {options.map((option, index) => (
                   <div key={index} className="option-item">
                     <OptionButton
-                      index={index}
+                      index={option.optionindex}
                       optionName={option.optionName}
-                      onVote={() => handleVote(index, option.optionName)}
+                      onVote={() => handleVote(option.optionindex, option.optionName)}
                       isChecked={selectedOption === option.optionName}
                       type="contract"
                     />

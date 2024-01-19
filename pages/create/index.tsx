@@ -172,7 +172,7 @@ const CreatePollPage = () => {
           title: 'Poll created successfully',
         });
         setCredentials([]);
-        router.push('/');
+        router.push('/').then(() => window.location.reload());
         /*setTimeout(() => {
           router.push('/');
         }, 1000);*/
@@ -225,9 +225,7 @@ const CreatePollPage = () => {
             });
             console.log('Poll created successfully');
             setCredentials([]);
-            setTimeout(() => {
-              router.push('/');
-            }, 1000);
+            router.push('/').then(() => window.location.reload());
           }
           else {
             console.error('You should connect to Sepolia, please try again');
