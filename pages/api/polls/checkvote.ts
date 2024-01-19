@@ -30,7 +30,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
                 .eq('vote_hash', vote_hash)
                 .eq('poll_id', pollId)
                 .single()
-
+            console.log(vote);
+            console.log(vote_hash);
             if (!vote) {
                 vote = { option_id: null };
             }

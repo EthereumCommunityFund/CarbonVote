@@ -6,8 +6,12 @@ async function main() {
 
   const votingContract = await ethers.deployContract("VotingContract");
   // console.log(votingContract)
+  try {
+    await votingContract.waitForDeployment();
+  } catch (error) {
+    console.error("An error occurred during deployment:", error);
+  }
 
-  await votingContract.waitForDeployment();
 
 
 
@@ -28,3 +32,9 @@ async function main() {
 
   // console.log(votingContract, await votingContract.owner());
 }
+main()
+  .then(() => process.exit(0))
+  .catch(error => {
+    console.error("An error occurred:", error);
+    process.exit(1);
+  });

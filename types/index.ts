@@ -76,4 +76,5 @@ export interface Option {
   totalEth?: string;
   votersData?: any;
   address?: string;
+  optionindex: number;
 }

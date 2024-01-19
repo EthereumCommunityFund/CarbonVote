@@ -62,14 +62,41 @@ const PollPage = () => {
   const contractAddress = "0xD07E11aeA30DC68E42327F116e47f12C7E434d77";
   useEffect(() => {
     fetchPollFromApi(id);
-    console.log(pollIsLive, 'live2');
   }, [id]);
 
   useEffect(() => {
-    if (hasChangedAccount) {
-      fetchPollFromApi(id);
+    console.log('account changed');
+    setSelectedOption(null);
+    fetchPollFromApi(id);
+    if (credentialId == '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2') {
+      const fetchNewScore = async () => {
+        let fetchScoreData = { address: account as string, scorerId: '6347' };
+        try {
+          let scoreResponse = await fetchScore(fetchScoreData);
+          let scoreData = scoreResponse.data;
+          console.log(scoreData.score.toString(), 'score');
+          setScore(scoreData.score.toString());
+        } catch (error) {
+          console.error('Error fetching score:', error);
+        }
+      };
+      fetchNewScore();
+    } else if (credentialId == "600d1865-1441-4e36-bb13-9345c94c4dfb") {
+      const fetchNewNumber = async () => {
+        try {
+          const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
+          //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
+          const contract = new ethers.Contract(contractAddress, contractABI, provider);
+          const events = await contract.getEventCountForCollection(account);
+
+          setPoapsNumber(events.toString());
+        } catch (error) {
+          console.error('Error fetching score:', error);
+        }
+      };
+      fetchNewNumber();
     }
-  }, [id]);
+  }, [account]);
 
   const fetchPollFromApi = async (pollId: string | string[] | undefined) => {
     try {
@@ -77,6 +104,7 @@ const PollPage = () => {
       const data = await response.data;
       console.log(data, 'pollData');
       setPoll(data);
+      console.log(poll?.poap_events.length, 'poll?.poap_events');
       setOptions(data.options);
       const credentialId = data.credentials?.[0]?.id || "";
       let identifier: string | null = null;
@@ -149,10 +177,10 @@ const PollPage = () => {
   }
 
   const warnAndConnect = () => {
-    console.error('You need to connect to Metamask to get your POAPs, please try again');
+    console.error('You need to connect to Metamask to get this information, please try again');
     toast({
       title: 'Error',
-      description: 'You need to connect to Metamask to get your POAPS number, please try again',
+      description: 'You need to connect to Metamask to get this information, please try again',
       variant: 'destructive',
     });
     connectToMetamask();
@@ -186,7 +214,6 @@ const PollPage = () => {
         return;
       }
       voter_identifier = localStorage.getItem('userId');
-      console.log(voter_identifier);
     }
     //Devconnect
     else if (credentialId == '3cc4b682-9865-47b0-aed8-ef1095e1c398') {
@@ -368,13 +395,13 @@ const PollPage = () => {
           {pollIsLive ? (
             <>
               <Label className="text-2xl">Vote on Poll</Label>
-              {poll?.poap_events && poll?.poap_events.length > 0 && credentialId === "600d1865-1441-4e36-bb13-9345c94c4dfb" ? (
-                <div></div>
-              ) : (
+              {poll.poap_events.length == 0 && credentialId === "600d1865-1441-4e36-bb13-9345c94c4dfb" ? (
                 <div>
                   <div><Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label></div>
                   <div><Label className="text-sm">Please notice that for now in this test version, we only stored the participation list of 2 Ethereum events.</Label></div>
                 </div>
+              ) : (
+                <div></div>
               )}
               {credentialId === "6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2" && (
                 <Label className="text-sm">Your gitcoin passport score is: {score}/100 (Your score must be higher than 0 to vote)</Label>

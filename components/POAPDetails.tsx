@@ -18,6 +18,7 @@ const PoapDetails = ({ poapEvents, account, eventDetails, setEventDetails }: Poa
         const responses = await Promise.all(
           poapEvents.map(eventId => getPoapEventDetails(eventId, account))
         );
+        setEventDetails([]); //fix bug that number of event incremente if open another browser
         setEventDetails((prevDetails: any) => [...prevDetails, ...responses]);
         setIsLoading(false);
       } catch (error) {
