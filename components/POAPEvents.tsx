@@ -14,7 +14,6 @@ const POAPEvents = () => {
   const addEvent = useFormStore((state) => state.addEvent)
   const removeEvent = useFormStore((state) => state.removeEvent)
 
-
   const handleSearch = async (event: any) => {
     setSearchTerm(event.target.value);
     if (event.target.value !== "") {
@@ -27,7 +26,7 @@ const POAPEvents = () => {
   };
 
   const handleSelectOption = (event: Event) => {
-    if (selectedEvents.length < 5) {
+    if (selectedEvents.length < 6) {
       setSearchTerm("");
       setSearchResults([]);
       addEvent(event)
