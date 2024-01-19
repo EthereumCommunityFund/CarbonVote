@@ -19,8 +19,8 @@ const PieChartComponent: React.FC<IPieChartComponent> = ({ votes }) => {
     datasets: [
       {
         data: weight,
-        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-        hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+        backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56'],
+        hoverBackgroundColor: ['#36A2EB', '#FF6384', '#FFCE56'],
       },
     ],
   };

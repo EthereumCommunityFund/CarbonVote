@@ -1,3 +1,4 @@
+import { PollOptionType, Option } from "@/types";
 /*export const calculateTimeRemaining = (endDate: string | bigint | number): string | null => {
   let endTime: Date | null = null;
 
@@ -94,4 +95,19 @@ export const convertToHoursAndMinutesToSeconds = (timeLimitString: string): numb
   });
 
   return seconds;
+};
+
+export const convertOptionsToPollOptions = (options: Option[]): PollOptionType[] => {
+  return options.map((option, index) => {
+    // You may need to generate unique IDs based on your requirements
+    const id = `option_${index + 1}`;
+
+    return {
+      id,
+      option_description: option.optionName,
+      pollId: id, // Assuming pollId is based on the option ID, adjust accordingly
+      totalWeight: 0,
+      votes: Number(option.totalEth), // Assuming initial votes count is 0, adjust accordingly
+    };
+  });
 };

@@ -7,7 +7,7 @@ import CountdownTimer from '@/components/ui/CountDownTimer';
 import HtmlString from '@/components/ui/Html';
 import { Label } from '@/components/ui/Label';
 import { useWallet } from '@/context/WalletContext';
-import { OptionType, PollType } from '@/types';
+import { Option, PollType } from '@/types';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 //import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
@@ -18,9 +18,10 @@ import VotingOption from '../../carbonvote-contracts/deployment/contracts/Voting
 import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
 import { fetchPollById } from '@/controllers/poll.controller';
-import { calculateTimeRemaining } from '@/utils/index';
+import { calculateTimeRemaining, convertOptionsToPollOptions } from '@/utils/index';
 import { Loader } from '@/components/ui/Loader';
 import { useUserPassportContext } from '@/context/PassportContext';
+import PieChartComponent from '@/components/ui/PieChart';
 interface Poll {
   id: string;
   name: string;
@@ -36,13 +37,7 @@ interface Poll {
   poll_type: number | bigint | string;
 }
 
-interface Option {
-  optionName: string;
-  votersCount: number;
-  totalEth?: string;
-  votersData?: any;
-  address?: string;
-}
+
 
 const PollPage = () => {
   const router = useRouter();
@@ -405,7 +400,9 @@ const PollPage = () => {
             ))} */}
               </div>
             </div>
-          ))}
+          ))
+        }
+        <PieChartComponent votes={convertOptionsToPollOptions(optionsData)} />
       </div>
     </div>
   );

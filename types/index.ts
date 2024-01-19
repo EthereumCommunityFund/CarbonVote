@@ -69,3 +69,11 @@ export type PillInputs = {
   event: Event,
   onRemove: (id: number) => void;
 }
+
+export interface Option {
+  optionName: string;
+  votersCount: number;
+  totalEth?: string;
+  votersData?: any;
+  address?: string;
+}
