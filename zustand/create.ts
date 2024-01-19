@@ -3,21 +3,31 @@ import { devtools, persist } from 'zustand/middleware'
 import type { } from '@redux-devtools/extension' // required for devtools typing
 import { Event } from '@/types'
 
-interface FormState {
+interface State {
     selectedEvents: Event[]
-    addEvent: (event: Event) => void
-    removeEvent: (id: number) => void
-    removeAll: () => void
 }
 
-export const useFormStore = create<FormState>()(
+interface FormState {
+    addEvent: (event: Event) => void
+    removeEvent: (id: number) => void
+    reset: () => void
+}
+
+// define the initial state
+const initialState: State = {
+    selectedEvents: [],
+}
+
+export const useFormStore = create<State & FormState>()(
     devtools(
         persist(
             (set) => ({
-                selectedEvents: [],
+                ...initialState,
                 addEvent: (event) => set((state) => ({ selectedEvents: [...state.selectedEvents, event] })),
                 removeEvent: (id) => set((state) => ({ selectedEvents: state.selectedEvents.filter(event => event.id !== id) })),
-                removeAll: () => set({ selectedEvents: [] })
+                reset: () => {
+                    set(initialState)
+                },
             }),
             {
                 name: 'carbon-form',
