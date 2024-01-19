@@ -19,8 +19,7 @@ import VotingContract from '../../carbonvote-contracts/deployment/contracts/Vote
 import { toast } from '@/components/ui/use-toast';
 import { OptionType } from '@/types';
 import { useUserPassportContext } from '@/context/PassportContext';
-import { PollRequestData, createPoll } from '@/controllers/poll.controller';
-import axiosInstance from '@/src/axiosInstance';
+import { createPoll } from '@/controllers/poll.controller';
 import { useFormStore } from "@/zustand/create";
 
 const CreatePollPage = () => {

@@ -18,6 +18,7 @@ export const HeaderComponent = () => {
         <div className="flex gap-1.5 items-center">
           <Image src={'/images/carbonvote.png'} width={30} height={30} alt={'Carbonvote'} />
           <Label className="text-red-600 text-lg">Carbonvote</Label>
+          <Label className="text-red-400 text-lg italic font-thin">beta</Label>
         </div>
       </Link>
       <div className="flex gap-1.5 items-center">

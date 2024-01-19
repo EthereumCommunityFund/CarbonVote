@@ -32,6 +32,8 @@ export const CredentialForm = ({
     'POAPS Verification': '600d1865-1441-4e36-bb13-9345c94c4dfb',
   };
 
+  const resetEvents = useFormStore((state) => state.resetEvents)
+
   const updateCredentials = (credentialKey: string) => {
     const uuid = credentialsMapping[credentialKey];
     setCredential(uuid);
@@ -53,6 +55,7 @@ export const CredentialForm = ({
     setIsGitcoinPassportRequired(false);
     setIsProtocolGuildMemberRequired(false);
     updateCredentials('POAPS Verification');
+    resetEvents();
   }
 
   const handlePOAPapiSelect = () => {
@@ -70,6 +73,7 @@ export const CredentialForm = ({
     setIsZuPassRequired(false);
     setIsProtocolGuildMemberRequired(false);
     updateCredentials('Gitcoin Passport');
+    resetEvents();
   }
 
   const handleProtocolGuildMemberSelect = () => {
@@ -79,6 +83,7 @@ export const CredentialForm = ({
     setIsZuPassRequired(false);
     setIsProtocolGuildMemberRequired(!isProtocolGuildMemberRequired);
     updateCredentials('Protocol Guild Member');
+    resetEvents();
   }
 
   const handleZuPassSelect = () => {
@@ -88,6 +93,7 @@ export const CredentialForm = ({
     setIsZuPassRequired(!isZuPassRequired);
     setIsProtocolGuildMemberRequired(false);
     updateCredentials('ZuConnect Resident');
+    resetEvents();
   }
 
   const CredentialSelector = () => {
