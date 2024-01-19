@@ -356,7 +356,9 @@ const PollPage = () => {
   };
 
   if (!poll) {
-    return <Loader />; // Add loading state handling
+    return <div className="flex justify-center items-center h-screen">
+      <Loader />
+    </div>
   }
 
   return (

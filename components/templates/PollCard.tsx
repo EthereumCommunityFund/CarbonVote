@@ -24,14 +24,6 @@ interface IPollCard {
 }
 
 export const PollCardTemplate = ({ id, title, topic, subTopic, description, options, votingMethod, polltype, pollMetadata, poll, startTime, endTime }: IPollCard) => {
-
-  /*useEffect(() => {
-    console.log(id, 'id');
-    console.log(poll.id, 'poll.id');
-    console.log(polltype, 'poll type');
-    console.log(startTime, 'start time');
-    console.log(endTime, 'end time');
-  }, []);*/
   console.log(endTime);
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
