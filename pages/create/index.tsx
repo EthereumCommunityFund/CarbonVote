@@ -63,6 +63,7 @@ const CreatePollPage = () => {
       setPollContract(contract);
     };
     doConnect();
+    removeAllPoapEvents();
   }, []);
 
   // const [options, setOptions] = useState<OptionType[]>([]);
@@ -172,13 +173,15 @@ const CreatePollPage = () => {
           title: 'Poll created successfully',
         });
         setCredentials([]);
+        removeAllPoapEvents();
         router.push('/').then(() => window.location.reload());
         /*setTimeout(() => {
           router.push('/');
         }, 1000);*/
       } catch (error) {
         console.error('Error creating poll:', error);
-        setIsLoading(false)
+        setIsLoading(false);
+        removeAllPoapEvents();
         toast({
           title: 'Error',
           description: 'Failed to create poll',
@@ -225,6 +228,7 @@ const CreatePollPage = () => {
             });
             console.log('Poll created successfully');
             setCredentials([]);
+            removeAllPoapEvents();
             router.push('/').then(() => window.location.reload());
           }
           else {
@@ -239,7 +243,8 @@ const CreatePollPage = () => {
         }
       } catch (error: any) {
         console.error('Error creating poll:', error);
-        setIsLoading(false)
+        setIsLoading(false);
+        removeAllPoapEvents();
         toast({
           title: 'Error',
           description: error.message,
@@ -273,6 +278,7 @@ const CreatePollPage = () => {
   };
 
   const handleBack = () => {
+    removeAllPoapEvents();
     router.push('/');
   };
 
