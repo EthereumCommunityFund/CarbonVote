@@ -18,6 +18,8 @@ import { v4 as uuidv4 } from 'uuid';
 import PoapDetails from '@/components/POAPDetails'
 import { fetchScore } from '@/controllers';
 import { Loader } from '@/components/ui/Loader';
+import PieChartComponent from '@/components/ui/PieChart';
+import { PollOptionType } from '@/types';
 
 interface Poll {
   id: string;
@@ -35,13 +37,7 @@ interface Poll {
   poap_events: number[]
 }
 
-interface Option {
-  id: string;
-  option_description: string;
-  pollId: string;
-  totalWeight: number;
-  votes: number;
-}
+
 
 const PollPage = () => {
   const router = useRouter();
@@ -54,7 +50,7 @@ const PollPage = () => {
   const { signIn, isPassportConnected, verifyticket, signInAndVerify } = useUserPassportContext();
   const { connectToMetamask, isConnected, account, hasChangedAccount } = useWallet();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [options, setOptions] = useState<Option[]>([]);
+  const [options, setOptions] = useState<PollOptionType[]>([]);
   const [credentialId, setCredentialId] = useState("");
   const [score, setScore] = useState('0');
   const [remainingTime, settimeRemaining] = useState('');
@@ -475,11 +471,12 @@ const PollPage = () => {
           <hr></hr>
           <div className='flex flex-col gap-2.5 pt-2.5'>
             {options &&
-              options.map((option: Option) => (
+              options.map((option: PollOptionType) => (
                 <OptionVotingCountProgress description={option.option_description} votes={option.votes} />
               ))
             }
           </div>
+          <PieChartComponent votes={options} />
         </div>
       </div>
     </div>
