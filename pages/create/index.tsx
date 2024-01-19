@@ -99,6 +99,7 @@ const CreatePollPage = () => {
         description: 'All fields are required',
         variant: 'destructive',
       });
+      setIsLoading(false)
       return;
     }
     const durationInSeconds = convertToHoursAndMinutesToSeconds(timeLimit);
@@ -109,6 +110,7 @@ const CreatePollPage = () => {
         description: 'Invalid duration',
         variant: 'destructive',
       });
+      setIsLoading(false)
       return;
     }
     // const endTime = new Date();
@@ -125,6 +127,7 @@ const CreatePollPage = () => {
         description: 'At least two options should be selected',
         variant: 'destructive',
       });
+      setIsLoading(false)
       return;
     }
     let poll_type = 0;
@@ -169,7 +172,7 @@ const CreatePollPage = () => {
           title: 'Poll created successfully',
         });
         setCredentials([]);
-        router.push('/');
+        router.push('/').then(() => window.location.reload());
         /*setTimeout(() => {
           router.push('/');
         }, 1000);*/
@@ -186,12 +189,13 @@ const CreatePollPage = () => {
       try {
         if (pollContract) {
           if (!isConnected) {
-            console.error('You need to connect to Metamask to vote, please try again');
+            console.error('You need to connect to Metamask to create, please try again');
             toast({
               title: 'Error',
-              description: 'You need to connect to Metamask to vote, please try again',
+              description: 'You need to connect to Metamask to create, please try again',
               variant: 'destructive',
             });
+            setIsLoading(false)
             connectToMetamask();
             return;
           }
@@ -221,9 +225,7 @@ const CreatePollPage = () => {
             });
             console.log('Poll created successfully');
             setCredentials([]);
-            setTimeout(() => {
-              router.push('/');
-            }, 1000);
+            router.push('/').then(() => window.location.reload());
           }
           else {
             console.error('You should connect to Sepolia, please try again');
@@ -232,6 +234,7 @@ const CreatePollPage = () => {
               description: 'You should connect to Sepolia, please try again',
               variant: 'destructive',
             });
+            setIsLoading(false)
           }
         }
       } catch (error: any) {

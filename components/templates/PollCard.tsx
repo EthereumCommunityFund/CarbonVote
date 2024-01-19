@@ -93,7 +93,7 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
         </div>
       </div>
 
-      <span className="text-xs" style={{ color: votingMethod === 'EthHolding' ? "orange" : "blue" }}>{votingMethod.toUpperCase()}</span>
+      <span className="text-xs" style={{ color: votingMethod === 'EthHolding' ? "orange" : "blue" }}>{votingMethod === 'headCount' ? 'HEADCOUNTING' : votingMethod.toUpperCase()}</span>
 
       {/* <!-- Description --> */}
       <span dangerouslySetInnerHTML={{ __html: removeImageTags(shortDescription) }} />

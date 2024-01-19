@@ -29,6 +29,7 @@ interface Poll {
   votingMethod: string;
   time_limit: number;
   startTime: number;
+  id: string;
 }
 
 export default function Home() {
@@ -60,6 +61,7 @@ export default function Home() {
       const votingMethod = pollType.toString() == '0' ? 'EthHolding' : 'HeadCounting';
       return {
         name,
+        id: index, //add id for ethholding polls so there will not have redirection problems
         description: descriptions[index],
         options: options[index],
         endTime: Number(endTimes[index]) * 1000,
@@ -109,7 +111,7 @@ export default function Home() {
             return (
               <PollCardTemplate
                 key={index}
-                id={`${index}`}
+                id={poll.id}
                 title={poll.name || poll.title}
                 creator={'Creator Name'}
                 description={poll.description}

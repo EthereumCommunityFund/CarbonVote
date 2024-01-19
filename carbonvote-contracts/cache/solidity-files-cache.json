@@ -1,13 +1,14 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "/Users/francopetra/Projects/CarbonVote/carbonvote-contracts/contracts/VoteContract.sol": {
-      "lastModificationDate": 1704999194260,
-      "contentHash": "c3ada6aa1ad7cb420dabed87f04f870b",
+    "D:\\Carbonvotte\\9\\CarbonVote\\carbonvote-contracts\\contracts\\VoteContract.sol": {
+      "lastModificationDate": 1705439238617,
+      "contentHash": "17939653f5ec40db8db7f76f311d0fc8",
       "sourceName": "contracts/VoteContract.sol",
       "solcConfig": {
-        "version": "0.8.19",
+        "version": "0.8.20",
         "settings": {
+          "evmVersion": "paris",
           "optimizer": {
             "enabled": false,
             "runs": 200
@@ -38,13 +39,14 @@
         "VotingContract"
       ]
     },
-    "/Users/francopetra/Projects/CarbonVote/carbonvote-contracts/contracts/VotingOption.sol": {
-      "lastModificationDate": 1704999194260,
-      "contentHash": "38f20e83389d0bc4cb87bdf3666c2a32",
+    "D:\\Carbonvotte\\9\\CarbonVote\\carbonvote-contracts\\contracts\\VotingOption.sol": {
+      "lastModificationDate": 1705439238617,
+      "contentHash": "f7ade61b37c01e8f35b48ebfe1028b5e",
       "sourceName": "contracts/VotingOption.sol",
       "solcConfig": {
-        "version": "0.8.19",
+        "version": "0.8.20",
         "settings": {
+          "evmVersion": "paris",
           "optimizer": {
             "enabled": false,
             "runs": 200
