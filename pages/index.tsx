@@ -1,23 +1,17 @@
 'use client'
 require('dotenv').config();
 import { useRouter } from 'next/router';
-import { v4 as uuidv4 } from 'uuid';
 import { useQuery } from 'react-query';
 import { fetchAllPolls as fetchAllPollsFromAPI } from '@/controllers/poll.controller';
 import { Label } from '@/components/ui/Label';
 import { useUserPassportContext } from '../context/PassportContext';
-//import { mockpolls } from '@/constant/mockPolls';
-import { PollType } from '@/types';
 import { PollCardTemplate } from '@/components/templates/PollCard';
 import Button from '@/components/ui/buttons/Button';
 import { PlusCirceIcon } from '@/components/icons';
-import { useEffect, useState } from 'react';
+import { Loader } from '@/components/ui/Loader';
 import { ethers } from 'ethers';
-//import VotingContract from './../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
 import VotingContract from './../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
-//import { contract_addresses } from './../carbonvote-contracts/artifacts/deployedAddresses.json';
-import { toast } from '@/components/ui/use-toast';
-import Spinner from '@/components/ui/Spinner';
+
 interface Poll {
   name: string;
   title: string;
@@ -95,17 +89,19 @@ export default function Home() {
     <div className="flex flex-col p-5 gap-2.5 text-black">
       <div className="flex gap-3 pt-5 px-5 bg-gradient-to-r from-red-400 to-white rounded-lg justify-center">
         <div className="flex flex-col gap-2.5 py-10 font-share-tech-mono lg:w-2/3">
-          <Label className="text-[39px]">Carbonvote V 2.0</Label>
+          <Label className="text-[39px]">Carbonvote 2 - Beta</Label>
           <Label className="lg:text-[69px] md:text-[59px]">Empowering Consensus for a Sustainable Future.</Label>
         </div>
       </div>
       <div className="px-[273px] flex flex-col gap-[30px]">
-        {isLoading ? <Spinner /> : <></>}
         <div className="flex justify-end">
           <Button className="rounded-full" leftIcon={PlusCirceIcon} onClick={handleCreatePoll}>
             Create a Poll
           </Button>
         </div>
+        {isLoading && <div className="flex justify-center items-center h-full">
+          <Loader />
+        </div>}
         <div className="flex flex-col gap-2.5 h-[250px]">
           {polls?.map((poll: Poll, index: number) => {
             return (
