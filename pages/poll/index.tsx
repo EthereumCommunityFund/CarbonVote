@@ -395,7 +395,7 @@ const PollPage = () => {
           {pollIsLive ? (
             <>
               <Label className="text-2xl">Vote on Poll</Label>
-              {poll.poap_events.length == 0 && credentialId === "600d1865-1441-4e36-bb13-9345c94c4dfb" ? (
+              {(!poll?.poap_events || poll?.poap_events.length === 0) && credentialId === "600d1865-1441-4e36-bb13-9345c94c4dfb" ? (
                 <div>
                   <div><Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label></div>
                   <div><Label className="text-sm">Please notice that for now in this test version, we only stored the participation list of 2 Ethereum events.</Label></div>
