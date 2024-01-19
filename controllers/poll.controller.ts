@@ -16,6 +16,11 @@ export type VoteRequestData = {
     poll_id: string;
 };
 
+export type CheckVoteData = {
+    id: string;
+    identifier: string | null;
+};
+
 
 export type OptionData = {
     option_description: string;
@@ -35,4 +40,8 @@ export const createPoll = async (pollData: PollRequestData) => {
 
 export const castVote = async (voteData: VoteRequestData) => {
     return await axiosInstance.post('/api/polls/vote', voteData);
+};
+
+export const fetchVote = async (checkData: CheckVoteData) => {
+    return await axiosInstance.get(`/api/polls/checkvote`, { params: checkData });
 };

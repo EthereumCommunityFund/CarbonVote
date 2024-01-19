@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/Label';
 import { useRouter } from 'next/router';
 import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
-import { VoteRequestData, castVote, fetchPollById, } from '@/controllers/poll.controller';
+import { VoteRequestData, castVote, fetchPollById, fetchVote, } from '@/controllers/poll.controller';
 import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
 import { useWallet } from '@/context/WalletContext';
@@ -48,7 +48,7 @@ const PollPage = () => {
   };
   const [poll, setPoll] = useState<Poll>();
   const { signIn, isPassportConnected, verifyticket, signInAndVerify } = useUserPassportContext();
-  const { connectToMetamask, isConnected, account } = useWallet();
+  const { connectToMetamask, isConnected, account, hasChangedAccount } = useWallet();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [options, setOptions] = useState<PollOptionType[]>([]);
   const [credentialId, setCredentialId] = useState("");
@@ -57,10 +57,18 @@ const PollPage = () => {
   const [startDate, setstartDate] = useState<Date>();
   const [poapsNumber, setPoapsNumber] = useState('0');
   const [eventDetails, setEventDetails] = useState<any[]>([])
+  //const [pollIsLive, setPollLive] = useState(false);
 
   const contractAddress = "0xD07E11aeA30DC68E42327F116e47f12C7E434d77";
   useEffect(() => {
     fetchPollFromApi(id);
+    console.log(pollIsLive, 'live2');
+  }, [id]);
+
+  useEffect(() => {
+    if (hasChangedAccount) {
+      fetchPollFromApi(id);
+    }
   }, [id]);
 
   const fetchPollFromApi = async (pollId: string | string[] | undefined) => {
@@ -71,8 +79,37 @@ const PollPage = () => {
       setPoll(data);
       setOptions(data.options);
       const credentialId = data.credentials?.[0]?.id || "";
+      let identifier: string | null = null;
+      if (credentialId) {
+        switch (credentialId) {
+          case '76118436-886f-4690-8a54-ab465d08fa0d': //Zuconnect
+          case '3cc4b682-9865-47b0-aed8-ef1095e1c398': //Devconnect
+            if (localStorage.getItem('userId')) { identifier = localStorage.getItem('userId'); }
+            break;
+          case '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2': //Gitcoin passport
+          case '600d1865-1441-4e36-bb13-9345c94c4dfb': //POAPS verification
+            if (localStorage.getItem('account')) { identifier = localStorage.getItem('account'); }
+            break;
+        }
+      }
+      else {
+        if (!localStorage.getItem('userUniqueId')) {
+          const uniqueId = uuidv4();
+          localStorage.setItem('userUniqueId', uniqueId);
+        }
+        identifier = localStorage.getItem('userUniqueId');
+      }
+      const checkdata = {
+        id: pollId as string,
+        identifier: identifier as string
+      }
+      const responsevote = await fetchVote(checkdata);
+      if (responsevote.data.option_id !== '') {
+        setSelectedOption(responsevote.data.option_id);
+      }
       const timeleft = calculateTimeRemaining(data.endTime);
       console.log(data.endTime);
+      console.log(data.startTime);
       const startdate = new Date(data.startTime);
       setstartDate(startdate);
       console.log(startDate, 'start date');
@@ -80,10 +117,17 @@ const PollPage = () => {
       else {
         settimeRemaining(timeleft);
       }
+      /*console.log(pollIsLive, 'live1');
+      console.log(remainingTime, 'remaining time');
+      if (remainingTime !== null && remainingTime !== 'Time is up!') {
+        setPollLive(true);
+        console.log(remainingTime, 'remaining Time', pollIsLive);
+      }*/
       if (credentialId) {
         setCredentialId(credentialId);
         console.log(credentialId, 'credential ID');
       }
+      //console.log(pollIsLive, 'live');
     } catch (error) {
       console.error('Error fetching poll from API:', error);
     }
@@ -324,14 +368,14 @@ const PollPage = () => {
           {pollIsLive ? (
             <>
               <Label className="text-2xl">Vote on Poll</Label>
-              {
-                credentialId === "600d1865-1441-4e36-bb13-9345c94c4dfb" && (
-                  <div>
-                    <div><Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label></div>
-                    <div><Label className="text-sm">Please notice that for now in this test version, we only stored the participation list of 2 Ethereum events.</Label></div>
-                  </div>
-                )
-              }
+              {poll?.poap_events && poll?.poap_events.length > 0 && credentialId === "600d1865-1441-4e36-bb13-9345c94c4dfb" ? (
+                <div></div>
+              ) : (
+                <div>
+                  <div><Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label></div>
+                  <div><Label className="text-sm">Please notice that for now in this test version, we only stored the participation list of 2 Ethereum events.</Label></div>
+                </div>
+              )}
               {credentialId === "6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2" && (
                 <Label className="text-sm">Your gitcoin passport score is: {score}/100 (Your score must be higher than 0 to vote)</Label>
               )}
@@ -342,14 +386,14 @@ const PollPage = () => {
                     id={option.id}
                     optionName={option.option_description}
                     onVote={(optionId) => handleVote(optionId as string)}
-                    isChecked={selectedOption === option.option_description}
+                    isChecked={selectedOption === option.id}
                     type="api"
                   />
                 ))}
               </div>
             </>
           ) : (
-            <Label className="text-2xl">Poll pinished</Label>
+            <Label className="text-2xl">Poll finished</Label>
           )}
         </div>
       </div>

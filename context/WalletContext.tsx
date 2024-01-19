@@ -6,6 +6,7 @@ interface WalletContextType {
   account: string | null;
   isConnected: boolean;
   connectToMetamask: () => Promise<void>;
+  hasChangedAccount: Boolean;
   // ... any other functions or state variables you want to include
 }
 
@@ -22,14 +23,17 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const [account, setAccount] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [hasChangedAccount, sethasChangedAccount] = useState(false);
   useEffect(() => {
     const init = async () => {
       if (window.ethereum) {
         try {
           const newProvider = new ethers.BrowserProvider(window.ethereum as any);
           const accounts = await newProvider.listAccounts();
+          console.log(accounts, 'accounts');
           if (accounts.length > 0) {
             setAccount(accounts[0].address);
+            localStorage.setItem('account', accounts[0].address);
             setIsConnected(true);
             setProvider(newProvider);
           }
@@ -79,6 +83,8 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     } else {
       setAccount(accounts[0]);
       setIsConnected(true);
+      sethasChangedAccount(true);
+      localStorage.setItem('account', accounts[0]);
     }
   };
 
@@ -124,6 +130,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       setAccount(newAccount);
       setProvider(newProvider);
       setIsConnected(true);
+      localStorage.setItem('account', newAccount);
     } catch (error) {
       console.error('Error connecting to MetaMask or generating signature:', error);
     } finally {
@@ -133,7 +140,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
 
 
   // Provide the context
-  return <WalletContext.Provider value={{ provider, account, isConnected, connectToMetamask }}>{children}</WalletContext.Provider>;
+  return <WalletContext.Provider value={{ provider, account, isConnected, connectToMetamask, hasChangedAccount }}>{children}</WalletContext.Provider>;
 };
 
 // Custom hook to use the wallet context

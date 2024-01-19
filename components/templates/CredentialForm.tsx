@@ -36,6 +36,7 @@ export const CredentialForm = ({
     const uuid = credentialsMapping[credentialKey];
     setCredential(uuid);
     onCredentialsChange([uuid]);
+    console.log(uuid, 'credential selected');
   };
 
   const handleCredentialSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -86,6 +87,7 @@ export const CredentialForm = ({
     setIsPOAPsRequired(false);
     setIsZuPassRequired(!isZuPassRequired);
     setIsProtocolGuildMemberRequired(false);
+    updateCredentials('ZuConnect Resident');
   }
 
   const CredentialSelector = () => {

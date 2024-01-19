@@ -66,6 +66,7 @@ const PollPage = () => {
       //let provider = new ethers.BrowserProvider(window.ethereum as any);
       //let signer = await provider.getSigner();
       //const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+      console.log('fetching', id)
       const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
       const contract = new ethers.Contract(contractAddress, contractAbi, provider);
       try {
@@ -91,6 +92,7 @@ const PollPage = () => {
     }
   };
 
+  const pollIsLive = remainingTime !== null && remainingTime !== 'Time is up!';
   const optionContractAbi = VotingOption.abi;
   // const optionNames: any[] = [];
 
@@ -116,6 +118,7 @@ const PollPage = () => {
             totalEth: '0',
             votersData: []
           });
+          newOptions.sort((a, b) => (a.optionName).localeCompare(b.optionName));
         } catch (error) {
           console.error('Error fetching options:', error);
         }
@@ -182,7 +185,7 @@ const PollPage = () => {
     windowReference.close();
     return true;
   }
-  const handleVote = async (optionIndex: number) => {
+  const handleVote = async (optionIndex: number, optionName: string) => {
     if (!isConnected) {
       console.error('You need to connect to Metamask to vote, please try again');
       toast({
@@ -261,6 +264,7 @@ const PollPage = () => {
         const transactionResponse = await contract.vote(pollIndex, newOptionIndex, signature, message);
         await transactionResponse.wait(); // Wait for the transaction to be mined
         console.log('Vote cast successfully');
+        setSelectedOption(optionName);
         toast({
           title: 'Vote cast successfully',
         });
@@ -301,9 +305,9 @@ const PollPage = () => {
         </div>
         <div className="bg-white flex flex-col gap-2.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
-            <div className={`${remainingTime !== null && remainingTime !== 'Time is up!' ? 'bg-[#F84A4A20]' : 'bg-[#F8F8F8]'
+            <div className={`${pollIsLive ? 'bg-[#F84A4A20]' : 'bg-[#F8F8F8]'
               } px-2.5 rounded-lg items-center`}>
-              {remainingTime !== null && remainingTime !== 'Time is up!' ? (
+              {pollIsLive ? (
                 <Label className="text-[#F84A4A]">Live</Label>
               ) : (
                 <Label className="text-[#656565]">Closed</Label>
@@ -326,32 +330,39 @@ const PollPage = () => {
             <span dangerouslySetInnerHTML={{ __html: poll?.description }} />
           </div>
         </div>
+
         <div className="bg-white/40 p-2.5 flex flex-col gap-3.5">
-          <Label className="text-2xl">Vote on Poll</Label>
-          <Label>
-            This vote requires a <Label className="font-bold">zero-value transaction</Label> from your wallet
-          </Label>
-          {
-            pollType?.toString() === "1"
-              ? <Label className="text-sm">You can not vote if your address is not on this list: <a href="https://app.splits.org/accounts/0x84af3D5824F0390b9510440B6ABB5CC02BB68ea1" style={{ color: 'blue' }}>link</a></Label>
-              : <Label className="text-sm">(You can also make a zero-value transaction from your wallet (in Sepolia) to given options addresses to vote)</Label>
-          }
-          <div className="flex flex-col gap-2.5">
-            {options.map((option, index) => (
-              <div key={index} className="option-item">
-                <OptionButton
-                  index={index}
-                  optionName={option.optionName}
-                  onVote={() => handleVote(index)}
-                  isChecked={selectedOption === option.optionName}
-                  type="contract"
-                />
-                {pollType?.toString() !== '1' && (
-                  <div className="option-address">Address: {option.address}</div>
-                )}
+          {pollIsLive ? (
+            <>
+              <Label className="text-2xl">Vote on Poll</Label>
+              <Label>
+                This vote requires a <Label className="font-bold">zero-value transaction</Label> from your wallet
+              </Label>
+              {
+                pollType?.toString() === "1"
+                  ? <Label className="text-sm">You can not vote if your address is not on this list: <a href="https://app.splits.org/accounts/0x84af3D5824F0390b9510440B6ABB5CC02BB68ea1" style={{ color: 'blue' }}>link</a></Label>
+                  : <Label className="text-sm">(You can also make a zero-value transaction from your wallet (in Sepolia) to given options addresses to vote)</Label>
+              }
+              <div className="flex flex-col gap-2.5">
+                {options.map((option, index) => (
+                  <div key={index} className="option-item">
+                    <OptionButton
+                      index={index}
+                      optionName={option.optionName}
+                      onVote={() => handleVote(index, option.optionName)}
+                      isChecked={selectedOption === option.optionName}
+                      type="contract"
+                    />
+                    {pollType?.toString() !== '1' && (
+                      <div className="option-address">Address: {option.address}</div>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          ) : (
+            <Label className="text-2xl">Poll finished</Label>
+          )}
         </div>
       </div>
       <div className="flex flex-col gap-10 w-96">
@@ -388,7 +399,7 @@ const PollPage = () => {
                 <Label className="text-2xl">{option.optionName}</Label>
               </div>
               <div className="flex flex-col gap-2.5 pl-5 pb-5">
-                <Label>No of voters: {option.votersCount.toString()}</Label>
+                <Label>Number of voters: {option.votersCount.toString()}</Label>
                 {pollType?.toString() !== '1' && (
                   <Label>Total Eth of Voters: {option.totalEth} ETH</Label>
                 )}
