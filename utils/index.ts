@@ -75,8 +75,9 @@ export const convertToHoursAndMinutesToSeconds = (timeLimitString: string): numb
   const SECONDS_IN_MINUTE = 60;
   const MINUTES_IN_HOUR = 60;
   const HOURS_IN_DAY = 24;
+  const DAYS_IN_WEEK = 7;
 
-  const timeParts = timeLimitString.match(/(\d+)(d|day|days|h|hour|hours|m|min|minute|minutes)/g);
+  const timeParts = timeLimitString.match(/(\d+)(w|week|weeks|d|day|days|h|hour|hours|m|min|minute|minutes)/g);
 
   if (!timeParts) {
     throw new Error("Invalid time format");
@@ -86,7 +87,9 @@ export const convertToHoursAndMinutesToSeconds = (timeLimitString: string): numb
   timeParts.forEach((part: string) => {
     const value = parseInt(part, 10);
 
-    if (part.includes('d') || part.includes('day') || part.includes('days')) {
+    if (part.includes('w') || part.includes('week') || part.includes('weeks')) {
+      seconds += value * DAYS_IN_WEEK * HOURS_IN_DAY * MINUTES_IN_HOUR * SECONDS_IN_MINUTE;
+    } else if (part.includes('d') || part.includes('day') || part.includes('days')) {
       seconds += value * HOURS_IN_DAY * MINUTES_IN_HOUR * SECONDS_IN_MINUTE;
     } else if (part.includes('h') || part.includes('hour') || part.includes('hours')) {
       seconds += value * MINUTES_IN_HOUR * SECONDS_IN_MINUTE;
