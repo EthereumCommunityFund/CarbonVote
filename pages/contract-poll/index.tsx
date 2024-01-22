@@ -18,9 +18,10 @@ import VotingOption from '../../carbonvote-contracts/deployment/contracts/Voting
 import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
 import { fetchPollById } from '@/controllers/poll.controller';
-import { calculateTimeRemaining } from '@/utils/index';
+import { calculateTimeRemaining, convertOptionsToPollOptions } from '@/utils/index';
 import { Loader } from '@/components/ui/Loader';
 import { useUserPassportContext } from '@/context/PassportContext';
+import PieChartComponent from '@/components/ui/PieChart';
 interface Poll {
   id: string;
   name: string;
@@ -376,7 +377,7 @@ const PollPage = () => {
             <Label className="text-2xl">Poll finished</Label>
           )}
         </div>
-      </div>
+      </div>Option
       <div className="flex flex-col gap-10 w-96">
         <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
           <Label className="text-2xl">Details</Label>
@@ -426,6 +427,7 @@ const PollPage = () => {
               </div>
             </div>
           ))}
+        <PieChartComponent votes={convertOptionsToPollOptions(optionsData)} />
       </div>
     </div>
   );
