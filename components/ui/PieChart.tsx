@@ -14,13 +14,19 @@ const PieChartComponent: React.FC<IPieChartComponent> = ({ votes }) => {
   // Data for the pie chart
   const labels: string[] = votes.map((vote) => vote.option_description)
   const weight: number[] = votes.map((vote) => vote.votes);
+
+  let backgroundColor: string[] = ['#FF6384', '#00FF00', '#FFCE56'];
+  if (labels[0] === 'Yes') {
+    backgroundColor = ['#00FF00', '#FF6384', '#FFCE56'];
+  }
+
   const data = {
     labels: labels,
     datasets: [
       {
         data: weight,
-        backgroundColor: ['#FF6384', '#00FF00', '#FFCE56'],
-        hoverBackgroundColor: ['#FF6384', '#00FF00', '#FFCE56'],
+        backgroundColor: backgroundColor,
+        hoverBackgroundColor: backgroundColor,
       },
     ],
   };
