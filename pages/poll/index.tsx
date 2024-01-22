@@ -47,7 +47,7 @@ const PollPage = () => {
     router.push('/');
   };
   const [poll, setPoll] = useState<Poll>();
-  const { signIn, isPassportConnected, verifyticket, signInAndVerify } = useUserPassportContext();
+  const { signIn, isPassportConnected, verifyticket, devconnectVerify } = useUserPassportContext();
   const { connectToMetamask, isConnected, account, hasChangedAccount } = useWallet();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [options, setOptions] = useState<PollOptionType[]>([]);
@@ -221,13 +221,12 @@ const PollPage = () => {
         await signIn();
       }
       try {
-        await verifyticket();
-        let usereventId = localStorage.getItem('event Id');
-        if (usereventId !== "91312aa1-5f74-4264-bdeb-f4a3ddb8670c" && usereventId !== "54863995-10c4-46e4-9342-75e48b68d307" && usereventId !== "797de414-2aec-4ef8-8655-09df7e2b6cc6" && usereventId !== "a6109324-7ca0-4198-9583-77962d1b9d53" && usereventId !== "5de90d09-22db-40ca-b3ae-d934573def8b") {
+        await devconnectVerify();
+        if (localStorage.getItem('devconnect Id')) {
           canVote = true;
         }
-        else { console.log('not a devconnect resident'); }
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Error in verifying ticket:', error);
         return;
       }

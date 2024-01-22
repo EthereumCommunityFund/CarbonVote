@@ -27,7 +27,7 @@ type UserPassportContextData = {
   signOut: () => void;
   verifyticket: () => void;
   pcd: string | null;
-  signInAndVerify: () => void;
+  devconnectVerify: () => void;
 };
 type InputParams = {
   sso: string;
@@ -71,7 +71,7 @@ export const UserPassportContext = createContext<UserPassportContextData>({
   isPassportConnected: false,
   signOut: () => { },
   verifyticket: () => { },
-  signInAndVerify: () => { },
+  devconnectVerify: () => { },
   pcd: null,
 });
 const PCD_STORAGE_KEY = 'userPCD';
@@ -86,7 +86,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
   const [pcd, setPcd] = useState<string | null>(null);
   //const [eventpcd, setEventPcd] = useState<string | null>(null);
   //const [mode, setMode] = useState<'ticket|sign-in'>('sign-in');
-  const [mode, setMode] = useState<'ticket' | 'sign-in'>('sign-in');
+  const [mode, setMode] = useState<'ticket' | 'sign-in' | 'devconnect'>('sign-in');
   const processPcd = (pcdStr: string) => {
     console.log(pcdStr);
     const pcd = JSON.parse(pcdStr);
@@ -106,7 +106,17 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
           console.error('Error processing PCD string:', error);
         }
       }
-      if (pcdStr && mode === 'sign-in') {
+      else if (pcdStr && mode === 'devconnect') {
+        try {
+          let _pcd = processPcd(pcdStr);
+          console.log(_pcd, 'devconnect event pcd');
+          localStorage.setItem('devconnect Id', _pcd.claim.nullifierHash);
+        }
+        catch (error) {
+          console.error('Error processing devconnect PCD string:', error);
+        }
+      }
+      else if (pcdStr && mode === 'sign-in') {
         try {
           let _pcd = processPcd(pcdStr);
           await verifyProof(_pcd);
@@ -468,17 +478,27 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
       reject(new Error("Verification failed"));
     }
   });*/
-  const signInAndVerify = async () => {
-    await signIn();
+  const devconnectVerify = () => {
 
-    try {
-      const result = await verifyticket();
-      return result;
-    } catch (error) {
+    setMode('devconnect');
+    console.log('devconnect verify start');
+    return new Promise<void>((resolve, reject) => {
+      openGroupMembershipPopup(
+        'https://zupass.org/',
+        window.location.origin + '/popup',
+        'https://api.zupass.org/semaphore/6',
+        'carbonvote',
+        undefined,
+        undefined
+      );
+      const onPopupClosed = () => {
+        console.log('PopupClosed event triggered');
+        window.removeEventListener('popupClosed', onPopupClosed);
+        resolve();
+      };
+      window.addEventListener('popupClosed', onPopupClosed);
+    });
 
-      console.error('Verification failed:', error);
-      throw error;
-    }
   };
   const signOut = () => {
     // Clear the PCD from local storage and state
@@ -495,7 +515,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
         isAuthenticated,
         signOut,
         verifyticket,
-        signInAndVerify,
+        devconnectVerify,
         pcd,
         isPassportConnected: isAuthenticated,
       }}
