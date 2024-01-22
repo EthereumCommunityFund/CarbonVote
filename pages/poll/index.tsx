@@ -416,6 +416,7 @@ const PollPage = () => {
                     onVote={(optionId) => handleVote(optionId as string)}
                     isChecked={selectedOption === option.id}
                     type="api"
+                    optionAddress={undefined}
                   />
                 ))}
               </div>

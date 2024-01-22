@@ -358,17 +358,15 @@ const PollPage = () => {
               }
               <div className="flex flex-col gap-2.5">
                 {options.map((option, index) => (
-                  <div key={index} className="option-item">
+                  <div key={index} className="option-item flex flex-col">
                     <OptionButton
                       index={option.optionindex}
                       optionName={option.optionName}
                       onVote={() => handleVote(option.optionindex, option.optionName)}
                       isChecked={selectedOption === option.optionName}
                       type="contract"
+                      optionAddress={pollType?.toString() !== '1' ? option.address : ''}
                     />
-                    {pollType?.toString() !== '1' && (
-                      <div className="option-address">Address: {option.address}</div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -377,7 +375,7 @@ const PollPage = () => {
             <Label className="text-2xl">Poll finished</Label>
           )}
         </div>
-      </div>Option
+      </div>
       <div className="flex flex-col gap-10 w-96">
         <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
           <Label className="text-2xl">Details</Label>
