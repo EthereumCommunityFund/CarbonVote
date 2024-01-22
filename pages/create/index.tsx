@@ -91,6 +91,13 @@ const CreatePollPage = () => {
     'POAPS Verification': '600d1865-1441-4e36-bb13-9345c94c4dfb',
   };
 
+  function isValidInputTime(input: string): boolean {
+    const regex = /(\d+)(d|day|days|h|hour|hours|m|min|minute|minutes)/g;
+    const matches = input.match(regex);
+
+    return matches !== null && matches[0] === input;
+  }
+
   const createNewPoll = async () => {
     setIsLoading(true)
     if (!motionTitle || !motionDescription || !timeLimit) {
@@ -102,9 +109,19 @@ const CreatePollPage = () => {
       setIsLoading(false)
       return;
     }
-    const durationInSeconds = convertToHoursAndMinutesToSeconds(timeLimit);
-    console.log(durationInSeconds);
-    if (durationInSeconds <= 0) {
+    let durationInSeconds: number;
+    try {
+      durationInSeconds = convertToHoursAndMinutesToSeconds(timeLimit);
+      if (durationInSeconds <= 0) {
+        toast({
+          title: 'Error',
+          description: 'Invalid duration',
+          variant: 'destructive',
+        });
+        setIsLoading(false)
+        return;
+      }
+    } catch (error) {
       toast({
         title: 'Error',
         description: 'Invalid duration',
@@ -113,6 +130,7 @@ const CreatePollPage = () => {
       setIsLoading(false)
       return;
     }
+
     // const endTime = new Date();
     // endTime.setSeconds(endTime.getSeconds() + durationInSeconds);
 
