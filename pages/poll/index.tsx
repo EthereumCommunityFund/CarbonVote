@@ -19,25 +19,7 @@ import PoapDetails from '@/components/POAPDetails'
 import { fetchScore } from '@/controllers';
 import { Loader } from '@/components/ui/Loader';
 import PieChartComponent from '@/components/ui/PieChart';
-import { PollOptionType } from '@/types';
-
-interface Poll {
-  id: string;
-  name: string;
-  title: string;
-  startTime: number;
-  endTime: number;
-  isLive: boolean;
-  creator: string;
-  topic: string;
-  subTopic: string;
-  description: string;
-  options: string[];
-  pollMetadata: string;
-  poap_events: number[]
-}
-
-
+import { PollOptionType, Poll } from '@/types';
 
 const PollPage = () => {
   const router = useRouter();
@@ -48,7 +30,7 @@ const PollPage = () => {
   };
   const [poll, setPoll] = useState<Poll>();
   const { signIn, isPassportConnected, verifyticket, devconnectVerify } = useUserPassportContext();
-  const { connectToMetamask, isConnected, account, hasChangedAccount } = useWallet();
+  const { connectToMetamask, isConnected, account } = useWallet();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [options, setOptions] = useState<PollOptionType[]>([]);
   const [credentialId, setCredentialId] = useState("");
@@ -57,7 +39,6 @@ const PollPage = () => {
   const [startDate, setstartDate] = useState<Date>();
   const [poapsNumber, setPoapsNumber] = useState('0');
   const [eventDetails, setEventDetails] = useState<any[]>([])
-  //const [pollIsLive, setPollLive] = useState(false);
 
   const contractAddress = "0xD07E11aeA30DC68E42327F116e47f12C7E434d77";
   useEffect(() => {
@@ -186,6 +167,23 @@ const PollPage = () => {
     connectToMetamask();
   }
 
+  // Function to request access to the user's wallet
+  const requestAccount = async () => {
+    if (window.ethereum) {
+      try {
+        if (window?.ethereum && window?.ethereum?.request) {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          return accounts[0];
+        }
+      } catch (error) {
+        console.error("Failed to connect wallet:", error);
+      }
+    } else {
+      console.log('Ethereum object not found, install MetaMask.');
+    }
+  }
+
+
   const pollIsLive = remainingTime !== null && remainingTime !== 'Time is up!';
 
   const handleVote = async (optionId: string) => {
@@ -202,6 +200,7 @@ const PollPage = () => {
         await signIn();
       }
       try {
+        // TODO: Verify again on backend
         await verifyticket();
         let usereventId = localStorage.getItem('event Id');
         console.log(usereventId);
@@ -303,14 +302,7 @@ const PollPage = () => {
       canVote = true;
     }
     const pollId = poll?.id;
-    const voteData = {
-      poll_id: pollId,
-      option_id: optionId,
-      voter_identifier: voter_identifier,
-    };
-
     try {
-      console.log(voteData, 'voteData');
       console.log(canVote);
       if (!canVote) {
         console.error('You do not have the credential to vote');
@@ -319,16 +311,31 @@ const PollPage = () => {
           description: 'You do not have the credential to vote',
           variant: 'destructive',
         });
-      }
-      else {
+      } else {
         // FIXME: We need to add signature to validate vote even if it's only checked by the backend
         // this way we avoit injection of accounts
-        const response = await castVote(voteData as VoteRequestData);
-        console.log(response, 'response');
-        toast({
-          title: 'Vote cast successfully',
-        });
-        await fetchPollFromApi(id);
+        // The user Signs
+        // User Signs the vote
+        try {
+          const message = `Vote for poll ${pollId} on option ${optionId}`;
+          const signature = await signMessage(message);
+          voteData.signature = signature; // Include the signature in the vote data
+          const voteData = {
+            poll_id: pollId,
+            option_id: optionId,
+            voter_identifier: voter_identifier,
+          };
+          console.log(voteData, 'voteData');
+          const response = await castVote(voteData as VoteRequestData);
+          console.log(response, 'response');
+          toast({
+            title: 'Vote cast successfully',
+          });
+          await fetchPollFromApi(id);
+        } catch (error) {
+          console.error('Error signing vote:', error);
+          return;
+        }
       }
     } catch (error: any) {
       if (error.response && error.response.status === 409) {
