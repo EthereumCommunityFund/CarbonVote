@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Link from 'next/link'
 import { useUserPassportContext } from '@/context/PassportContext';
 import Button from './ui/buttons/Button';
@@ -9,6 +10,7 @@ import { useWallet } from '@/context/WalletContext';
 export const HeaderComponent = () => {
   const { signIn, isPassportConnected } = useUserPassportContext();
   const { connectToMetamask, account, isConnected } = useWallet();
+  const [isHovered, setIsHovered] = useState(false);
 
   const formattedAddy = account?.slice(0, 4) + '...' + account?.slice(-4)
   return (
@@ -24,9 +26,19 @@ export const HeaderComponent = () => {
         <Button className="outline-none h-10 items-center rounded-full" leftIcon={BoltIcon} onClick={signIn}>
           {isPassportConnected ? 'Zupass Connected' : 'Connect Passport'}
         </Button>
-        <Button className="outline-none h-10 items-center rounded-full" onClick={connectToMetamask}>
-          {isConnected ? formattedAddy : 'Connect Wallet'}
-        </Button>
+        {isConnected ?
+          // FIXME: Add disconnect function
+          <Button className={`outline-none h-10 items-center rounded-full`} onClick={connectToMetamask}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            {isHovered ? "Disconnect" : formattedAddy}
+          </Button>
+          :
+          <Button className="outline-none h-10 items-center rounded-full" onClick={connectToMetamask}>
+            Connect Wallet
+          </Button>
+        }
       </div>
     </div>
   );

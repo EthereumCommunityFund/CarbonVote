@@ -30,7 +30,7 @@ const PollPage = () => {
   };
   const [poll, setPoll] = useState<Poll>();
   const { signIn, isPassportConnected, verifyticket, devconnectVerify } = useUserPassportContext();
-  const { connectToMetamask, isConnected, account } = useWallet();
+  const { connectToMetamask, isConnected, account, signer } = useWallet();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [options, setOptions] = useState<PollOptionType[]>([]);
   const [credentialId, setCredentialId] = useState("");
@@ -122,16 +122,9 @@ const PollPage = () => {
       const startdate = new Date(data.startTime);
       setstartDate(startdate);
       console.log(startDate, 'start date');
-      if (!timeleft) { }
-      else {
+      if (timeleft) {
         settimeRemaining(timeleft);
       }
-      /*console.log(pollIsLive, 'live1');
-      console.log(remainingTime, 'remaining time');
-      if (remainingTime !== null && remainingTime !== 'Time is up!') {
-        setPollLive(true);
-        console.log(remainingTime, 'remaining Time', pollIsLive);
-      }*/
       if (credentialId) {
         setCredentialId(credentialId);
         console.log(credentialId, 'credential ID');
@@ -167,23 +160,6 @@ const PollPage = () => {
     connectToMetamask();
   }
 
-  // Function to request access to the user's wallet
-  const requestAccount = async () => {
-    if (window.ethereum) {
-      try {
-        if (window?.ethereum && window?.ethereum?.request) {
-          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-          return accounts[0];
-        }
-      } catch (error) {
-        console.error("Failed to connect wallet:", error);
-      }
-    } else {
-      console.log('Ethereum object not found, install MetaMask.');
-    }
-  }
-
-
   const pollIsLive = remainingTime !== null && remainingTime !== 'Time is up!';
 
   const handleVote = async (optionId: string) => {
@@ -206,7 +182,6 @@ const PollPage = () => {
         console.log(usereventId);
         if (usereventId == "91312aa1-5f74-4264-bdeb-f4a3ddb8670c" || usereventId == "54863995-10c4-46e4-9342-75e48b68d307" || usereventId == "797de414-2aec-4ef8-8655-09df7e2b6cc6" || usereventId == "a6109324-7ca0-4198-9583-77962d1b9d53") {
           canVote = true;
-          console.log(canVote);
         }
       } catch (error) {
         console.error('Error in verifying ticket:', error);
@@ -303,7 +278,7 @@ const PollPage = () => {
     }
     const pollId = poll?.id;
     try {
-      console.log(canVote);
+      console.log('canVote:', canVote);
       if (!canVote) {
         console.error('You do not have the credential to vote');
         toast({
@@ -318,12 +293,15 @@ const PollPage = () => {
         // User Signs the vote
         try {
           const message = `Vote for poll ${pollId} on option ${optionId}`;
-          const signature = await signMessage(message);
-          voteData.signature = signature; // Include the signature in the vote data
+
+          if (signer === null) return;
+          const signature = await signer.signMessage(message);
+
           const voteData = {
             poll_id: pollId,
             option_id: optionId,
             voter_identifier: voter_identifier,
+            signature
           };
           console.log(voteData, 'voteData');
           const response = await castVote(voteData as VoteRequestData);

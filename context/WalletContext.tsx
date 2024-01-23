@@ -14,6 +14,7 @@ interface WalletProviderProps {
 export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const [provider, setProvider] = useState<ethers.Provider | null>(null);
   const [account, setAccount] = useState<string | null>(null);
+  const [signer, setSigner] = useState<ethers.Signer | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [hasChangedAccount, sethasChangedAccount] = useState(false);
@@ -87,8 +88,9 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     setIsConnecting(true);
     try {
       const newProvider = new ethers.BrowserProvider(window.ethereum as any);
-      const signer = await newProvider.getSigner();
-      const newAccount = await signer.getAddress();
+      const newSigner = await newProvider.getSigner();
+      const newAccount = await newSigner.getAddress();
+      setSigner(newSigner);
       setAccount(newAccount);
       setProvider(newProvider);
       setIsConnected(true);
@@ -101,7 +103,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   };
 
   // Provide the context
-  return <WalletContext.Provider value={{ provider, account, isConnected, connectToMetamask, hasChangedAccount }}>{children}</WalletContext.Provider>;
+  return <WalletContext.Provider value={{ provider, signer, account, isConnected, connectToMetamask, hasChangedAccount }}>{children}</WalletContext.Provider>;
 };
 
 // Custom hook to use the wallet context

@@ -100,6 +100,7 @@ export interface Poll {
 
 export interface WalletContextType {
   provider: ethers.Provider | null;
+  signer: ethers.Signer | null
   account: string | null;
   isConnected: boolean;
   connectToMetamask: () => Promise<void>;
