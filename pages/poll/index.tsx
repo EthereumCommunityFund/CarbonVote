@@ -19,25 +19,7 @@ import PoapDetails from '@/components/POAPDetails'
 import { fetchScore } from '@/controllers';
 import { Loader } from '@/components/ui/Loader';
 import PieChartComponent from '@/components/ui/PieChart';
-import { PollOptionType } from '@/types';
-
-interface Poll {
-  id: string;
-  name: string;
-  title: string;
-  startTime: number;
-  endTime: number;
-  isLive: boolean;
-  creator: string;
-  topic: string;
-  subTopic: string;
-  description: string;
-  options: string[];
-  pollMetadata: string;
-  poap_events: number[]
-}
-
-
+import { PollOptionType, Poll } from '@/types';
 
 const PollPage = () => {
   const router = useRouter();
@@ -48,7 +30,7 @@ const PollPage = () => {
   };
   const [poll, setPoll] = useState<Poll>();
   const { signIn, isPassportConnected, verifyticket, devconnectVerify } = useUserPassportContext();
-  const { connectToMetamask, isConnected, account, hasChangedAccount } = useWallet();
+  const { connectToMetamask, isConnected, account, signer } = useWallet();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [options, setOptions] = useState<PollOptionType[]>([]);
   const [credentialId, setCredentialId] = useState("");
@@ -57,7 +39,6 @@ const PollPage = () => {
   const [startDate, setstartDate] = useState<Date>();
   const [poapsNumber, setPoapsNumber] = useState('0');
   const [eventDetails, setEventDetails] = useState<any[]>([])
-  //const [pollIsLive, setPollLive] = useState(false);
 
   const contractAddress = "0xD07E11aeA30DC68E42327F116e47f12C7E434d77";
   useEffect(() => {
@@ -141,16 +122,9 @@ const PollPage = () => {
       const startdate = new Date(data.startTime);
       setstartDate(startdate);
       console.log(startDate, 'start date');
-      if (!timeleft) { }
-      else {
+      if (timeleft) {
         settimeRemaining(timeleft);
       }
-      /*console.log(pollIsLive, 'live1');
-      console.log(remainingTime, 'remaining time');
-      if (remainingTime !== null && remainingTime !== 'Time is up!') {
-        setPollLive(true);
-        console.log(remainingTime, 'remaining Time', pollIsLive);
-      }*/
       if (credentialId) {
         setCredentialId(credentialId);
         console.log(credentialId, 'credential ID');
@@ -202,12 +176,12 @@ const PollPage = () => {
         await signIn();
       }
       try {
+        // TODO: Verify again on backend
         await verifyticket();
         let usereventId = localStorage.getItem('event Id');
         console.log(usereventId);
         if (usereventId == "91312aa1-5f74-4264-bdeb-f4a3ddb8670c" || usereventId == "54863995-10c4-46e4-9342-75e48b68d307" || usereventId == "797de414-2aec-4ef8-8655-09df7e2b6cc6" || usereventId == "a6109324-7ca0-4198-9583-77962d1b9d53") {
           canVote = true;
-          console.log(canVote);
         }
       } catch (error) {
         console.error('Error in verifying ticket:', error);
@@ -303,15 +277,8 @@ const PollPage = () => {
       canVote = true;
     }
     const pollId = poll?.id;
-    const voteData = {
-      poll_id: pollId,
-      option_id: optionId,
-      voter_identifier: voter_identifier,
-    };
-
     try {
-      console.log(voteData, 'voteData');
-      console.log(canVote);
+      console.log('canVote:', canVote);
       if (!canVote) {
         console.error('You do not have the credential to vote');
         toast({
@@ -319,16 +286,34 @@ const PollPage = () => {
           description: 'You do not have the credential to vote',
           variant: 'destructive',
         });
-      }
-      else {
+      } else {
         // FIXME: We need to add signature to validate vote even if it's only checked by the backend
         // this way we avoit injection of accounts
-        const response = await castVote(voteData as VoteRequestData);
-        console.log(response, 'response');
-        toast({
-          title: 'Vote cast successfully',
-        });
-        await fetchPollFromApi(id);
+        // The user Signs
+        // User Signs the vote
+        try {
+          const message = `Vote for poll ${pollId} on option ${optionId}`;
+
+          if (signer === null) return;
+          const signature = await signer.signMessage(message);
+
+          const voteData = {
+            poll_id: pollId,
+            option_id: optionId,
+            voter_identifier: voter_identifier,
+            signature
+          };
+          console.log(voteData, 'voteData');
+          const response = await castVote(voteData as VoteRequestData);
+          console.log(response, 'response');
+          toast({
+            title: 'Vote cast successfully',
+          });
+          await fetchPollFromApi(id);
+        } catch (error) {
+          console.error('Error signing vote:', error);
+          return;
+        }
       }
     } catch (error: any) {
       if (error.response && error.response.status === 409) {

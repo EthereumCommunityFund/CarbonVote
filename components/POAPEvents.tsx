@@ -41,7 +41,8 @@ const POAPEvents = () => {
     <div style={{
       display: 'inline-flex',
       alignItems: 'center',
-      border: '1px solid #ccc',
+      border: '1px solid #c2c2c2',
+      backgroundColor: '#ececec',
       borderRadius: '9999px',
       padding: '4px 8px',
       margin: '4px',

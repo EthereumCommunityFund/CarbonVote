@@ -4,7 +4,7 @@ export const Loader = () => {
   return (
     <>
       <li className="py-3 flex justify-center">
-        <Jelly size={50} color="#68C6AC" />
+        <Jelly size={50} color="#F87171" />
       </li>
     </>
   );

@@ -133,7 +133,7 @@ export const CredentialForm = ({
             checked={isPOAPsRequired}
             onClick={handlePOAPSelect}
           />
-          <Label className="text-lg">Add Ethereum POAPS Checking (The test version stores only 10 events)</Label>
+          <Label className="text-lg">Add Ethereum POAPS Checking (Up to 10 events)</Label>
         </div>
       </div>
 

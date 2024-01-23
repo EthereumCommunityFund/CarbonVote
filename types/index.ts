@@ -1,3 +1,5 @@
+import { ethers } from 'ethers';
+
 export type OptionType = {
   name: string;
   isChecked: boolean;
@@ -77,4 +79,31 @@ export interface Option {
   votersData?: any;
   address?: string;
   optionindex: number;
+}
+
+export interface Poll {
+  id: string;
+  name: string;
+  title: string;
+  startTime: number;
+  endTime: number;
+  isLive: boolean;
+  creator: string;
+  topic: string;
+  subTopic: string;
+  description: string;
+  options: string[];
+  pollMetadata: string;
+  poap_events: number[]
+}
+
+
+export interface WalletContextType {
+  provider: ethers.Provider | null;
+  signer: ethers.Signer | null
+  account: string | null;
+  isConnected: boolean;
+  connectToMetamask: () => Promise<void>;
+  hasChangedAccount: Boolean;
+  // ... any other functions or state variables you want to include
 }

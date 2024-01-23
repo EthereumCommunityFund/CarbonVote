@@ -1,14 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ethers } from 'ethers';
 import { toast } from '@/components/ui/use-toast';
-interface WalletContextType {
-  provider: ethers.Provider | null;
-  account: string | null;
-  isConnected: boolean;
-  connectToMetamask: () => Promise<void>;
-  hasChangedAccount: Boolean;
-  // ... any other functions or state variables you want to include
-}
+import { WalletContextType } from 'types'
 
 // Create the context
 const WalletContext = createContext<WalletContextType | null>(null);
@@ -21,6 +14,7 @@ interface WalletProviderProps {
 export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const [provider, setProvider] = useState<ethers.Provider | null>(null);
   const [account, setAccount] = useState<string | null>(null);
+  const [signer, setSigner] = useState<ethers.Signer | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [hasChangedAccount, sethasChangedAccount] = useState(false);
@@ -65,17 +59,6 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     };
   }, [account]);
 
-
-  /*useEffect(() => {
-    window.ethereum?.on('accountsChanged', handleAccountsChanged);
-    return () => {
-      window.ethereum?.removeListener('accountsChanged', handleAccountsChanged);
-    };
-  }, [account]);*/
-
-
-
-
   const handleAccountsChanged = (accounts: string[]) => {
     if (accounts.length === 0) {
       setAccount(null);
@@ -87,26 +70,6 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       localStorage.setItem('account', accounts[0]);
     }
   };
-
-  // const generateSignature = async (account: string, message: string) => {
-  //   const response = await fetch('/api/auth/generate_signature', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-
-  //     body: JSON.stringify({ account, message }),
-  //   });
-
-  //   if (!response.ok) {
-  //     throw new Error('Failed to generate signature');
-  //   }
-
-  //   const data = await response.json();
-  //   console.log(data.data.message, 'message');
-  //   console.log(data.data.signed_message, 'signature');
-  //   return data.data.signed_message;
-  // };
 
   const connectToMetamask = async () => {
     if (!window.ethereum) {
@@ -125,8 +88,9 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     setIsConnecting(true);
     try {
       const newProvider = new ethers.BrowserProvider(window.ethereum as any);
-      const signer = await newProvider.getSigner();
-      const newAccount = await signer.getAddress();
+      const newSigner = await newProvider.getSigner();
+      const newAccount = await newSigner.getAddress();
+      setSigner(newSigner);
       setAccount(newAccount);
       setProvider(newProvider);
       setIsConnected(true);
@@ -138,9 +102,8 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     }
   };
 
-
   // Provide the context
-  return <WalletContext.Provider value={{ provider, account, isConnected, connectToMetamask, hasChangedAccount }}>{children}</WalletContext.Provider>;
+  return <WalletContext.Provider value={{ provider, signer, account, isConnected, connectToMetamask, hasChangedAccount }}>{children}</WalletContext.Provider>;
 };
 
 // Custom hook to use the wallet context
