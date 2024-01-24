@@ -96,14 +96,3 @@ export interface Poll {
   pollMetadata: string;
   poap_events: number[]
 }
-
-
-export interface WalletContextType {
-  provider: ethers.Provider | null;
-  signer: ethers.Signer | null
-  account: string | null;
-  isConnected: boolean;
-  connectToMetamask: () => Promise<void>;
-  hasChangedAccount: Boolean;
-  // ... any other functions or state variables you want to include
-}

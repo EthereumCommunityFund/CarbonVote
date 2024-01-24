@@ -1,18 +1,15 @@
-import { useState } from 'react';
 import Link from 'next/link'
 import { useUserPassportContext } from '@/context/PassportContext';
 import Button from './ui/buttons/Button';
 import Image from 'next/image';
 import { Label } from './ui/Label';
 import { BoltIcon } from './icons';
-import { useWallet } from '@/context/WalletContext';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+
 
 export const HeaderComponent = () => {
   const { signIn, isPassportConnected } = useUserPassportContext();
-  const { connectToMetamask, account, isConnected } = useWallet();
-  const [isHovered, setIsHovered] = useState(false);
 
-  const formattedAddy = account?.slice(0, 4) + '...' + account?.slice(-4)
   return (
     <div className="bg-white flex w-full h-16 justify-between items-center p-5">
       <Link href="/">
@@ -26,19 +23,7 @@ export const HeaderComponent = () => {
         <Button className="outline-none h-10 items-center rounded-full" leftIcon={BoltIcon} onClick={signIn}>
           {isPassportConnected ? 'Zupass Connected' : 'Connect Passport'}
         </Button>
-        {isConnected ?
-          // FIXME: Add disconnect function
-          <Button className={`outline-none h-10 items-center rounded-full`} onClick={connectToMetamask}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-          >
-            {isHovered ? "Disconnect" : formattedAddy}
-          </Button>
-          :
-          <Button className="outline-none h-10 items-center rounded-full" onClick={connectToMetamask}>
-            Connect Wallet
-          </Button>
-        }
+        <ConnectButton />
       </div>
     </div>
   );

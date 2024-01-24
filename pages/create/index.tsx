@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import TextEditor from '@/components/ui/TextEditor';
 import { useRouter } from 'next/router';
-import { useWallet } from '@/context/WalletContext';
+import { useAccount, useConnect } from 'wagmi'
 import { ChangeEvent, useState } from 'react';
 import { useEffect } from 'react';
 import { Contract, ethers } from 'ethers';
@@ -35,7 +35,9 @@ const CreatePollPage = () => {
   const [timeLimit, setTimeLimit] = useState<string>();
   const [votingMethod, setVotingMethod] = useState<'ethholding' | 'headcount'>('ethholding');
   const [pollType, setpollType] = useState<0 | 1>(0);
-  const { connectToMetamask, isConnected, account } = useWallet();
+  const { isConnected } = useAccount();
+  const { connect } = useConnect();
+
   const [options, setOptions] = useState<OptionType[]>([
     { name: 'Yes', isChecked: true },
     { name: 'No', isChecked: true },
@@ -216,7 +218,7 @@ const CreatePollPage = () => {
               variant: 'destructive',
             });
             setIsLoading(false)
-            connectToMetamask();
+            connect();
             return;
           }
           if (votingMethod != 'ethholding') {

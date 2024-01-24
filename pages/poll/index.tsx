@@ -10,7 +10,7 @@ import { toast } from '@/components/ui/use-toast';
 import { VoteRequestData, castVote, fetchPollById, fetchVote, } from '@/controllers/poll.controller';
 import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
-import { useWallet } from '@/context/WalletContext';
+import { useAccount, useConnect, useSignMessage } from 'wagmi'
 import { ethers } from "ethers";
 import contractABI from '@/carbonvote-contracts/deployment/contracts/poapsverification.json';
 import { calculateTimeRemaining } from '@/utils/index';
@@ -30,7 +30,8 @@ const PollPage = () => {
   };
   const [poll, setPoll] = useState<Poll>();
   const { signIn, isPassportConnected, verifyticket, devconnectVerify } = useUserPassportContext();
-  const { connectToMetamask, isConnected, account, signer } = useWallet();
+  const { address: account, isConnected } = useAccount();
+  const { connect } = useConnect();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [options, setOptions] = useState<PollOptionType[]>([]);
   const [credentialId, setCredentialId] = useState("");
@@ -39,6 +40,10 @@ const PollPage = () => {
   const [startDate, setstartDate] = useState<Date>();
   const [poapsNumber, setPoapsNumber] = useState('0');
   const [eventDetails, setEventDetails] = useState<any[]>([])
+  const [message, setMessage] = useState('')
+  const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
+    message,
+  })
 
   const contractAddress = "0xD07E11aeA30DC68E42327F116e47f12C7E434d77";
   useEffect(() => {
@@ -157,7 +162,7 @@ const PollPage = () => {
       description: 'You need to connect to Metamask to get this information, please try again',
       variant: 'destructive',
     });
-    connectToMetamask();
+    connect();
   }
 
   const pollIsLive = remainingTime !== null && remainingTime !== 'Time is up!';
@@ -213,7 +218,7 @@ const PollPage = () => {
         return;
       }
       if (account !== null) {
-        let fetchScoreData = { address: account, scorerId: '6347' };
+        let fetchScoreData = { address: account as string, scorerId: '6347' };
         let scoreResponse = await fetchScore(fetchScoreData);
         let scoreData = scoreResponse.data;
         console.log(scoreData.score.toString(), 'score');
@@ -292,10 +297,11 @@ const PollPage = () => {
         // The user Signs
         // User Signs the vote
         try {
-          const message = `Vote for poll ${pollId} on option ${optionId}`;
+          const newMessage = `Vote for poll ${pollId} on option ${optionId}`;
 
-          //if (signer === null) return;
-          //const signature = await signer.signMessage(message);
+          //if (account === null) return;
+          // setMessage(newMessage)
+          // await signMessage();
 
           const voteData = {
             poll_id: pollId,
@@ -447,7 +453,7 @@ const PollPage = () => {
               </div>
             </div>
             {(poll?.poap_events?.length > 0) && (
-              <PoapDetails poapEvents={poll?.poap_events} account={account} eventDetails={eventDetails} setEventDetails={setEventDetails} />
+              <PoapDetails poapEvents={poll?.poap_events} account={account as string} eventDetails={eventDetails} setEventDetails={setEventDetails} />
             )}
           </div>
         </div>

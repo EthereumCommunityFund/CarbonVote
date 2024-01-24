@@ -1,13 +1,10 @@
-import { Contract, ethers } from 'ethers';
-import { ArrowLeftIcon, StopCircleIcon, ThumbDownIcon, ThumbUpIcon } from '@/components/icons';
+import { ethers } from 'ethers';
+import { ArrowLeftIcon } from '@/components/icons';
 import { ClockIcon } from '@/components/icons/clock';
 import Button from '@/components/ui/buttons/Button';
-import CheckerButton from '@/components/ui/buttons/CheckerButton';
 import CountdownTimer from '@/components/ui/CountDownTimer';
-import HtmlString from '@/components/ui/Html';
 import { Label } from '@/components/ui/Label';
-import { useWallet } from '@/context/WalletContext';
-import { OptionType, PollType } from '@/types';
+import { useAccount, useConnect } from 'wagmi'
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 //import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
@@ -17,34 +14,11 @@ import VotingContract from '../../carbonvote-contracts/deployment/contracts/Vote
 import VotingOption from '../../carbonvote-contracts/deployment/contracts/VotingOption.sol/VotingOption.json';
 import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
-import { fetchPollById } from '@/controllers/poll.controller';
 import { calculateTimeRemaining, convertOptionsToPollOptions } from '@/utils/index';
 import { Loader } from '@/components/ui/Loader';
 import { useUserPassportContext } from '@/context/PassportContext';
 import PieChartComponent from '@/components/ui/PieChart';
-interface Poll {
-  id: string;
-  name: string;
-  startDate: string | Date;
-  endTime: string | bigint | number;
-  startTime: string | bigint | number;
-  creator: string;
-  topic: string;
-  subTopic: string;
-  description: string;
-  options: string[];
-  pollMetadata: string;
-  poll_type: number | bigint | string;
-}
-
-interface Option {
-  optionName: string;
-  votersCount: number;
-  totalEth?: string;
-  votersData?: any;
-  address?: string;
-  optionindex: number;
-}
+import { Poll, Option } from '@/types'
 
 const PollPage = () => {
   const router = useRouter();
@@ -62,7 +36,9 @@ const PollPage = () => {
   const [remainingTime, settimeRemaining] = useState('');
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [pollType, setPollType] = useState<string | number | bigint>();
-  const { connectToMetamask, isConnected, account } = useWallet();
+  const { address: account, isConnected } = useAccount();
+  const { connect } = useConnect();
+
   const { signIn, isPassportConnected } = useUserPassportContext();
   useEffect(() => {
     fetchPollFromContract();
@@ -200,13 +176,13 @@ const PollPage = () => {
   }
   const handleVote = async (optionIndex: number, optionName: string) => {
     if (!isConnected) {
-      console.error('You need to connect to Metamask to vote, please try again');
+      console.error('You need to connect to vote, please try again');
       toast({
         title: 'Error',
-        description: 'You need to connect to Metamask to vote, please try again',
+        description: 'You need to connect to vote, please try again',
         variant: 'destructive',
       });
-      connectToMetamask();
+      connect();
       return;
     }
     const generateSignature = async (message: string) => {
