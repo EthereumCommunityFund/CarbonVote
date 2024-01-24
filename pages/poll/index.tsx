@@ -294,14 +294,14 @@ const PollPage = () => {
         try {
           const message = `Vote for poll ${pollId} on option ${optionId}`;
 
-          if (signer === null) return;
-          const signature = await signer.signMessage(message);
+          //if (signer === null) return;
+          //const signature = await signer.signMessage(message);
 
           const voteData = {
             poll_id: pollId,
             option_id: optionId,
             voter_identifier: voter_identifier,
-            signature
+            //signature
           };
           console.log(voteData, 'voteData');
           const response = await castVote(voteData as VoteRequestData);
