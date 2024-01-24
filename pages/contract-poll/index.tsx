@@ -22,6 +22,7 @@ import { calculateTimeRemaining, convertOptionsToPollOptions } from '@/utils/ind
 import { Loader } from '@/components/ui/Loader';
 import { useUserPassportContext } from '@/context/PassportContext';
 import PieChartComponent from '@/components/ui/PieChart';
+import TransactionList from '@/components/TransactionList';
 interface Poll {
   id: string;
   name: string;
@@ -374,6 +375,11 @@ const PollPage = () => {
           ) : (
             <Label className="text-2xl">Poll finished</Label>
           )}
+        </div>
+        <div className='flex'>
+          {options.map((option, index) => (
+            <TransactionList key={index} address={option.address as string} />
+          ))}
         </div>
       </div>
       <div className="flex flex-col gap-10 w-96">
