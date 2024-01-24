@@ -25,13 +25,14 @@ const OptionButton: React.FC<OptionButtonProps> = ({ optionName, onVote, isCheck
       <div className="flex items-center space-x-2 w-full">
         <span className={`text-lg font-bold ${isChecked ? 'text-blue-500' : 'text-gray-700'}`}>{isChecked ? '✔️' : ''}</span>
         <span onClick={handleVote} className={`rounded-full relative transition-all duration-300 items-center px-4 py-3 flex ${isChecked ? 'bg-blue-500' : 'bg-white'} ${optionName === 'No' ? 'text-[#FF6384]' : 'text-[#00FF00]'} w-full`}>
-          <Label className="w-full">{optionName}: </Label>
+          <Label className="w-full">{optionName} </Label>
         </span>
         <input type="checkbox" className="hidden" checked={isChecked} readOnly />
       </div>
-      <div className='w-full flex justify-left px-4 py-2'>
+      {optionAddress && (<div className='w-full flex justify-left px-4 py-2'>
         <span>Address: {optionAddress}</span>
       </div>
+      )}
     </label>
   );
 };
