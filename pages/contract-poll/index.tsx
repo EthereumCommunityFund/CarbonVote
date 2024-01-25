@@ -376,9 +376,9 @@ const PollPage = () => {
             <Label className="text-2xl">Poll finished</Label>
           )}
         </div>
-        <div className='flex'>
+        <div className='flex gap-3'>
           {options.map((option, index) => (
-            <TransactionList key={index} address={option.address as string} />
+            option.address && <TransactionList key={index} optionAddress={option.address} optionName={option.optionName} />
           ))}
         </div>
       </div>
