@@ -19,7 +19,6 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     try {
-
         // Check requirements from database
         const { data: pollData } = await supabase
             .from('votes')

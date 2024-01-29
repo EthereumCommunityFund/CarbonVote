@@ -7,9 +7,6 @@ import { Label } from '@/components/ui/Label';
 import { useAccount, useConnect } from 'wagmi'
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-//import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
-//import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
-//import VotingOption from '../../carbonvote-contracts/artifacts/contracts/VotingOption.sol/VotingOption.json';
 import VotingContract from '../../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
 import VotingOption from '../../carbonvote-contracts/deployment/contracts/VotingOption.sol/VotingOption.json';
 import OptionButton from '@/components/ui/buttons/OptionButton';
@@ -294,20 +291,21 @@ const PollPage = () => {
         </div>
         <div className="bg-white flex flex-col gap-2.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
-            <div className={`${pollIsLive ? 'bg-[#F84A4A20]' : 'bg-[#F8F8F8]'
+            <div className={`${pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
               } px-2.5 rounded-lg items-center`}>
               {pollIsLive ? (
-                <Label className="text-[#F84A4A]">Live</Label>
+                <Label className="text-[#44b678]">Live</Label>
               ) : (
                 <Label className="text-[#656565]">Closed</Label>
               )}
-              {remainingTime !== null && remainingTime !== 'Time is up!' ? (
-                <div className="flex gap-2">
-                  <ClockIcon />
-                  <CountdownTimer endTime={Number(poll.endTime) * 1000} />
-                </div>
-              ) : null}
             </div>
+
+            {remainingTime !== null && remainingTime !== 'Time is up!' ? (
+              <div className="flex gap-2">
+                <ClockIcon />
+                <CountdownTimer endTime={Number(poll.endTime) * 1000} />
+              </div>
+            ) : null}
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-black/60 text-lg">Motion: </Label>
@@ -329,7 +327,7 @@ const PollPage = () => {
               </Label>
               {
                 pollType?.toString() === "1"
-                  ? <Label className="text-sm">You can not vote if your address is not on this list: <a href="https://app.splits.org/accounts/0x84af3D5824F0390b9510440B6ABB5CC02BB68ea1" style={{ color: 'blue' }}>link</a></Label>
+                  ? <Label className="text-sm">You can not vote if your address is not on <a href="https://app.splits.org/accounts/0x84af3D5824F0390b9510440B6ABB5CC02BB68ea1" className="text-red-400">this list</a></Label>
                   : <Label className="text-sm">(You can also make a zero-value transaction from your wallet (in Sepolia) to given options addresses to vote)</Label>
               }
               <div className="flex flex-col gap-2.5">

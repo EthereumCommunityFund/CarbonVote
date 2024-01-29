@@ -20,6 +20,7 @@ import { fetchScore } from '@/controllers';
 import { Loader } from '@/components/ui/Loader';
 import PieChartComponent from '@/components/ui/PieChart';
 import { PollOptionType, Poll } from '@/types';
+import { CREDENTIALS } from '@/src/constants'
 
 const PollPage = () => {
   const router = useRouter();
@@ -70,6 +71,8 @@ const PollPage = () => {
     } else if (credentialId == "600d1865-1441-4e36-bb13-9345c94c4dfb") {
       const fetchNewNumber = async () => {
         try {
+          // TODO: Replace ethers with wagmi.
+          // ref: https://wagmi.sh/core/api/actions/readContract
           const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
           //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
           const contract = new ethers.Contract(contractAddress, contractABI, provider);
@@ -141,18 +144,8 @@ const PollPage = () => {
   };
 
   const getRequirement = () => {
-    switch (credentialId) {
-      case '76118436-886f-4690-8a54-ab465d08fa0d':
-        return 'Zuconnect Resident';
-      case '3cc4b682-9865-47b0-aed8-ef1095e1c398':
-        return 'Devconnect Resident';
-      case '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2':
-        return 'Gitcoin Passport';
-      case '600d1865-1441-4e36-bb13-9345c94c4dfb':
-        return 'POAPS Verification';
-      default:
-        return '';
-    }
+    const current = Object.values(CREDENTIALS).find(credential => credential.id === id);
+    return current?.name;
   }
 
   const warnAndConnect = () => {
@@ -174,8 +167,8 @@ const PollPage = () => {
       const uniqueId = uuidv4();
       localStorage.setItem('userUniqueId', uniqueId);
     }
-    //Zuconnect credentials voting
-    if (credentialId == '76118436-886f-4690-8a54-ab465d08fa0d') {
+    // Zuconnect credentials voting
+    if (credentialId == CREDENTIALS.ZuConnectResident.id) {
       console.log('Zuconnect resident"');
       if (!isPassportConnected) {
         await signIn();
@@ -194,8 +187,8 @@ const PollPage = () => {
       }
       voter_identifier = localStorage.getItem('userId');
     }
-    //Devconnect
-    else if (credentialId == '3cc4b682-9865-47b0-aed8-ef1095e1c398') {
+    // Devconnect
+    else if (credentialId == CREDENTIALS.DevConnect.id) {
       if (!isPassportConnected) {
         await signIn();
       }
@@ -211,8 +204,8 @@ const PollPage = () => {
       }
       voter_identifier = localStorage.getItem('userId');
     }
-    //Gitcoin
-    else if (credentialId == '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2') {
+    // Gitcoin
+    else if (credentialId == CREDENTIALS.GitcoinPassport.id) {
       if (!isConnected) {
         warnAndConnect();
         return;
@@ -255,8 +248,8 @@ const PollPage = () => {
       voter_identifier = account;
       canVote = true;
     }
-    //POAPS ONCHAIN
-    else if (credentialId == '600d1865-1441-4e36-bb13-9345c94c4dfb') {
+    // POAPS ONCHAIN
+    else if (credentialId == CREDENTIALS.POAPSVerification.id) {
       if (!isConnected) {
         warnAndConnect();
         return;

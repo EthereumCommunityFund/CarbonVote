@@ -1,5 +1,5 @@
 'use client'
-import { ArrowLeftIcon, PlusCirceIcon, PlusIcon, StopCircleIcon, ThumbDownIcon, ThumbUpIcon } from '@/components/icons';
+import { ArrowLeftIcon, PlusCirceIcon, PlusIcon } from '@/components/icons';
 import { XMarkIcon } from '@/components/icons/xmark';
 import { CredentialForm } from '@/components/templates/CredentialForm';
 import Button from '@/components/ui/buttons/Button';
@@ -12,23 +12,18 @@ import { useAccount, useConnect } from 'wagmi'
 import { ChangeEvent, useState } from 'react';
 import { useEffect } from 'react';
 import { Contract, ethers } from 'ethers';
-import { convertToHoursAndMinutesToSeconds, convertToMinutes } from '@/utils';
-//import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
-//import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
+import { convertToHoursAndMinutesToSeconds } from '@/utils';
 import VotingContract from '../../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
 import { toast } from '@/components/ui/use-toast';
 import { OptionType } from '@/types';
-import { useUserPassportContext } from '@/context/PassportContext';
 import { createPoll } from '@/controllers/poll.controller';
 import { useFormStore } from "@/zustand/create";
+import { CREDENTIALS, CONTRACT_ADDRESS } from '@/src/constants'
 
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
   const contractAbi = VotingContract.abi;
-  //const contractAddress = contract_addresses.VotingContract;
-  const contractAddress = "0x5092F0161B330A7B2128Fa39a93b10ff32c0AE3e";
   const router = useRouter();
-  const { signIn, isPassportConnected } = useUserPassportContext();
   const [credentials, setCredentials] = useState<string[]>([]);
   const [motionTitle, setMotionTitle] = useState<string>();
   const [motionDescription, setMotionDescription] = useState<string>('');
@@ -50,24 +45,14 @@ const CreatePollPage = () => {
 
   useEffect(() => {
     const doConnect = async () => {
-      /*let provider;
-    console.log(process.env.PROVIDER as string, 'process env');
-    if (process.env.PROVIDER == "mainnet") { provider = ethers.getDefaultProvider("mainnet"); }
-    if (process.env.PROVIDER == "sepolia") { provider = ethers.getDefaultProvider("sepolia"); }
-    if (process.env.PROVIDER == "testnet") { console.log('testnet'); provider = ethers.getDefaultProvider("http://localhost:8545/"); }*/
-      //const signer = await provider.getSigner();
       const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
-      const contract = new ethers.Contract(contractAddress, contractAbi, provider);
-      //const provider = new ethers.BrowserProvider(window.ethereum as any);
-      //const signer = await provider.getSigner();
-      //const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, provider);
       setPollContract(contract);
     };
     doConnect();
     resetFormStore();
   }, []);
 
-  // const [options, setOptions] = useState<OptionType[]>([]);
   const handleOptionChange = (updatedOption: OptionType) => {
     const updatedOptions = options.map((option) => (option.name === updatedOption.name ? updatedOption : option));
     setOptions(updatedOptions);
@@ -80,25 +65,6 @@ const CreatePollPage = () => {
   const removeOption = (index: number) => {
     setOptions(options.filter((_, i) => i !== index));
   };
-
-  const updateOption = (index: number, updatedOption: OptionType) => {
-    const updatedOptions = options.map((option, i) => (i === index ? updatedOption : option));
-    setOptions(updatedOptions);
-  };
-  const credentialsMapping = {
-    'Protocol Guild Member': '635a93d1-4d2c-47d9-82f4-9acd8ff68350',
-    'ZuConnect Resident': '76118436-886f-4690-8a54-ab465d08fa0d',
-    'DevConnect': '3cc4b682-9865-47b0-aed8-ef1095e1c398',
-    'Gitcoin Passport': '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2',
-    'POAPS Verification': '600d1865-1441-4e36-bb13-9345c94c4dfb',
-  };
-
-  function isValidInputTime(input: string): boolean {
-    const regex = /(\d+)(d|day|days|h|hour|hours|m|min|minute|minutes)/g;
-    const matches = input.match(regex);
-
-    return matches !== null && matches[0] === input;
-  }
 
   const createNewPoll = async () => {
     setIsLoading(true)
@@ -133,13 +99,6 @@ const CreatePollPage = () => {
       return;
     }
 
-    // const endTime = new Date();
-    // endTime.setSeconds(endTime.getSeconds() + durationInSeconds);
-
-    // Convert the end time to an ISO string
-    // const timeLimitISO = endTime.toISOString();
-
-
     const checkedOptions = options.filter((option) => option.isChecked);
     if (checkedOptions.length < 2) {
       toast({
@@ -170,7 +129,7 @@ const CreatePollPage = () => {
         poap_events: selectedPOAPEvents.map(event => event.id)
       };
 
-      const isProtocolGuildMember = credentials.includes(credentialsMapping['Protocol Guild Member']);
+      const isProtocolGuildMember = credentials.includes(CREDENTIALS.ProtocolGuildMember.id);
 
       if (votingMethod === 'headcount' && isProtocolGuildMember) {
         poll_type = 1;
@@ -194,9 +153,6 @@ const CreatePollPage = () => {
         setCredentials([]);
         resetFormStore();
         router.push('/').then(() => window.location.reload());
-        /*setTimeout(() => {
-          router.push('/');
-        }, 1000);*/
       } catch (error) {
         console.error('Error creating poll:', error);
         setIsLoading(false);
@@ -233,7 +189,7 @@ const CreatePollPage = () => {
           console.log(poll_type, 'poll_type');
           const provider = new ethers.BrowserProvider(window.ethereum as any);
           const signer = await provider.getSigner();
-          const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+          const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, signer);
           console.log(provider, signer, contract);
           const network = await provider.getNetwork();
 
@@ -371,8 +327,6 @@ const CreatePollPage = () => {
                 <CredentialForm
                   selectedCredentials={credentials}
                   onCredentialsChange={(selectedUuids) => setCredentials(selectedUuids)}
-                /*isZuPassRequired={isZuPassRequired}
-                setIsZuPassRequired={setIsZuPassRequired}*/
                 />
               </div>
             )

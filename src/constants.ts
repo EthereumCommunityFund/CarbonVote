@@ -28,3 +28,28 @@ export const PCDPASS_SEMAPHORE_GROUP_URL = IS_PROD
 
 
 export const PASSPORT_SERVER_URL = "https://api.pcd-passport.com/"
+
+export const CREDENTIALS = {
+  ProtocolGuildMember: {
+    id: '635a93d1-4d2c-47d9-82f4-9acd8ff68350',
+    name: "Protocol Guild Member"
+  },
+  ZuConnectResident: {
+    id: '76118436-886f-4690-8a54-ab465d08fa0d',
+    name: "ZuConnect Resident"
+  },
+  DevConnect: {
+    id: '3cc4b682-9865-47b0-aed8-ef1095e1c398',
+    name: "DevConnect"
+  },
+  GitcoinPassport: {
+    id: '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2',
+    name: "Gitcoin Passport"
+  },
+  POAPSVerification: {
+    id: '600d1865-1441-4e36-bb13-9345c94c4dfb',
+    name: "POAPS Verification"
+  },
+};
+
+export const CONTRACT_ADDRESS = "0x5092F0161B330A7B2128Fa39a93b10ff32c0AE3e"

@@ -1,44 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Label } from '@radix-ui/react-label';
 import ToggleSwitchButton from '../ui/buttons/ToggleSwitchButton';
 import POAPEvents from '../POAPEvents';
 import { useFormStore } from "@/zustand/create";
+import { CREDENTIALS } from '@/src/constants'
 
 type CredentialFormProps = {
   selectedCredentials: string[];
   onCredentialsChange: (credentials: string[]) => void;
 };
 
-interface CredentialsMapping {
-  [key: string]: string;
-}
-
 export const CredentialForm = ({
   selectedCredentials,
   onCredentialsChange,
 }: CredentialFormProps) => {
-  const [credential, setCredential] = useState('');
   const [isPOAPapiRequired, setIsPOAPapiRequired] = useState(false);
   const [isPOAPsRequired, setIsPOAPsRequired] = useState(false);
   const [isProtocolGuildMemberRequired, setIsProtocolGuildMemberRequired] = useState(false);
   const [isZuPassRequired, setIsZuPassRequired] = useState(false);
   const [isGitcoinPassportRequired, setIsGitcoinPassportRequired] = useState(false);
   const [selectedCredentialText, setSelectedCredentialText] = useState("Select Credential");
-  const credentialsMapping: CredentialsMapping = {
-    'Protocol Guild Member': '635a93d1-4d2c-47d9-82f4-9acd8ff68350',
-    'ZuConnect Resident': '76118436-886f-4690-8a54-ab465d08fa0d',
-    'DevConnect': '3cc4b682-9865-47b0-aed8-ef1095e1c398',
-    'Gitcoin Passport': '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2',
-    'POAPS Verification': '600d1865-1441-4e36-bb13-9345c94c4dfb',
-  };
 
   const resetEvents = useFormStore((state) => state.resetEvents)
 
-  const updateCredentials = (credentialKey: string) => {
-    const uuid = credentialsMapping[credentialKey];
-    setCredential(uuid);
-    onCredentialsChange([uuid]);
-    console.log(uuid, 'credential selected');
+  const updateCredentials = (credentialUUID: string) => {
+    onCredentialsChange([credentialUUID]);
+    console.log(credentialUUID, 'credential selected');
   };
 
   const handleCredentialSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -54,7 +41,7 @@ export const CredentialForm = ({
     setIsZuPassRequired(false);
     setIsGitcoinPassportRequired(false);
     setIsProtocolGuildMemberRequired(false);
-    updateCredentials('POAPS Verification');
+    updateCredentials(CREDENTIALS.POAPSVerification.id);
     resetEvents();
   }
 
@@ -64,7 +51,8 @@ export const CredentialForm = ({
     setIsZuPassRequired(false);
     setIsGitcoinPassportRequired(false);
     setIsProtocolGuildMemberRequired(false);
-    updateCredentials('POAPS Verification');
+    // TODO: There;s no POAP api credentials
+    updateCredentials('');
   }
   const handleGitCoinSelect = () => {
     setIsGitcoinPassportRequired(!isGitcoinPassportRequired);
@@ -72,7 +60,7 @@ export const CredentialForm = ({
     setIsPOAPsRequired(false);
     setIsZuPassRequired(false);
     setIsProtocolGuildMemberRequired(false);
-    updateCredentials('Gitcoin Passport');
+    updateCredentials(CREDENTIALS.GitcoinPassport.id);
     resetEvents();
   }
 
@@ -82,7 +70,7 @@ export const CredentialForm = ({
     setIsPOAPsRequired(false);
     setIsZuPassRequired(false);
     setIsProtocolGuildMemberRequired(!isProtocolGuildMemberRequired);
-    updateCredentials('Protocol Guild Member');
+    updateCredentials(CREDENTIALS.ProtocolGuildMember.id);
     resetEvents();
   }
 
@@ -92,7 +80,7 @@ export const CredentialForm = ({
     setIsPOAPsRequired(false);
     setIsZuPassRequired(!isZuPassRequired);
     setIsProtocolGuildMemberRequired(false);
-    updateCredentials('ZuConnect Resident');
+    updateCredentials(CREDENTIALS.ZuConnectResident.id);
     resetEvents();
   }
 
@@ -115,8 +103,8 @@ export const CredentialForm = ({
           >
             <option value="">Select an option</option>
             <>
-              <option value="ZuConnect Resident">ZuConnect Resident</option>
-              <option value="DevConnect">DevConnect</option>
+              <option value={CREDENTIALS.ZuConnectResident.id}>{CREDENTIALS.ZuConnectResident.name}</option>
+              <option value={CREDENTIALS.DevConnect.id}>{CREDENTIALS.DevConnect.name}</option>
             </>
           </select>
         </div>
@@ -133,7 +121,8 @@ export const CredentialForm = ({
             checked={isPOAPsRequired}
             onClick={handlePOAPSelect}
           />
-          <Label className="text-lg">Add Ethereum POAPS Checking (Up to 10 events)</Label>
+          <Label className="text-lg">Ethereum POAPS Checking - Onchain verification</Label>
+          <Label className="text-lg">(The test version stores only 2 events)</Label>
         </div>
       </div>
 
@@ -144,7 +133,7 @@ export const CredentialForm = ({
             checked={isPOAPapiRequired}
             onClick={handlePOAPapiSelect}
           />
-          <Label className="text-lg">Add Ethereum POAPs (Offchain Verification) (The test version stores only 2 events)</Label>
+          <Label className="text-lg">Ethereum POAPs - Offchain verification</Label>
         </div>
       </div>
 
@@ -155,7 +144,7 @@ export const CredentialForm = ({
             checked={isProtocolGuildMemberRequired}
             onClick={handleProtocolGuildMemberSelect}
           />
-          <Label className="text-lg">Add Protocol Guild Member Credential</Label>
+          <Label className="text-lg">Protocol Guild Member Credential</Label>
         </div>
       </div>
 
@@ -166,7 +155,7 @@ export const CredentialForm = ({
             checked={isZuPassRequired}
             onClick={handleZuPassSelect}
           />
-          <Label className="text-lg">Add ZuPass Credentials</Label>
+          <Label className="text-lg">ZuPass Credentials</Label>
         </div>
       </div>
 
@@ -176,7 +165,7 @@ export const CredentialForm = ({
             checked={isGitcoinPassportRequired}
             onClick={handleGitCoinSelect}
           />
-          <Label className="text-lg">Add Gitcoin Passport Credential</Label>
+          <Label className="text-lg">Gitcoin Passport Credential</Label>
         </div>
       </div>
 
