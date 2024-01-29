@@ -1,6 +1,5 @@
 'use client'
-import { ArrowLeftIcon, PlusCirceIcon, PlusIcon } from '@/components/icons';
-import { XMarkIcon } from '@/components/icons/xmark';
+import { FiArrowLeft, FiPlusCircle, FiXCircle, FiPlus, FiTrash2 } from "react-icons/fi";
 import { CredentialForm } from '@/components/templates/CredentialForm';
 import Button from '@/components/ui/buttons/Button';
 import CheckerButton from '@/components/ui/buttons/CheckerButton';
@@ -34,8 +33,8 @@ const CreatePollPage = () => {
   const { connect } = useConnect();
 
   const [options, setOptions] = useState<OptionType[]>([
-    { name: 'Yes', isChecked: true },
-    { name: 'No', isChecked: true },
+    { name: '', isChecked: true },
+    { name: '', isChecked: true },
   ]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -52,11 +51,6 @@ const CreatePollPage = () => {
     doConnect();
     resetFormStore();
   }, []);
-
-  const handleOptionChange = (updatedOption: OptionType) => {
-    const updatedOptions = options.map((option) => (option.name === updatedOption.name ? updatedOption : option));
-    setOptions(updatedOptions);
-  };
 
   const addOption = () => {
     setOptions([...options, { name: '', isChecked: true }]);
@@ -261,7 +255,7 @@ const CreatePollPage = () => {
     <div className="flex gap-20 px-20 py-5 text-black w-full justify-center overflow-y-auto">
       <div className="flex flex-col gap-2.5 py-5">
         <div>
-          <Button className="rounded-full" leftIcon={ArrowLeftIcon} onClick={handleBack}>
+          <Button className="rounded-full" leftIcon={FiArrowLeft} onClick={handleBack}>
             Back
           </Button>
         </div>
@@ -283,14 +277,14 @@ const CreatePollPage = () => {
               {/* <Label className="text-black/60 text-base">max: 3</Label> */}
             </div>
             {options.map((option, index) => (
-              <div key={index} className="flex items-center space-x-2">
-                <CheckerButton option={option} onOptionChange={(updatedOption) => handleCheckboxChange(index, updatedOption.isChecked)} onInputChange={(e) => handleInputChange(index, e)} />
-                <button onClick={() => removeOption(index)}>❌</button>
+              <div key={index} className="flex w-full space-x-2">
+                <CheckerButton option={option} idx={index} onInputChange={(e) => handleInputChange(index, e)} />
+                <button className="text-red-400" onClick={() => removeOption(index)}><FiTrash2 /></button>
               </div>
             ))}
 
             <div className="flex justify-end">
-              <Button className="rounded-full" leftIcon={PlusIcon} onClick={addOption}>
+              <Button className="rounded-full" leftIcon={FiPlus} onClick={addOption}>
                 Add Option
               </Button>
             </div>
@@ -333,10 +327,10 @@ const CreatePollPage = () => {
           )}
         </div>
         <div className="flex gap-2.5 justify-end">
-          <Button className="rounded-full" leftIcon={XMarkIcon}>
+          <Button className="rounded-full" leftIcon={FiXCircle}>
             Discard
           </Button>
-          <Button className="rounded-full" leftIcon={PlusCirceIcon} isLoading={isLoading} onClick={createNewPoll}>
+          <Button className="rounded-full" leftIcon={FiPlusCircle} isLoading={isLoading} onClick={createNewPoll}>
             Create Poll
           </Button>
         </div>
