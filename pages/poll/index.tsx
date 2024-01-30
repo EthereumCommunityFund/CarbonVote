@@ -30,7 +30,7 @@ const PollPage = () => {
     router.push('/');
   };
   const [poll, setPoll] = useState<Poll>();
-  const { signIn, isPassportConnected, verifyticket, devconnectVerify } = useUserPassportContext();
+  const { signIn, isPassportConnected, verifyticket, devconnectVerify } = useUserPassportContext(); // zupass
   const { address: account, isConnected } = useAccount();
   const { connect } = useConnect();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -46,7 +46,6 @@ const PollPage = () => {
     message,
   })
 
-  const contractAddress = "0xD07E11aeA30DC68E42327F116e47f12C7E434d77";
   useEffect(() => {
     fetchPollFromApi(id);
   }, [id]);
@@ -68,14 +67,14 @@ const PollPage = () => {
         }
       };
       fetchNewScore();
-    } else if (credentialId == "600d1865-1441-4e36-bb13-9345c94c4dfb") {
+    } else if (credentialId == CREDENTIALS.POAPSVerification.id) {
       const fetchNewNumber = async () => {
         try {
           // TODO: Replace ethers with wagmi.
           // ref: https://wagmi.sh/core/api/actions/readContract
           const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
           //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
-          const contract = new ethers.Contract(contractAddress, contractABI, provider);
+          const contract = new ethers.Contract(CREDENTIALS.POAPSVerification.contract, contractABI, provider);
           const events = await contract.getEventCountForCollection(account);
 
           setPoapsNumber(events.toString());
@@ -95,16 +94,16 @@ const PollPage = () => {
       setPoll(data);
       console.log(poll?.poap_events.length, 'poll?.poap_events');
       setOptions(data.options);
-      const credentialId = data.credentials?.[0]?.id || "";
+      const newCredentialId = data.credentials?.[0]?.id || "";
       let identifier: string | null = null;
-      if (credentialId) {
-        switch (credentialId) {
-          case '76118436-886f-4690-8a54-ab465d08fa0d': //Zuconnect
-          case '3cc4b682-9865-47b0-aed8-ef1095e1c398': //Devconnect
+      if (newCredentialId) {
+        switch (newCredentialId) {
+          case CREDENTIALS.ZuConnectResident.id: //Zuconnect
+          case CREDENTIALS.DevConnect.id: //Devconnect
             if (localStorage.getItem('userId')) { identifier = localStorage.getItem('userId'); }
             break;
-          case '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2': //Gitcoin passport
-          case '600d1865-1441-4e36-bb13-9345c94c4dfb': //POAPS verification
+          case CREDENTIALS.GitcoinPassport.id: //Gitcoin passport
+          case CREDENTIALS.POAPSVerification.id: //POAPS verification
             if (localStorage.getItem('account')) { identifier = localStorage.getItem('account'); }
             break;
         }
@@ -133,9 +132,9 @@ const PollPage = () => {
       if (timeleft) {
         settimeRemaining(timeleft);
       }
-      if (credentialId) {
-        setCredentialId(credentialId);
-        console.log(credentialId, 'credential ID');
+      if (newCredentialId) {
+        setCredentialId(newCredentialId);
+        console.log('credential ID', newCredentialId);
       }
       //console.log(pollIsLive, 'live');
     } catch (error) {
@@ -160,9 +159,63 @@ const PollPage = () => {
 
   const pollIsLive = remainingTime !== null && remainingTime !== 'Time is up!';
 
+  const handleCastVote = async (optionId: string, requiredCred: string, voterTag: string) => {
+    const pollId = poll?.id;
+    const voter_identifier = localStorage.getItem(voterTag);
+    try {
+      const voteData = {
+        poll_id: pollId,
+        option_id: optionId,
+        voter_identifier: voter_identifier,
+        requiredCred,
+        signature: null
+      };
+      console.log(voteData, 'voteData');
+      const response = await castVote(voteData as VoteRequestData);
+      console.log(response, 'response');
+      toast({
+        title: 'Vote cast successfully',
+      });
+      await fetchPollFromApi(id);
+    } catch (error) {
+      console.error('Error casting vote:', error);
+      return;
+    }
+  }
+
+  const handleCastVoteSigned = async (optionId: string, requiredCred: string) => {
+    const pollId = poll?.id;
+    try {
+      const newMessage = `Vote for poll ${pollId} on option ${optionId}`;
+
+      if (account === null) return;
+      setMessage(newMessage)
+      const signature = await signMessage();
+
+      const voteData = {
+        poll_id: pollId,
+        option_id: optionId,
+        voter_identifier: account,
+        requiredCred,
+        signature,
+
+      };
+      console.log(voteData, 'voteData');
+      const response = await castVote(voteData as VoteRequestData);
+      console.log(response, 'response');
+      toast({
+        title: 'Vote cast successfully',
+      });
+      await fetchPollFromApi(id);
+    } catch (error) {
+      console.error('Error signing vote:', error);
+      return;
+    }
+  }
+
   const handleVote = async (optionId: string) => {
     let canVote = false;
-    let voter_identifier: any = '';
+
     if (!localStorage.getItem('userUniqueId')) {
       const uniqueId = uuidv4();
       localStorage.setItem('userUniqueId', uniqueId);
@@ -179,30 +232,28 @@ const PollPage = () => {
         let usereventId = localStorage.getItem('event Id');
         console.log(usereventId);
         if (usereventId == "91312aa1-5f74-4264-bdeb-f4a3ddb8670c" || usereventId == "54863995-10c4-46e4-9342-75e48b68d307" || usereventId == "797de414-2aec-4ef8-8655-09df7e2b6cc6" || usereventId == "a6109324-7ca0-4198-9583-77962d1b9d53") {
-          canVote = true;
+          await handleCastVote(optionId, CREDENTIALS.ZuConnectResident.id, 'userId');
         }
       } catch (error) {
         console.error('Error in verifying ticket:', error);
         return;
       }
-      voter_identifier = localStorage.getItem('userId');
     }
     // Devconnect
     else if (credentialId == CREDENTIALS.DevConnect.id) {
       if (!isPassportConnected) {
         await signIn();
+        return;
       }
       try {
         await devconnectVerify();
-        if (localStorage.getItem('devconnect Id')) {
-          canVote = true;
+        if (localStorage.getItem('devconnectNullifier')) {
+          await handleCastVote(optionId, CREDENTIALS.DevConnect.id, 'userId');
         }
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Error in verifying ticket:', error);
         return;
       }
-      voter_identifier = localStorage.getItem('userId');
     }
     // Gitcoin
     else if (credentialId == CREDENTIALS.GitcoinPassport.id) {
@@ -217,10 +268,9 @@ const PollPage = () => {
         console.log(scoreData.score.toString(), 'score');
         setScore(scoreData.score.toString());
         if (scoreData.score.toString() != '0') {
-          canVote = true;
+          await handleCastVoteSigned(optionId, CREDENTIALS.GitcoinPassport.id);
         }
       }
-      voter_identifier = account;
     }
     // POAPS API
     else if (poll?.poap_events && poll?.poap_events.length) {
@@ -245,8 +295,7 @@ const PollPage = () => {
           return; // Exit the function if an event without an owner is found
         }
       }
-      voter_identifier = account;
-      canVote = true;
+      await handleCastVoteSigned(optionId, '');
     }
     // POAPS ONCHAIN
     else if (credentialId == CREDENTIALS.POAPSVerification.id) {
@@ -257,7 +306,7 @@ const PollPage = () => {
       try {
         const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
         //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
-        const contract = new ethers.Contract(contractAddress, contractABI, provider);
+        const contract = new ethers.Contract(CREDENTIALS.POAPSVerification.contract, contractABI, provider);
         const events = await contract.getEventCountForCollection(account);
 
         setPoapsNumber(events.toString());
@@ -267,204 +316,147 @@ const PollPage = () => {
       }
 
       if (Number(poapsNumber) > 4) {
-        canVote = true;
+        await handleCastVoteSigned(optionId, CREDENTIALS.ProtocolGuildMember.id);
       }
-      voter_identifier = account;
-    } else {
-      voter_identifier = localStorage.getItem('userUniqueId');
-      canVote = true;
-    }
-    const pollId = poll?.id;
-    try {
-      console.log('canVote:', canVote);
-      if (!canVote) {
-        console.error('You do not have the credential to vote');
-        toast({
-          title: 'Error',
-          description: 'You do not have the credential to vote',
-          variant: 'destructive',
-        });
-      } else {
-        // FIXME: We need to add signature to validate vote even if it's only checked by the backend
-        // this way we avoit injection of accounts
-        // The user Signs
-        // User Signs the vote
-        try {
-          const newMessage = `Vote for poll ${pollId} on option ${optionId}`;
-
-          //if (account === null) return;
-          // setMessage(newMessage)
-          // await signMessage();
-
-          const voteData = {
-            poll_id: pollId,
-            option_id: optionId,
-            voter_identifier: voter_identifier,
-            //signature
-          };
-          console.log(voteData, 'voteData');
-          const response = await castVote(voteData as VoteRequestData);
-          console.log(response, 'response');
-          toast({
-            title: 'Vote cast successfully',
-          });
-          await fetchPollFromApi(id);
-        } catch (error) {
-          console.error('Error signing vote:', error);
+      // Protocol Guild
+      else if (poll?.poap_events && poll?.poap_events.length) {
+        if (!isConnected) {
+          warnAndConnect();
           return;
         }
+        await handleCastVote(optionId, CREDENTIALS.ProtocolGuildMember.id, 'userUniqueId');
       }
-    } catch (error: any) {
-      if (error.response && error.response.status === 409) {
-        console.error('You have already voted for this option');
-        toast({
-          title: 'Warning',
-          description: 'You have already voted for this option',
-          variant: 'destructive',
-        });
-      }
-      else {
-        console.error('Error casting vote:', error);
-        toast({
-          title: 'Error',
-          description: error.message,
-          variant: 'destructive',
-        });
-      }
-    }
-  };
+    };
 
-  if (!poll) {
-    return <div className="flex justify-center items-center h-screen">
-      <Loader />
-    </div>
-  }
-
-  return (
-    <div className="flex flex-col md:flex-row gap-20 px-20 pt-5 text-black w-full justify-center">
-      <div className="flex flex-col gap-2.5 max-w-[1000px] w-full">
-        <div>
-          <Button className="rounded-full" leftIcon={ArrowLeftIcon} onClick={handleBack}>
-            Back
-          </Button>
-        </div>
-        <div className="bg-white flex flex-col gap-1.5 rounded-2xl p-5 ">
-          <div className="flex gap-3.5 pb-3">
-            <div className={`${pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
-              } px-2.5 rounded-lg items-center`}>
-              {pollIsLive ? (
-                <Label className="text-[#44b678]">Live</Label>
-              ) : (
-                <Label className="text-[#656565]">Closed</Label>
-              )}
-            </div>
-            {pollIsLive ? (
-              <div className="flex gap-2">
-                <ClockIcon />
-                <CountdownTimer endTime={poll.endTime} />
-              </div>
-            ) : null}
-          </div>
-          <div className="flex flex-col gap-1">
-            <Label className="text-black/60 text-base">Motion: </Label>
-            <Label className="text-2xl">{poll?.title}</Label>
-          </div>
-          <div className="flex justify-end pb-5 border-b border-black/30">{/* <Label>by: {mockPoll.creator}</Label> */}</div>
-          <div className="flex flex-col gap-2.5">
-            <Label className="text-black/60 text-lg font-bold">Description: </Label>
-            <span dangerouslySetInnerHTML={{ __html: poll?.description }} />
-          </div>
-        </div>
-
-        <div className="bg-white/40 p-2.5 flex flex-col gap-3.5">
-          {pollIsLive ? (
-            <>
-              <Label className="text-2xl">Vote on Poll</Label>
-              {(!poll?.poap_events || poll?.poap_events.length === 0) && credentialId === "600d1865-1441-4e36-bb13-9345c94c4dfb" ? (
-                <div>
-                  <div><Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label></div>
-                  <div><Label className="text-sm">Please notice that for now in this test version, we only stored the participation list of 2 Ethereum events.</Label></div>
-                </div>
-              ) : (
-                <div></div>
-              )}
-              {credentialId === "6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2" && (
-                <Label className="text-sm">Your gitcoin passport score is: {score}/100 (Your score must be higher than 0 to vote)</Label>
-              )}
-              <div className="flex flex-col gap-2.5">
-                {options?.map((option) => (
-                  <OptionButton
-                    key={option.id}
-                    id={option.id}
-                    optionName={option.option_description}
-                    onVote={(optionId) => handleVote(optionId as string)}
-                    isChecked={selectedOption === option.id}
-                    type="api"
-                    optionAddress={undefined}
-                  />
-                ))}
-              </div>
-            </>
-          ) : (
-            <Label className="text-2xl">Poll finished</Label>
-          )}
-        </div>
+    if (!poll) {
+      return <div className="flex justify-center items-center h-screen">
+        <Loader />
       </div>
-      <div className="flex flex-col gap-8 w-96">
-        <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
-          <Label className="text-2xl">Details</Label>
-          <hr></hr>
-          <div className='flex flex-col gap-4 pt-3 text-base'>
-            <Label>Voting Method: HeadCounting</Label>
-            <Label>
-              {(() => {
-                return `Start Date: ${new Date(Number(poll.startTime))}`;
-              })()}
-            </Label>
-            <Label>
-              {(() => {
-                return `End Date: ${new Date(Number(poll.endTime))}`;
-              })()}
-            </Label>
-            <Label className="text-1xl">
-              Requirements:
-            </Label>
-            <div>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                border: '1px solid #ccc',
-                borderRadius: '9999px',
-                padding: '4px 8px',
-                margin: '4px',
-              }}>
-                <img src={'/images/carbonvote.png'} alt="Requirement image" style={{ width: '30px', height: '30px', marginRight: '8px', borderRadius: 100 }} />
-                <span>{getRequirement()}</span>
-                {/* TODO: Check if this is complied */}
-                <div style={{ marginLeft: 10 }}>⚪️</div>
-                {/* <div style={{ marginLeft: 10 }}>{true ? "✅" : "🔴"}</div> */}
+    }
+
+    return (
+      <div className="flex flex-col md:flex-row gap-20 px-20 pt-5 text-black w-full justify-center">
+        <div className="flex flex-col gap-2.5 max-w-[1000px] w-full">
+          <div>
+            <Button className="rounded-full" leftIcon={ArrowLeftIcon} onClick={handleBack}>
+              Back
+            </Button>
+          </div>
+          <div className="bg-white flex flex-col gap-1.5 rounded-2xl p-5 ">
+            <div className="flex gap-3.5 pb-3">
+              <div className={`${pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
+                } px-2.5 rounded-lg items-center`}>
+                {pollIsLive ? (
+                  <Label className="text-[#44b678]">Live</Label>
+                ) : (
+                  <Label className="text-[#656565]">Closed</Label>
+                )}
               </div>
+              {pollIsLive ? (
+                <div className="flex gap-2">
+                  <ClockIcon />
+                  <CountdownTimer endTime={poll.endTime} />
+                </div>
+              ) : null}
             </div>
-            {(poll?.poap_events?.length > 0) && (
-              <PoapDetails poapEvents={poll?.poap_events} account={account as string} eventDetails={eventDetails} setEventDetails={setEventDetails} />
+            <div className="flex flex-col gap-1">
+              <Label className="text-black/60 text-base">Motion: </Label>
+              <Label className="text-2xl">{poll?.title}</Label>
+            </div>
+            <div className="flex justify-end pb-5 border-b border-black/30">{/* <Label>by: {mockPoll.creator}</Label> */}</div>
+            <div className="flex flex-col gap-2.5">
+              <Label className="text-black/60 text-lg font-bold">Description: </Label>
+              <span dangerouslySetInnerHTML={{ __html: poll?.description }} />
+            </div>
+          </div>
+
+          <div className="bg-white/40 p-2.5 flex flex-col gap-3.5">
+            {pollIsLive ? (
+              <>
+                <Label className="text-2xl">Vote on Poll</Label>
+                {(!poll?.poap_events || poll?.poap_events.length === 0) && credentialId === CREDENTIALS.POAPSVerification.id ? (
+                  <div>
+                    <div><Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label></div>
+                    <div><Label className="text-sm">Please notice that for now in this test version, we only stored the participation list of 2 Ethereum events.</Label></div>
+                  </div>
+                ) : (
+                  <div></div>
+                )}
+                {credentialId === "6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2" && (
+                  <Label className="text-sm">Your gitcoin passport score is: {score}/100 (Your score must be higher than 0 to vote)</Label>
+                )}
+                <div className="flex flex-col gap-2.5">
+                  {options?.map((option) => (
+                    <OptionButton
+                      key={option.id}
+                      id={option.id}
+                      optionName={option.option_description}
+                      onVote={(optionId) => handleVote(optionId as string)}
+                      isChecked={selectedOption === option.id}
+                      type="api"
+                      optionAddress={undefined}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <Label className="text-2xl">Poll finished</Label>
             )}
           </div>
         </div>
-        <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
-          <Label className="text-2xl">Results</Label>
-          <hr></hr>
-          <div className='flex flex-col gap-2.5 pt-2.5'>
-            {options &&
-              options.map((option: PollOptionType) => (
-                <OptionVotingCountProgress description={option.option_description} votes={option.votes} />
-              ))
-            }
+        <div className="flex flex-col gap-8 w-96">
+          <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
+            <Label className="text-2xl">Details</Label>
+            <hr></hr>
+            <div className='flex flex-col gap-4 pt-3 text-base'>
+              <Label>Voting Method: HeadCounting</Label>
+              <Label>
+                {(() => {
+                  return `Start Date: ${new Date(Number(poll.startTime))}`;
+                })()}
+              </Label>
+              <Label>
+                {(() => {
+                  return `End Date: ${new Date(Number(poll.endTime))}`;
+                })()}
+              </Label>
+              <Label className="text-1xl">
+                Requirements:
+              </Label>
+              <div>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  border: '1px solid #ccc',
+                  borderRadius: '9999px',
+                  padding: '4px 8px',
+                  margin: '4px',
+                }}>
+                  <img src={'/images/carbonvote.png'} alt="Requirement image" style={{ width: '30px', height: '30px', marginRight: '8px', borderRadius: 100 }} />
+                  <span>{getRequirement()}</span>
+                  <div style={{ marginLeft: 10 }}>⚪️</div>
+                </div>
+              </div>
+              {(poll?.poap_events?.length > 0) && (
+                <PoapDetails poapEvents={poll?.poap_events} account={account as string} eventDetails={eventDetails} setEventDetails={setEventDetails} />
+              )}
+            </div>
           </div>
-          <PieChartComponent votes={options} />
+          <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
+            <Label className="text-2xl">Results</Label>
+            <hr></hr>
+            <div className='flex flex-col gap-2.5 pt-2.5'>
+              {options &&
+                options.map((option: PollOptionType) => (
+                  <OptionVotingCountProgress description={option.option_description} votes={option.votes} />
+                ))
+              }
+            </div>
+            <PieChartComponent votes={options} />
+          </div>
         </div>
       </div>
-    </div>
-  )
-};
+    )
+  };
 
-export default PollPage;
+  export default PollPage;

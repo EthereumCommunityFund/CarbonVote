@@ -273,7 +273,7 @@ const CreatePollPage = () => {
           <div className="flex flex-col gap-1">
             <div className="flex gap-2 items-center">
               <Label className="text-2xl">Options</Label>
-              <Label className="text-black/60 text-base">min: 2</Label>
+              <Label className="text-black/60 text-sm">min 2</Label>
               {/* <Label className="text-black/60 text-base">max: 3</Label> */}
             </div>
             {options.map((option, index) => (

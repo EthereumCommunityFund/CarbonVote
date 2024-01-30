@@ -48,8 +48,10 @@ export const CREDENTIALS = {
   },
   POAPSVerification: {
     id: '600d1865-1441-4e36-bb13-9345c94c4dfb',
-    name: "POAPS Verification"
+    name: "POAPS Verification",
+    contract: '0xD07E11aeA30DC68E42327F116e47f12C7E434d77'
   },
 };
 
+// TODO: improve naming (ethholding?)
 export const CONTRACT_ADDRESS = "0x5092F0161B330A7B2128Fa39a93b10ff32c0AE3e"
