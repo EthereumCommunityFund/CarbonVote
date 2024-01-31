@@ -46,6 +46,10 @@ export const CREDENTIALS = {
     id: '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2',
     name: "Gitcoin Passport"
   },
+  POAPapi: {
+    id: 'poaps',
+    name: "POAP API"
+  },
   POAPSVerification: {
     id: '600d1865-1441-4e36-bb13-9345c94c4dfb',
     name: "POAPS Verification",

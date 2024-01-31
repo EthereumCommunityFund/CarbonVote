@@ -1,8 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../../utils/supabaseClient';
+import { verifyMessage } from 'ethers';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import getPoapOwnership from 'utils/getPoapOwnership'
+import { supabase } from 'utils/supabaseClient';
+import { CREDENTIALS } from '@/src/constants';
+
+
 const poapApiKey = process.env.POAP_API_KEY ?? "";
 
 const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -11,7 +15,7 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
         return;
     }
 
-    const { option_id, voter_identifier, poll_id } = req.body;
+    const { pollId, option_id, voter_identifier, poll_id, requiredCred, signature } = req.body;
 
     if (!option_id || !voter_identifier || !poll_id) {
         res.status(400).send('Option ID, Poll ID, and Voter Identifier are required');
@@ -25,6 +29,25 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
             .select('*')
             .eq('poll_id', poll_id)
             .single();
+
+
+        if (requiredCred === CREDENTIALS.GitcoinPassport.id || requiredCred === CREDENTIALS.POAPapi.id || requiredCred === CREDENTIALS.ProtocolGuildMember.id) {
+            const message = `{ poll_id: ${pollId}, option_id: ${option_id}, voter_identifier: ${voter_identifier}, requiredCred: ${requiredCred}`;
+
+            const signerAddress = verifyMessage(message, signature);
+            console.log("🚀 ~ signerAddress:", signerAddress)
+            console.log("🚀 ~ voter_identifier:", voter_identifier)
+
+            if (signerAddress !== voter_identifier) {
+                res.status(409).send("Signature doesn't correspond with address.");
+                return;
+            }
+        }
+
+        // Proof generated on the FE, should be re-verified on the backend
+        // if (requiredCred === CREDENTIALS.DevConnect.id || requiredCred === CREDENTIALS.ZuConnectResident.id) {
+        //     await verifyticket();
+        // }
 
         if (pollData?.poap_events && pollData?.poap_events.length) {
             // voter_identifier should be the user's address

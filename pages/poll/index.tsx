@@ -186,27 +186,29 @@ const PollPage = () => {
   const handleCastVoteSigned = async (optionId: string, requiredCred: string) => {
     const pollId = poll?.id;
     try {
-      const newMessage = `Vote for poll ${pollId} on option ${optionId}`;
+      const newMessage = `{ poll_id: ${pollId}, option_id: ${optionId}, voter_identifier: ${account}, requiredCred: ${requiredCred}`;
 
       if (account === null) return;
       setMessage(newMessage)
       const signature = await signMessage();
 
-      const voteData = {
-        poll_id: pollId,
-        option_id: optionId,
-        voter_identifier: account,
-        requiredCred,
-        signature,
-
-      };
-      console.log(voteData, 'voteData');
-      const response = await castVote(voteData as VoteRequestData);
-      console.log(response, 'response');
-      toast({
-        title: 'Vote cast successfully',
-      });
-      await fetchPollFromApi(id);
+      console.log("🚀 ~ handleCastVoteSigned ~ signature:", signature)
+      if (isSuccess) {
+        const voteData = {
+          poll_id: pollId,
+          option_id: optionId,
+          voter_identifier: account,
+          requiredCred,
+          signature,
+        };
+        console.log(voteData, 'voteData');
+        const response = await castVote(voteData as VoteRequestData);
+        console.log(response, 'response');
+        toast({
+          title: 'Vote cast successfully',
+        });
+        await fetchPollFromApi(id);
+      }
     } catch (error) {
       console.error('Error signing vote:', error);
       return;
@@ -214,8 +216,6 @@ const PollPage = () => {
   }
 
   const handleVote = async (optionId: string) => {
-    let canVote = false;
-
     if (!localStorage.getItem('userUniqueId')) {
       const uniqueId = uuidv4();
       localStorage.setItem('userUniqueId', uniqueId);
@@ -295,7 +295,7 @@ const PollPage = () => {
           return; // Exit the function if an event without an owner is found
         }
       }
-      await handleCastVoteSigned(optionId, '');
+      await handleCastVoteSigned(optionId, CREDENTIALS.POAPapi.id);
     }
     // POAPS ONCHAIN
     else if (credentialId == CREDENTIALS.POAPSVerification.id) {
@@ -328,7 +328,7 @@ const PollPage = () => {
       }
     };
 
-    if (!poll) {
+    if (!poll || isLoading) {
       return <div className="flex justify-center items-center h-screen">
         <Loader />
       </div>

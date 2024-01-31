@@ -14,7 +14,8 @@ import { verifyProof } from '../controllers/auth.controller';
 import { useZuAuth, supportedEvents } from 'zuauth';
 import { ArgumentTypeName } from "@pcd/pcd-types";
 import { EdDSATicketPCDPackage } from "@pcd/eddsa-ticket-pcd";
-import { ArgsOf, PCDPackage, SerializedPCD } from "@pcd/pcd-types";
+import { ArgsOf, PCDPackage } from "@pcd/pcd-types";
+
 type UserPassportContextData = {
   signIn: () => void;
   isAuthenticated: boolean;
