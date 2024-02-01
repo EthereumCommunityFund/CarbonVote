@@ -96,3 +96,27 @@ export interface Poll {
   pollMetadata: string;
   poap_events: number[]
 }
+
+export interface ProcessVoteInput {
+  vote_hash: string;
+  poll_id: string;
+  option_id: string;
+}
+
+interface PollData {
+  poap_events: string[];
+}
+
+export interface CheckPOAPOwnershipInput {
+  pollData: PollData;
+  voter_identifier: string;
+}
+
+
+export interface VerifySignatureInput {
+  pollId: string;
+  option_id: string;
+  voter_identifier: string;
+  requiredCred: string;
+  signature: string;
+}
