@@ -457,6 +457,7 @@ const PollPage = () => {
         </div>
       </div>
     )
-  };
+  }
+};
 
-  export default PollPage;
+export default PollPage;
