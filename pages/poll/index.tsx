@@ -326,138 +326,138 @@ const PollPage = () => {
         }
         await handleCastVote(optionId, CREDENTIALS.ProtocolGuildMember.id, 'userUniqueId');
       }
-    };
-
-    if (!poll || isLoading) {
-      return <div className="flex justify-center items-center h-screen">
-        <Loader />
-      </div>
     }
+  };
 
-    return (
-      <div className="flex flex-col md:flex-row gap-20 px-20 pt-5 text-black w-full justify-center">
-        <div className="flex flex-col gap-2.5 max-w-[1000px] w-full">
-          <div>
-            <Button className="rounded-full" leftIcon={ArrowLeftIcon} onClick={handleBack}>
-              Back
-            </Button>
-          </div>
-          <div className="bg-white flex flex-col gap-1.5 rounded-2xl p-5 ">
-            <div className="flex gap-3.5 pb-3">
-              <div className={`${pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
-                } px-2.5 rounded-lg items-center`}>
-                {pollIsLive ? (
-                  <Label className="text-[#44b678]">Live</Label>
-                ) : (
-                  <Label className="text-[#656565]">Closed</Label>
-                )}
-              </div>
+  if (!poll || isLoading) {
+    return <div className="flex justify-center items-center h-screen">
+      <Loader />
+    </div>
+  }
+
+  return (
+    <div className="flex flex-col md:flex-row gap-20 px-20 pt-5 text-black w-full justify-center">
+      <div className="flex flex-col gap-2.5 max-w-[1000px] w-full">
+        <div>
+          <Button className="rounded-full" leftIcon={ArrowLeftIcon} onClick={handleBack}>
+            Back
+          </Button>
+        </div>
+        <div className="bg-white flex flex-col gap-1.5 rounded-2xl p-5 ">
+          <div className="flex gap-3.5 pb-3">
+            <div className={`${pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
+              } px-2.5 rounded-lg items-center`}>
               {pollIsLive ? (
-                <div className="flex gap-2">
-                  <ClockIcon />
-                  <CountdownTimer endTime={poll.endTime} />
-                </div>
-              ) : null}
+                <Label className="text-[#44b678]">Live</Label>
+              ) : (
+                <Label className="text-[#656565]">Closed</Label>
+              )}
             </div>
-            <div className="flex flex-col gap-1">
-              <Label className="text-black/60 text-base">Motion: </Label>
-              <Label className="text-2xl">{poll?.title}</Label>
-            </div>
-            <div className="flex justify-end pb-5 border-b border-black/30">{/* <Label>by: {mockPoll.creator}</Label> */}</div>
-            <div className="flex flex-col gap-2.5">
-              <Label className="text-black/60 text-lg font-bold">Description: </Label>
-              <span dangerouslySetInnerHTML={{ __html: poll?.description }} />
-            </div>
-          </div>
-
-          <div className="bg-white/40 p-2.5 flex flex-col gap-3.5">
             {pollIsLive ? (
-              <>
-                <Label className="text-2xl">Vote on Poll</Label>
-                {(!poll?.poap_events || poll?.poap_events.length === 0) && credentialId === CREDENTIALS.POAPSVerification.id ? (
-                  <div>
-                    <div><Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label></div>
-                    <div><Label className="text-sm">Please notice that for now in this test version, we only stored the participation list of 2 Ethereum events.</Label></div>
-                  </div>
-                ) : (
-                  <div></div>
-                )}
-                {credentialId === "6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2" && (
-                  <Label className="text-sm">Your gitcoin passport score is: {score}/100 (Your score must be higher than 0 to vote)</Label>
-                )}
-                <div className="flex flex-col gap-2.5">
-                  {options?.map((option) => (
-                    <OptionButton
-                      key={option.id}
-                      id={option.id}
-                      optionName={option.option_description}
-                      onVote={(optionId) => handleVote(optionId as string)}
-                      isChecked={selectedOption === option.id}
-                      type="api"
-                      optionAddress={undefined}
-                    />
-                  ))}
+              <div className="flex gap-2">
+                <ClockIcon />
+                <CountdownTimer endTime={poll.endTime} />
+              </div>
+            ) : null}
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label className="text-black/60 text-base">Motion: </Label>
+            <Label className="text-2xl">{poll?.title}</Label>
+          </div>
+          <div className="flex justify-end pb-5 border-b border-black/30">{/* <Label>by: {mockPoll.creator}</Label> */}</div>
+          <div className="flex flex-col gap-2.5">
+            <Label className="text-black/60 text-lg font-bold">Description: </Label>
+            <span dangerouslySetInnerHTML={{ __html: poll?.description }} />
+          </div>
+        </div>
+
+        <div className="bg-white/40 p-2.5 flex flex-col gap-3.5">
+          {pollIsLive ? (
+            <>
+              <Label className="text-2xl">Vote on Poll</Label>
+              {(!poll?.poap_events || poll?.poap_events.length === 0) && credentialId === CREDENTIALS.POAPSVerification.id ? (
+                <div>
+                  <div><Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label></div>
+                  <div><Label className="text-sm">Please notice that for now in this test version, we only stored the participation list of 2 Ethereum events.</Label></div>
                 </div>
-              </>
-            ) : (
-              <Label className="text-2xl">Poll finished</Label>
+              ) : (
+                <div></div>
+              )}
+              {credentialId === "6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2" && (
+                <Label className="text-sm">Your gitcoin passport score is: {score}/100 (Your score must be higher than 0 to vote)</Label>
+              )}
+              <div className="flex flex-col gap-2.5">
+                {options?.map((option) => (
+                  <OptionButton
+                    key={option.id}
+                    id={option.id}
+                    optionName={option.option_description}
+                    onVote={(optionId) => handleVote(optionId as string)}
+                    isChecked={selectedOption === option.id}
+                    type="api"
+                    optionAddress={undefined}
+                  />
+                ))}
+              </div>
+            </>
+          ) : (
+            <Label className="text-2xl">Poll finished</Label>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-col gap-8 w-96">
+        <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
+          <Label className="text-2xl">Details</Label>
+          <hr></hr>
+          <div className='flex flex-col gap-4 pt-3 text-base'>
+            <Label>Voting Method: HeadCounting</Label>
+            <Label>
+              {(() => {
+                return `Start Date: ${new Date(Number(poll.startTime))}`;
+              })()}
+            </Label>
+            <Label>
+              {(() => {
+                return `End Date: ${new Date(Number(poll.endTime))}`;
+              })()}
+            </Label>
+            <Label className="text-1xl">
+              Requirements:
+            </Label>
+            <div>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                border: '1px solid #ccc',
+                borderRadius: '9999px',
+                padding: '4px 8px',
+                margin: '4px',
+              }}>
+                <img src={'/images/carbonvote.png'} alt="Requirement image" style={{ width: '30px', height: '30px', marginRight: '8px', borderRadius: 100 }} />
+                <span>{getRequirement()}</span>
+                <div style={{ marginLeft: 10 }}>⚪️</div>
+              </div>
+            </div>
+            {(poll?.poap_events?.length > 0) && (
+              <PoapDetails poapEvents={poll?.poap_events} account={account as string} eventDetails={eventDetails} setEventDetails={setEventDetails} />
             )}
           </div>
         </div>
-        <div className="flex flex-col gap-8 w-96">
-          <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
-            <Label className="text-2xl">Details</Label>
-            <hr></hr>
-            <div className='flex flex-col gap-4 pt-3 text-base'>
-              <Label>Voting Method: HeadCounting</Label>
-              <Label>
-                {(() => {
-                  return `Start Date: ${new Date(Number(poll.startTime))}`;
-                })()}
-              </Label>
-              <Label>
-                {(() => {
-                  return `End Date: ${new Date(Number(poll.endTime))}`;
-                })()}
-              </Label>
-              <Label className="text-1xl">
-                Requirements:
-              </Label>
-              <div>
-                <div style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  border: '1px solid #ccc',
-                  borderRadius: '9999px',
-                  padding: '4px 8px',
-                  margin: '4px',
-                }}>
-                  <img src={'/images/carbonvote.png'} alt="Requirement image" style={{ width: '30px', height: '30px', marginRight: '8px', borderRadius: 100 }} />
-                  <span>{getRequirement()}</span>
-                  <div style={{ marginLeft: 10 }}>⚪️</div>
-                </div>
-              </div>
-              {(poll?.poap_events?.length > 0) && (
-                <PoapDetails poapEvents={poll?.poap_events} account={account as string} eventDetails={eventDetails} setEventDetails={setEventDetails} />
-              )}
-            </div>
+        <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
+          <Label className="text-2xl">Results</Label>
+          <hr></hr>
+          <div className='flex flex-col gap-2.5 pt-2.5'>
+            {options &&
+              options.map((option: PollOptionType) => (
+                <OptionVotingCountProgress description={option.option_description} votes={option.votes} />
+              ))
+            }
           </div>
-          <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
-            <Label className="text-2xl">Results</Label>
-            <hr></hr>
-            <div className='flex flex-col gap-2.5 pt-2.5'>
-              {options &&
-                options.map((option: PollOptionType) => (
-                  <OptionVotingCountProgress description={option.option_description} votes={option.votes} />
-                ))
-              }
-            </div>
-            <PieChartComponent votes={options} />
-          </div>
+          <PieChartComponent votes={options} />
         </div>
       </div>
-    )
-  }
+    </div>
+  )
 };
 
 export default PollPage;
