@@ -8,18 +8,14 @@ import {
   ZKEdDSAEventTicketPCDPackage,
   ZKEdDSAEventTicketPCDArgs,
 } from "@pcd/zk-eddsa-event-ticket-pcd";
-import { constructZupassPcdGetRequestUrl } from "@pcd/passport-interface/src/PassportInterface";
-import { openZupassPopup } from "@pcd/passport-interface/src/PassportPopup";
 import { SemaphoreGroupPCDPackage } from "@pcd/semaphore-group-pcd";
 import { generateSnarkMessageHash } from "@pcd/util";
-import { SemaphoreSignaturePCDPackage } from "@pcd/semaphore-signature-pcd";
-import { generate_signature, verifyProof } from '../controllers/auth.controller';
-import { ZKEdDSAEventTicketPCDClaim } from '@pcd/zk-eddsa-event-ticket-pcd';
-import { openSignedZuzaluSignInPopup } from '@pcd/passport-interface';
-import { useZuAuth, supportedEvents, supportedProducs } from 'zuauth';
+import { verifyProof } from '../controllers/auth.controller';
+import { useZuAuth, supportedEvents } from 'zuauth';
 import { ArgumentTypeName } from "@pcd/pcd-types";
 import { EdDSATicketPCDPackage } from "@pcd/eddsa-ticket-pcd";
-import { ArgsOf, PCDPackage, SerializedPCD } from "@pcd/pcd-types";
+import { ArgsOf, PCDPackage } from "@pcd/pcd-types";
+
 type UserPassportContextData = {
   signIn: () => void;
   isAuthenticated: boolean;
@@ -110,7 +106,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
         try {
           let _pcd = processPcd(pcdStr);
           console.log(_pcd, 'devconnect event pcd');
-          localStorage.setItem('devconnect Id', _pcd.claim.nullifierHash);
+          localStorage.setItem('devconnectNullifier', _pcd.claim.nullifierHash);
         }
         catch (error) {
           console.error('Error processing devconnect PCD string:', error);
@@ -174,72 +170,6 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
     setIsAuthenticated(!!storedPcd);
   }, []);
 
-  /*const verifyZupassTicket = () => {
-    setMode('ticket');
-    const defaultSetOfTicketFieldsToReveal: EdDSATicketFieldsToReveal = {
-      revealTicketId: true,
-      revealEventId: true,
-      revealProductId: true,
-      revealTimestampConsumed: true,
-      revealTimestampSigned: true,
-      revealAttendeeSemaphoreId: true,
-      revealIsConsumed: true,
-      revealIsRevoked: true,
-      revealTicketCategory: false,
-      revealAttendeeEmail: true,
-      revealAttendeeName: true,
-    };
-
-    // fieldsToReveal: EdDSATicketFieldsToReveal,
-    // watermark: string | bigint,
-    // externalNullifier?: string | bigint,
-    // validEventIds: string[] = supportedEvents,
-    // validProductIds: string[] = supportedProducs,
-    // popupRoute: string = "popup"
-
-    //   ZuConnectResident: [
-    //     {
-    //         eventId: "91312aa1-5f74-4264-bdeb-f4a3ddb8670c",
-    //         productId: "cc9e3650-c29b-4629-b275-6b34fc70b2f9"
-    //     },
-    //     {
-    //         eventId: "54863995-10c4-46e4-9342-75e48b68d307",
-    //         productId: "d2123bf9-c027-4851-b52c-d8b73fc3f5af"
-    //     },
-    //     {
-    //         eventId: "797de414-2aec-4ef8-8655-09df7e2b6cc6",
-    //         productId: "d3620f38-56a9-4235-bea8-0d1dba6bb623"
-    //     },
-    //     {
-    //         eventId: "a6109324-7ca0-4198-9583-77962d1b9d53",
-    //         productId: "a6109324-7ca0-4198-9583-77962d1b9d53"
-    //     }
-    // ]
-    authenticate(
-      defaultSetOfTicketFieldsToReveal,
-      '1366567502',
-      undefined,
-      [
-        '5de90d09-22db-40ca-b3ae-d934573def8b',
-        '5de90d09-22db-40ca-b3ae-d934573def8b',
-        '5de90d09-22db-40ca-b3ae-d934573def8b',
-        '91312aa1-5f74-4264-bdeb-f4a3ddb8670c',
-        '54863995-10c4-46e4-9342-75e48b68d307',
-        '797de414-2aec-4ef8-8655-09df7e2b6cc6',
-        'a6109324-7ca0-4198-9583-77962d1b9d53',
-      ],
-      [
-        '5ba4cd9e-893c-4a4a-b15b-cf36ceda1938',
-        '10016d35-40df-4033-a171-7d661ebaccaa',
-        '53b518ed-e427-4a23-bf36-a6e1e2764256',
-        'cc9e3650-c29b-4629-b275-6b34fc70b2f9',
-        'd2123bf9-c027-4851-b52c-d8b73fc3f5af',
-        'd3620f38-56a9-4235-bea8-0d1dba6bb623',
-        'a6109324-7ca0-4198-9583-77962d1b9d53',
-      ],
-      'ticket-popup'
-    );
-  };*/
   function openZupassPopup(popupUrl: string, proofUrl: string) {
     const url = `${popupUrl}?proofUrl=${encodeURIComponent(proofUrl)}`;
     const popup = window.open(url, "_blank", "width=450,height=600,top=100,popup");
@@ -471,13 +401,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
       });
     })
   };
-  /*window.addEventListener('eventTicketpopupClosed', () => {
-    if (localStorage.getItem('event Id')) {
-      resolve('success');
-    } else {
-      reject(new Error("Verification failed"));
-    }
-  });*/
+
   const devconnectVerify = () => {
 
     setMode('devconnect');

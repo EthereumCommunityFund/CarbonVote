@@ -97,13 +97,26 @@ export interface Poll {
   poap_events: number[]
 }
 
+export interface ProcessVoteInput {
+  vote_hash: string;
+  poll_id: string;
+  option_id: string;
+}
 
-export interface WalletContextType {
-  provider: ethers.Provider | null;
-  signer: ethers.Signer | null
-  account: string | null;
-  isConnected: boolean;
-  connectToMetamask: () => Promise<void>;
-  hasChangedAccount: Boolean;
-  // ... any other functions or state variables you want to include
+interface PollData {
+  poap_events: string[];
+}
+
+export interface CheckPOAPOwnershipInput {
+  pollData: PollData;
+  voter_identifier: string;
+}
+
+
+export interface VerifySignatureInput {
+  pollId: string;
+  option_id: string;
+  voter_identifier: string;
+  requiredCred: string;
+  signature: string;
 }

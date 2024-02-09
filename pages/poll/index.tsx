@@ -10,7 +10,7 @@ import { toast } from '@/components/ui/use-toast';
 import { VoteRequestData, castVote, fetchPollById, fetchVote, } from '@/controllers/poll.controller';
 import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
-import { useWallet } from '@/context/WalletContext';
+import { useAccount, useConnect, useSignMessage } from 'wagmi'
 import { ethers } from "ethers";
 import contractABI from '@/carbonvote-contracts/deployment/contracts/poapsverification.json';
 import { calculateTimeRemaining } from '@/utils/index';
@@ -20,6 +20,7 @@ import { fetchScore } from '@/controllers';
 import { Loader } from '@/components/ui/Loader';
 import PieChartComponent from '@/components/ui/PieChart';
 import { PollOptionType, Poll } from '@/types';
+import { CREDENTIALS } from '@/src/constants'
 
 const PollPage = () => {
   const router = useRouter();
@@ -29,8 +30,9 @@ const PollPage = () => {
     router.push('/');
   };
   const [poll, setPoll] = useState<Poll>();
-  const { signIn, isPassportConnected, verifyticket, devconnectVerify } = useUserPassportContext();
-  const { connectToMetamask, isConnected, account, signer } = useWallet();
+  const { signIn, isPassportConnected, verifyticket, devconnectVerify } = useUserPassportContext(); // zupass
+  const { address: account, isConnected } = useAccount();
+  const { connect } = useConnect();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [options, setOptions] = useState<PollOptionType[]>([]);
   const [credentialId, setCredentialId] = useState("");
@@ -39,8 +41,11 @@ const PollPage = () => {
   const [startDate, setstartDate] = useState<Date>();
   const [poapsNumber, setPoapsNumber] = useState('0');
   const [eventDetails, setEventDetails] = useState<any[]>([])
+  const [message, setMessage] = useState('')
+  const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
+    message,
+  })
 
-  const contractAddress = "0xD07E11aeA30DC68E42327F116e47f12C7E434d77";
   useEffect(() => {
     fetchPollFromApi(id);
   }, [id]);
@@ -62,12 +67,14 @@ const PollPage = () => {
         }
       };
       fetchNewScore();
-    } else if (credentialId == "600d1865-1441-4e36-bb13-9345c94c4dfb") {
+    } else if (credentialId == CREDENTIALS.POAPSVerification.id) {
       const fetchNewNumber = async () => {
         try {
+          // TODO: Replace ethers with wagmi.
+          // ref: https://wagmi.sh/core/api/actions/readContract
           const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
           //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
-          const contract = new ethers.Contract(contractAddress, contractABI, provider);
+          const contract = new ethers.Contract(CREDENTIALS.POAPSVerification.contract, contractABI, provider);
           const events = await contract.getEventCountForCollection(account);
 
           setPoapsNumber(events.toString());
@@ -87,16 +94,16 @@ const PollPage = () => {
       setPoll(data);
       console.log(poll?.poap_events.length, 'poll?.poap_events');
       setOptions(data.options);
-      const credentialId = data.credentials?.[0]?.id || "";
+      const newCredentialId = data.credentials?.[0]?.id || "";
       let identifier: string | null = null;
-      if (credentialId) {
-        switch (credentialId) {
-          case '76118436-886f-4690-8a54-ab465d08fa0d': //Zuconnect
-          case '3cc4b682-9865-47b0-aed8-ef1095e1c398': //Devconnect
+      if (newCredentialId) {
+        switch (newCredentialId) {
+          case CREDENTIALS.ZuConnectResident.id: //Zuconnect
+          case CREDENTIALS.DevConnect.id: //Devconnect
             if (localStorage.getItem('userId')) { identifier = localStorage.getItem('userId'); }
             break;
-          case '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2': //Gitcoin passport
-          case '600d1865-1441-4e36-bb13-9345c94c4dfb': //POAPS verification
+          case CREDENTIALS.GitcoinPassport.id: //Gitcoin passport
+          case CREDENTIALS.POAPSVerification.id: //POAPS verification
             if (localStorage.getItem('account')) { identifier = localStorage.getItem('account'); }
             break;
         }
@@ -125,9 +132,9 @@ const PollPage = () => {
       if (timeleft) {
         settimeRemaining(timeleft);
       }
-      if (credentialId) {
-        setCredentialId(credentialId);
-        console.log(credentialId, 'credential ID');
+      if (newCredentialId) {
+        setCredentialId(newCredentialId);
+        console.log('credential ID', newCredentialId);
       }
       //console.log(pollIsLive, 'live');
     } catch (error) {
@@ -136,18 +143,8 @@ const PollPage = () => {
   };
 
   const getRequirement = () => {
-    switch (credentialId) {
-      case '76118436-886f-4690-8a54-ab465d08fa0d':
-        return 'Zuconnect Resident';
-      case '3cc4b682-9865-47b0-aed8-ef1095e1c398':
-        return 'Devconnect Resident';
-      case '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2':
-        return 'Gitcoin Passport';
-      case '600d1865-1441-4e36-bb13-9345c94c4dfb':
-        return 'POAPS Verification';
-      default:
-        return '';
-    }
+    const current = Object.values(CREDENTIALS).find(credential => credential.id === id);
+    return current?.name;
   }
 
   const warnAndConnect = () => {
@@ -157,20 +154,74 @@ const PollPage = () => {
       description: 'You need to connect to Metamask to get this information, please try again',
       variant: 'destructive',
     });
-    connectToMetamask();
+    connect();
   }
 
   const pollIsLive = remainingTime !== null && remainingTime !== 'Time is up!';
 
+  const handleCastVote = async (optionId: string, requiredCred: string, voterTag: string) => {
+    const pollId = poll?.id;
+    const voter_identifier = localStorage.getItem(voterTag);
+    try {
+      const voteData = {
+        poll_id: pollId,
+        option_id: optionId,
+        voter_identifier: voter_identifier,
+        requiredCred,
+        signature: null
+      };
+      console.log(voteData, 'voteData');
+      const response = await castVote(voteData as VoteRequestData);
+      console.log(response, 'response');
+      toast({
+        title: 'Vote cast successfully',
+      });
+      await fetchPollFromApi(id);
+    } catch (error) {
+      console.error('Error casting vote:', error);
+      return;
+    }
+  }
+
+  const handleCastVoteSigned = async (optionId: string, requiredCred: string) => {
+    const pollId = poll?.id;
+    try {
+      const newMessage = `{ poll_id: ${pollId}, option_id: ${optionId}, voter_identifier: ${account}, requiredCred: ${requiredCred}`;
+
+      if (account === null) return;
+      setMessage(newMessage)
+      const signature = await signMessage();
+
+      console.log("🚀 ~ handleCastVoteSigned ~ signature:", signature)
+      if (isSuccess) {
+        const voteData = {
+          poll_id: pollId,
+          option_id: optionId,
+          voter_identifier: account,
+          requiredCred,
+          signature,
+        };
+        console.log(voteData, 'voteData');
+        const response = await castVote(voteData as VoteRequestData);
+        console.log(response, 'response');
+        toast({
+          title: 'Vote cast successfully',
+        });
+        await fetchPollFromApi(id);
+      }
+    } catch (error) {
+      console.error('Error signing vote:', error);
+      return;
+    }
+  }
+
   const handleVote = async (optionId: string) => {
-    let canVote = false;
-    let voter_identifier: any = '';
     if (!localStorage.getItem('userUniqueId')) {
       const uniqueId = uuidv4();
       localStorage.setItem('userUniqueId', uniqueId);
     }
-    //Zuconnect credentials voting
-    if (credentialId == '76118436-886f-4690-8a54-ab465d08fa0d') {
+    // Zuconnect credentials voting
+    if (credentialId == CREDENTIALS.ZuConnectResident.id) {
       console.log('Zuconnect resident"');
       if (!isPassportConnected) {
         await signIn();
@@ -181,48 +232,45 @@ const PollPage = () => {
         let usereventId = localStorage.getItem('event Id');
         console.log(usereventId);
         if (usereventId == "91312aa1-5f74-4264-bdeb-f4a3ddb8670c" || usereventId == "54863995-10c4-46e4-9342-75e48b68d307" || usereventId == "797de414-2aec-4ef8-8655-09df7e2b6cc6" || usereventId == "a6109324-7ca0-4198-9583-77962d1b9d53") {
-          canVote = true;
+          await handleCastVote(optionId, CREDENTIALS.ZuConnectResident.id, 'userId');
         }
       } catch (error) {
         console.error('Error in verifying ticket:', error);
         return;
       }
-      voter_identifier = localStorage.getItem('userId');
     }
-    //Devconnect
-    else if (credentialId == '3cc4b682-9865-47b0-aed8-ef1095e1c398') {
+    // Devconnect
+    else if (credentialId == CREDENTIALS.DevConnect.id) {
       if (!isPassportConnected) {
         await signIn();
+        return;
       }
       try {
         await devconnectVerify();
-        if (localStorage.getItem('devconnect Id')) {
-          canVote = true;
+        if (localStorage.getItem('devconnectNullifier')) {
+          await handleCastVote(optionId, CREDENTIALS.DevConnect.id, 'userId');
         }
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Error in verifying ticket:', error);
         return;
       }
-      voter_identifier = localStorage.getItem('userId');
     }
-    //Gitcoin
-    else if (credentialId == '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2') {
+    // Gitcoin
+    else if (credentialId == CREDENTIALS.GitcoinPassport.id) {
       if (!isConnected) {
         warnAndConnect();
         return;
       }
       if (account !== null) {
-        let fetchScoreData = { address: account, scorerId: '6347' };
+        let fetchScoreData = { address: account as string, scorerId: '6347' };
         let scoreResponse = await fetchScore(fetchScoreData);
         let scoreData = scoreResponse.data;
         console.log(scoreData.score.toString(), 'score');
         setScore(scoreData.score.toString());
         if (scoreData.score.toString() != '0') {
-          canVote = true;
+          await handleCastVoteSigned(optionId, CREDENTIALS.GitcoinPassport.id);
         }
       }
-      voter_identifier = account;
     }
     // POAPS API
     else if (poll?.poap_events && poll?.poap_events.length) {
@@ -247,11 +295,10 @@ const PollPage = () => {
           return; // Exit the function if an event without an owner is found
         }
       }
-      voter_identifier = account;
-      canVote = true;
+      await handleCastVoteSigned(optionId, CREDENTIALS.POAPapi.id);
     }
-    //POAPS ONCHAIN
-    else if (credentialId == '600d1865-1441-4e36-bb13-9345c94c4dfb') {
+    // POAPS ONCHAIN
+    else if (credentialId == CREDENTIALS.POAPSVerification.id) {
       if (!isConnected) {
         warnAndConnect();
         return;
@@ -259,7 +306,7 @@ const PollPage = () => {
       try {
         const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
         //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
-        const contract = new ethers.Contract(contractAddress, contractABI, provider);
+        const contract = new ethers.Contract(CREDENTIALS.POAPSVerification.contract, contractABI, provider);
         const events = await contract.getEventCountForCollection(account);
 
         setPoapsNumber(events.toString());
@@ -269,73 +316,20 @@ const PollPage = () => {
       }
 
       if (Number(poapsNumber) > 4) {
-        canVote = true;
+        await handleCastVoteSigned(optionId, CREDENTIALS.ProtocolGuildMember.id);
       }
-      voter_identifier = account;
-    } else {
-      voter_identifier = localStorage.getItem('userUniqueId');
-      canVote = true;
-    }
-    const pollId = poll?.id;
-    try {
-      console.log('canVote:', canVote);
-      if (!canVote) {
-        console.error('You do not have the credential to vote');
-        toast({
-          title: 'Error',
-          description: 'You do not have the credential to vote',
-          variant: 'destructive',
-        });
-      } else {
-        // FIXME: We need to add signature to validate vote even if it's only checked by the backend
-        // this way we avoit injection of accounts
-        // The user Signs
-        // User Signs the vote
-        try {
-          const message = `Vote for poll ${pollId} on option ${optionId}`;
-
-          //if (signer === null) return;
-          //const signature = await signer.signMessage(message);
-
-          const voteData = {
-            poll_id: pollId,
-            option_id: optionId,
-            voter_identifier: voter_identifier,
-            //signature
-          };
-          console.log(voteData, 'voteData');
-          const response = await castVote(voteData as VoteRequestData);
-          console.log(response, 'response');
-          toast({
-            title: 'Vote cast successfully',
-          });
-          await fetchPollFromApi(id);
-        } catch (error) {
-          console.error('Error signing vote:', error);
+      // Protocol Guild
+      else if (poll?.poap_events && poll?.poap_events.length) {
+        if (!isConnected) {
+          warnAndConnect();
           return;
         }
-      }
-    } catch (error: any) {
-      if (error.response && error.response.status === 409) {
-        console.error('You have already voted for this option');
-        toast({
-          title: 'Warning',
-          description: 'You have already voted for this option',
-          variant: 'destructive',
-        });
-      }
-      else {
-        console.error('Error casting vote:', error);
-        toast({
-          title: 'Error',
-          description: error.message,
-          variant: 'destructive',
-        });
+        await handleCastVote(optionId, CREDENTIALS.ProtocolGuildMember.id, 'userUniqueId');
       }
     }
   };
 
-  if (!poll) {
+  if (!poll || isLoading) {
     return <div className="flex justify-center items-center h-screen">
       <Loader />
     </div>
@@ -381,7 +375,7 @@ const PollPage = () => {
           {pollIsLive ? (
             <>
               <Label className="text-2xl">Vote on Poll</Label>
-              {(!poll?.poap_events || poll?.poap_events.length === 0) && credentialId === "600d1865-1441-4e36-bb13-9345c94c4dfb" ? (
+              {(!poll?.poap_events || poll?.poap_events.length === 0) && credentialId === CREDENTIALS.POAPSVerification.id ? (
                 <div>
                   <div><Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label></div>
                   <div><Label className="text-sm">Please notice that for now in this test version, we only stored the participation list of 2 Ethereum events.</Label></div>
@@ -441,13 +435,11 @@ const PollPage = () => {
               }}>
                 <img src={'/images/carbonvote.png'} alt="Requirement image" style={{ width: '30px', height: '30px', marginRight: '8px', borderRadius: 100 }} />
                 <span>{getRequirement()}</span>
-                {/* TODO: Check if this is complied */}
                 <div style={{ marginLeft: 10 }}>⚪️</div>
-                {/* <div style={{ marginLeft: 10 }}>{true ? "✅" : "🔴"}</div> */}
               </div>
             </div>
             {(poll?.poap_events?.length > 0) && (
-              <PoapDetails poapEvents={poll?.poap_events} account={account} eventDetails={eventDetails} setEventDetails={setEventDetails} />
+              <PoapDetails poapEvents={poll?.poap_events} account={account as string} eventDetails={eventDetails} setEventDetails={setEventDetails} />
             )}
           </div>
         </div>
