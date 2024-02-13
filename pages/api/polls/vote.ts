@@ -1,26 +1,116 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../../utils/supabaseClient';
+import { verifyMessage } from 'ethers';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
-import getPoapOwnership from 'utils/getPoapOwnership'
+import getPoapOwnership from 'utils/getPoapOwnership';
+import { supabase } from 'utils/supabaseClient';
+import { CREDENTIALS } from '@/src/constants';
+import { VerifySignatureInput, CheckPOAPOwnershipInput, ProcessVoteInput } from '@/types'
+
 const poapApiKey = process.env.POAP_API_KEY ?? "";
 
-const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
+async function validateRequest(req: NextApiRequest) {
     if (req.method !== 'POST') {
-        res.status(405).send('Method Not Allowed');
-        return;
+        throw new Error('Method Not Allowed');
     }
 
     const { option_id, voter_identifier, poll_id } = req.body;
-
     if (!option_id || !voter_identifier || !poll_id) {
-        res.status(400).send('Option ID, Poll ID, and Voter Identifier are required');
-        return;
+        throw new Error('Option ID, Poll ID, and Voter Identifier are required');
+    }
+}
+
+async function verifySignature({ pollId, option_id, voter_identifier, requiredCred, signature }: VerifySignatureInput): Promise<void> {
+    if (requiredCred === CREDENTIALS.GitcoinPassport.id || requiredCred === CREDENTIALS.POAPapi.id || requiredCred === CREDENTIALS.ProtocolGuildMember.id) {
+        const message = `{ poll_id: ${pollId}, option_id: ${option_id}, voter_identifier: ${voter_identifier}, requiredCred: ${requiredCred}`;
+        const signerAddress = verifyMessage(message, signature);
+
+        if (signerAddress !== voter_identifier) {
+            throw new Error("Signature doesn't correspond with address.");
+        }
+    }
+    // Additional verification logic for other credentials can be added here
+}
+
+async function checkPOAPOwnership({ pollData, voter_identifier }: CheckPOAPOwnershipInput): Promise<void> {
+    const ownershipPromises = pollData.poap_events.map(eventId =>
+        getPoapOwnership(poapApiKey, voter_identifier, eventId)
+    );
+    const responses = await Promise.all(ownershipPromises);
+
+    for (const response of responses) {
+        if (!response?.data?.owner) {
+            throw new Error("You don't qualify to vote for this poll.");
+        }
+    }
+}
+
+async function processVote({ vote_hash, poll_id, option_id }: ProcessVoteInput): Promise<void> {
+    const { data: existingVoteOnOption } = await supabase
+        .from('votes')
+        .select('*')
+        .eq('vote_hash', vote_hash)
+        .eq('poll_id', poll_id)
+        .eq('option_id', option_id)
+        .single();
+
+    if (existingVoteOnOption) {
+        throw new Error('You have already voted for this option in this poll.');
     }
 
-    try {
+    // Check if the voter has already voted in the poll and process accordingly
+    const { data, error } = await supabase
+        .from('votes')
+        .select('option_id')
+        .eq('vote_hash', vote_hash)
+        .eq('poll_id', poll_id);
 
-        // Check requirements from database
+    if (error) throw error;
+
+    let existingVote = data ? data[0] : null;
+    if (existingVote) {
+        const { error: deleteError } = await supabase
+            .from('votes')
+            .delete()
+            .match({ vote_hash, poll_id });
+
+        if (deleteError) throw deleteError;
+
+        if (existingVote.option_id !== option_id) {
+            const { error: decrementError } = await supabase
+                .rpc('decrement_vote', { option_id_param: existingVote.option_id });
+
+            if (decrementError) throw decrementError;
+        }
+    }
+
+    // Insert the new vote
+    const { error: insertError } = await supabase
+        .from('votes')
+        .insert([{
+            id: uuidv4(),
+            option_id,
+            vote_hash,
+            poll_id,
+            cast_at: new Date()
+        }]);
+
+    if (insertError) throw insertError;
+
+    // Increment the vote count for the new option
+    const { error: incrementError } = await supabase
+        .rpc('increment_vote', { option_id_param: option_id });
+
+    if (incrementError) throw incrementError;
+}
+
+const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
+    try {
+        await validateRequest(req);
+        const { pollId, option_id, voter_identifier, poll_id, requiredCred, signature } = req.body;
+
+        await verifySignature({ pollId, option_id, voter_identifier, requiredCred, signature });
+
         const { data: pollData } = await supabase
             .from('votes')
             .select('*')
@@ -28,100 +118,14 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
             .single();
 
         if (pollData?.poap_events && pollData?.poap_events.length) {
-            // voter_identifier should be the user's address
-            const ownershipPromises = pollData.poap_events.map((eventId: any) =>
-                getPoapOwnership(poapApiKey, voter_identifier, eventId)
-            );
-            const responses = await Promise.all(ownershipPromises);
-
-            for (const response of responses) {
-                if (!response?.data?.owner) {
-                    console.error("Error: User doesn't own this POAP");
-                    res.status(409).send("You don't qualify to vote for this poll.");
-                    return; // Exit the function if an event without an owner is found
-                }
-            }
+            await checkPOAPOwnership({ pollData, voter_identifier });
         }
 
         const vote_hash = crypto.createHash('sha256').update(voter_identifier).digest('hex');
-
-        // Check if the user has already voted for the same option in the same poll
-        const { data: existingVoteOnOption } = await supabase
-            .from('votes')
-            .select('*')
-            .eq('vote_hash', vote_hash)
-            .eq('poll_id', poll_id)
-            .eq('option_id', option_id)
-            .single();
-
-        if (existingVoteOnOption) {
-            res.status(409).send('You have already voted for this option in this poll.');
-            return;
-        }
-
-        //  FIXME: Needs to check if any of the requirements has been used before 
-        // (so a user can't transfer and vote with another account)
-
-        // Check if this voter has already voted in the poll
-        const { data, error: existingVoteError } = await supabase
-            .from('votes')
-            .select('option_id')
-            .eq('vote_hash', vote_hash)
-            .eq('poll_id', poll_id)
-            .select();
-
-        console.log(existingVoteError)
-        let existingVote;
-        if (data) {
-            existingVote = data[0]
-        }
-
-        if (existingVoteError) throw existingVoteError;
-
-        if (existingVote) {
-            // Delete the previous vote
-            const { error: deleteError } = await supabase
-                .from('votes')
-                .delete()
-                .match({ vote_hash, poll_id });
-
-            if (deleteError) throw deleteError;
-
-            // If they voted for a different option, update the previous option's vote count
-            if (existingVote.option_id !== option_id) {
-                const { error: decrementError } = await supabase
-                    .rpc('decrement_vote', { option_id_param: existingVote.option_id });
-
-                if (decrementError) {
-                    console.log(decrementError)
-                    throw decrementError;
-
-                }
-            }
-        }
-
-        // Insert the new vote
-        const { error: insertError } = await supabase
-            .from('votes')
-            .insert([{
-                id: uuidv4(),
-                option_id,
-                vote_hash,
-                poll_id,
-                cast_at: new Date()
-            }]);
-
-        if (insertError) throw insertError;
-
-        // Increment the vote count for the new option
-        const { error: incrementError } = await supabase
-            .rpc('increment_vote', { option_id_param: option_id });
-
-        if (incrementError) throw incrementError;
+        await processVote({ vote_hash, poll_id, option_id });
 
         res.status(201).send('Vote recorded successfully');
     } catch (error: any) {
-        // Handle errors
         res.status(500).json({ error: error.message || 'An unexpected error occurred' });
     }
 };

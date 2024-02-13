@@ -1,50 +1,21 @@
-import { Contract, ethers } from 'ethers';
-import { ArrowLeftIcon, StopCircleIcon, ThumbDownIcon, ThumbUpIcon } from '@/components/icons';
+import { ethers } from 'ethers';
+import { ArrowLeftIcon } from '@/components/icons';
 import { ClockIcon } from '@/components/icons/clock';
 import Button from '@/components/ui/buttons/Button';
-import CheckerButton from '@/components/ui/buttons/CheckerButton';
 import CountdownTimer from '@/components/ui/CountDownTimer';
-import HtmlString from '@/components/ui/Html';
 import { Label } from '@/components/ui/Label';
-import { useWallet } from '@/context/WalletContext';
-import { OptionType, PollType } from '@/types';
+import { useAccount, useConnect } from 'wagmi'
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-//import { contract_addresses } from '../../carbonvote-contracts/artifacts/deployedAddresses.json';
-//import VotingContract from '../../carbonvote-contracts/artifacts/contracts/VoteContract.sol/VotingContract.json';
-//import VotingOption from '../../carbonvote-contracts/artifacts/contracts/VotingOption.sol/VotingOption.json';
 import VotingContract from '../../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
 import VotingOption from '../../carbonvote-contracts/deployment/contracts/VotingOption.sol/VotingOption.json';
 import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
-import { fetchPollById } from '@/controllers/poll.controller';
 import { calculateTimeRemaining, convertOptionsToPollOptions } from '@/utils/index';
 import { Loader } from '@/components/ui/Loader';
 import { useUserPassportContext } from '@/context/PassportContext';
 import PieChartComponent from '@/components/ui/PieChart';
-interface Poll {
-  id: string;
-  name: string;
-  startDate: string | Date;
-  endTime: string | bigint | number;
-  startTime: string | bigint | number;
-  creator: string;
-  topic: string;
-  subTopic: string;
-  description: string;
-  options: string[];
-  pollMetadata: string;
-  poll_type: number | bigint | string;
-}
-
-interface Option {
-  optionName: string;
-  votersCount: number;
-  totalEth?: string;
-  votersData?: any;
-  address?: string;
-  optionindex: number;
-}
+import { Poll, Option } from '@/types'
 
 const PollPage = () => {
   const router = useRouter();
@@ -62,7 +33,9 @@ const PollPage = () => {
   const [remainingTime, settimeRemaining] = useState('');
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [pollType, setPollType] = useState<string | number | bigint>();
-  const { connectToMetamask, isConnected, account } = useWallet();
+  const { address: account, isConnected } = useAccount();
+  const { connect } = useConnect();
+
   const { signIn, isPassportConnected } = useUserPassportContext();
   useEffect(() => {
     fetchPollFromContract();
@@ -200,13 +173,13 @@ const PollPage = () => {
   }
   const handleVote = async (optionIndex: number, optionName: string) => {
     if (!isConnected) {
-      console.error('You need to connect to Metamask to vote, please try again');
+      console.error('You need to connect to vote, please try again');
       toast({
         title: 'Error',
-        description: 'You need to connect to Metamask to vote, please try again',
+        description: 'You need to connect to vote, please try again',
         variant: 'destructive',
       });
-      connectToMetamask();
+      connect();
       return;
     }
     const generateSignature = async (message: string) => {
@@ -318,20 +291,21 @@ const PollPage = () => {
         </div>
         <div className="bg-white flex flex-col gap-2.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
-            <div className={`${pollIsLive ? 'bg-[#F84A4A20]' : 'bg-[#F8F8F8]'
+            <div className={`${pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
               } px-2.5 rounded-lg items-center`}>
               {pollIsLive ? (
-                <Label className="text-[#F84A4A]">Live</Label>
+                <Label className="text-[#44b678]">Live</Label>
               ) : (
                 <Label className="text-[#656565]">Closed</Label>
               )}
-              {remainingTime !== null && remainingTime !== 'Time is up!' ? (
-                <div className="flex gap-2">
-                  <ClockIcon />
-                  <CountdownTimer endTime={Number(poll.endTime) * 1000} />
-                </div>
-              ) : null}
             </div>
+
+            {remainingTime !== null && remainingTime !== 'Time is up!' ? (
+              <div className="flex gap-2">
+                <ClockIcon />
+                <CountdownTimer endTime={Number(poll.endTime) * 1000} />
+              </div>
+            ) : null}
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-black/60 text-lg">Motion: </Label>
@@ -353,7 +327,7 @@ const PollPage = () => {
               </Label>
               {
                 pollType?.toString() === "1"
-                  ? <Label className="text-sm">You can not vote if your address is not on this list: <a href="https://app.splits.org/accounts/0x84af3D5824F0390b9510440B6ABB5CC02BB68ea1" style={{ color: 'blue' }}>link</a></Label>
+                  ? <Label className="text-sm">You can not vote if your address is not on <a href="https://app.splits.org/accounts/0x84af3D5824F0390b9510440B6ABB5CC02BB68ea1" className="text-red-400">this list</a></Label>
                   : <Label className="text-sm">(You can also make a zero-value transaction from your wallet (in Sepolia) to given options addresses to vote)</Label>
               }
               <div className="flex flex-col gap-2.5">
