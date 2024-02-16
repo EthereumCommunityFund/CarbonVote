@@ -6,12 +6,14 @@ import {
   RainbowKitProvider,
 } from '@rainbow-me/rainbowkit';
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
-import { mainnet, optimism, sepolia } from 'wagmi/chains';
+import { mainnet, sepolia } from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 
+const envChains: any = process.env.NODE_ENV === 'production' ? [mainnet] : [sepolia];
+
 const { chains, publicClient } = configureChains(
-  [sepolia],
+  envChains,
   [
     alchemyProvider({ apiKey: process.env.ALCHEMY_ID ?? "" }),
     publicProvider()
