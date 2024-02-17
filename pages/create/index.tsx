@@ -18,6 +18,8 @@ import { OptionType } from '@/types';
 import { createPoll } from '@/controllers/poll.controller';
 import { useFormStore } from "@/zustand/create";
 import { CREDENTIALS, CONTRACT_ADDRESS } from '@/src/constants'
+import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
@@ -292,8 +294,10 @@ const CreatePollPage = () => {
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <Label className="text-2xl">Time Limit</Label>
-            <Input value={timeLimit} onChange={handleTimeLimitChange} placeholder={'4days 7hour 30m'}></Input>
+            <Label className="text-2xl">End Date/Time</Label>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DateTimePicker />
+            </LocalizationProvider>
           </div>
           <div className="flex flex-col gap-2">
             <Label className="text-2xl">Voting Method</Label>
@@ -337,7 +341,7 @@ const CreatePollPage = () => {
           </Button>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 export default CreatePollPage;
