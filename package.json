@@ -16,6 +16,10 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@editorjs/editorjs": "^2.29.0",
+    "@editorjs/header": "^2.8.1",
+    "@editorjs/marker": "^1.4.0",
+    "@editorjs/simple-image": "^1.6.0",
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "@openzeppelin/contracts-upgradeable": "^5.0.1",
     "@pcd/email-pcd": "^0.3.0",

@@ -260,14 +260,14 @@ const CreatePollPage = () => {
           </Button>
         </div>
         <div className="bg-white flex flex-col gap-2.5 rounded-2xl p-5 ">
-          <Label className="text-2xl">Create Poll</Label>
+          <Label className="text-2xl text-black/40">Create Poll</Label>
           <div className="flex flex-col gap-1">
-            <Label className="text-black/60 text-lg">Motion Title: </Label>
+            <Label className="text-black text-lg">Motion Title: </Label>
             <Input value={motionTitle} onChange={handleTitleInputChange} placeholder={'Motion Title'} />
           </div>
           <div className="flex justify-end pb-5 border-b border-black/30"></div>
           <div className="flex flex-col gap-2.5">
-            <Label className="text-black/60 text-lg font-bold">Motion Description: </Label>
+            <Label className="text-black text-lg font-bold">Motion Description: </Label>
             <TextEditor value={motionDescription} onChange={handleDescriptionChange} />
           </div>
           <div className="flex flex-col gap-1">
