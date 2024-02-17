@@ -20,6 +20,7 @@ import { useFormStore } from "@/zustand/create";
 import { CREDENTIALS, CONTRACT_ADDRESS } from '@/src/constants'
 import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from "dayjs";
 
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
@@ -43,6 +44,7 @@ const CreatePollPage = () => {
   // Zustand
   const selectedPOAPEvents = useFormStore((state) => state.selectedEvents)
   const resetFormStore = useFormStore((state) => state.reset)
+  const endDateTime = useState<Dayjs>();
 
   useEffect(() => {
     const doConnect = async () => {
@@ -105,6 +107,16 @@ const CreatePollPage = () => {
       setIsLoading(false)
       return;
     }
+
+    if (typeof endDateTime === null) {
+      toast({
+        title: 'Error',
+        description: 'End Date/Time is not selected',
+        variant: 'destructive',
+      });
+      setIsLoading(false)
+      return;
+    }
     let poll_type = 0;
     const optionNames = checkedOptions.map((option) => option.name);
     const pollMetadata = 'arbitrary data';
@@ -122,7 +134,8 @@ const CreatePollPage = () => {
         votingMethod: 'headCount',
         options: options.filter((option) => option.isChecked).map((option) => ({ option_description: option.name })),
         credentials: credentials,
-        poap_events: selectedPOAPEvents.map(event => event.id)
+        poap_events: selectedPOAPEvents.map(event => event.id),
+        endDateTime: endDateTime
       };
 
       const isProtocolGuildMember = credentials.includes(CREDENTIALS.ProtocolGuildMember.id);
@@ -296,7 +309,7 @@ const CreatePollPage = () => {
           <div className="flex flex-col gap-2">
             <Label className="text-2xl">End Date/Time</Label>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DateTimePicker />
+              <DateTimePicker value={endDateTime} />
             </LocalizationProvider>
           </div>
           <div className="flex flex-col gap-2">
