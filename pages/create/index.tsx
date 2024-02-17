@@ -279,7 +279,9 @@ const CreatePollPage = () => {
             {options.map((option, index) => (
               <div key={index} className="flex w-full space-x-2">
                 <CheckerButton option={option} idx={index} onInputChange={(e) => handleInputChange(index, e)} />
-                <button className="text-red-400" onClick={() => removeOption(index)}><FiTrash2 /></button>
+                {index > 1 &&
+                  <button className="text-red-400" onClick={() => removeOption(index)}><FiTrash2 /></button>
+                }
               </div>
             ))}
 
