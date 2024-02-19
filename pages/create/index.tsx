@@ -21,7 +21,7 @@ import { CREDENTIALS, CONTRACT_ADDRESS } from '@/src/constants'
 import { DateTimePicker, LocalizationProvider, TimezoneProps } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
-import { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import { GetServerSideProps, GetStaticProps, InferGetServerSidePropsType, InferGetStaticPropsType } from "next";
 import moment from "moment-timezone";
 
 type TimeZoneType = {
@@ -29,7 +29,7 @@ type TimeZoneType = {
   timeZoneOffset: string;
 }
 
-const CreatePollPage = ({ myTimeZone }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const CreatePollPage = ({ myTimeZone }: InferGetStaticPropsType<typeof getStaticProps>) => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
   const contractAbi = VotingContract.abi;
   const router = useRouter();
@@ -367,7 +367,22 @@ const CreatePollPage = ({ myTimeZone }: InferGetServerSidePropsType<typeof getSe
 };
 export default CreatePollPage;
 
-export const getServerSideProps: GetServerSideProps = (async () => {
+// export const getServerSideProps: GetServerSideProps = (async () => {
+//   const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+//   const timeZoneAbbr = moment().tz(timeZone).format('zz');
+//   const myTimeZone: TimeZoneType = {
+//     timeZone: timeZone,
+//     timeZoneOffset: timeZoneAbbr,
+//   }
+//   return {
+//     props: {
+//       myTimeZone
+//     }
+//   }
+// });
+
+export const getStaticProps: GetStaticProps = async () => {
   const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const timeZoneAbbr = moment().tz(timeZone).format('zz');
@@ -380,4 +395,4 @@ export const getServerSideProps: GetServerSideProps = (async () => {
       myTimeZone
     }
   }
-});
+};
