@@ -24,12 +24,13 @@ import dayjs, { Dayjs } from "dayjs";
 import { GetServerSideProps, GetStaticProps, InferGetServerSidePropsType, InferGetStaticPropsType } from "next";
 import moment from "moment-timezone";
 
-type TimeZoneType = {
-  timeZone: string;
-  timeZoneOffset: string;
-}
+// type TimeZoneType = {
+//   timeZone: string;
+//   timeZoneOffset: string;
+// }
 
-const CreatePollPage = ({ myTimeZone }: InferGetStaticPropsType<typeof getStaticProps>) => {
+// const CreatePollPage = ({ myTimeZone }: InferGetStaticPropsType<typeof getStaticProps>) => {
+const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
   const contractAbi = VotingContract.abi;
   const router = useRouter();
@@ -41,6 +42,8 @@ const CreatePollPage = ({ myTimeZone }: InferGetStaticPropsType<typeof getStatic
   const [pollType, setpollType] = useState<0 | 1>(0);
   const { isConnected } = useAccount();
   const { connect } = useConnect();
+  const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timeZoneAbbr = moment().tz(timeZone).format('zz');
 
   const [options, setOptions] = useState<OptionType[]>([
     { name: '', isChecked: true },
@@ -319,7 +322,8 @@ const CreatePollPage = ({ myTimeZone }: InferGetStaticPropsType<typeof getStatic
               <DateTimePicker value={endDateTime} />
             </LocalizationProvider>
           </div>
-          <Label>{`Your TimeZone: ${myTimeZone.timeZone} ${myTimeZone.timeZoneOffset}`} </Label>
+          {/* <Label>{`Your TimeZone: ${myTimeZone.timeZone} ${myTimeZone.timeZoneOffset}`} </Label> */}
+          <Label>{`Your TimeZone: ${timeZone} ${timeZoneAbbr}`} </Label>
           <div className="flex flex-col gap-2">
             <Label className="text-2xl">Voting Method</Label>
             <div className="flex flex-col gap-1">
@@ -382,17 +386,17 @@ export default CreatePollPage;
 //   }
 // });
 
-export const getStaticProps: GetStaticProps = async () => {
-  const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
+// export const getStaticProps: GetStaticProps = async () => {
+//   const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  const timeZoneAbbr = moment().tz(timeZone).format('zz');
-  const myTimeZone: TimeZoneType = {
-    timeZone: timeZone,
-    timeZoneOffset: timeZoneAbbr,
-  }
-  return {
-    props: {
-      myTimeZone
-    }
-  }
-};
+//   const timeZoneAbbr = moment().tz(timeZone).format('zz');
+//   const myTimeZone: TimeZoneType = {
+//     timeZone: timeZone,
+//     timeZoneOffset: timeZoneAbbr,
+//   }
+//   return {
+//     props: {
+//       myTimeZone
+//     }
+//   }
+// };
