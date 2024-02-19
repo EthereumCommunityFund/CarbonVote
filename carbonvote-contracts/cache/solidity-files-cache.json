@@ -1,8 +1,8 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "/home/dev/Documents/project/ecf/CarbonVote/carbonvote-contracts/contracts/VoteContract.sol": {
-      "lastModificationDate": 1705603079277,
+    "/home/dev/Documents/projects/CarbonVote/carbonvote-contracts/contracts/VoteContract.sol": {
+      "lastModificationDate": 1708364424359,
       "contentHash": "36cdd8720648a439b97cac79f2411d26",
       "sourceName": "contracts/VoteContract.sol",
       "solcConfig": {
@@ -39,8 +39,8 @@
         "VotingContract"
       ]
     },
-    "/home/dev/Documents/project/ecf/CarbonVote/carbonvote-contracts/contracts/VotingOption.sol": {
-      "lastModificationDate": 1705603079277,
+    "/home/dev/Documents/projects/CarbonVote/carbonvote-contracts/contracts/VotingOption.sol": {
+      "lastModificationDate": 1708364424359,
       "contentHash": "f76f2c3d84988785ce40a66a12627485",
       "sourceName": "contracts/VotingOption.sol",
       "solcConfig": {
