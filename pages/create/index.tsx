@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/Label';
 import TextEditor from '@/components/ui/TextEditor';
 import { useRouter } from 'next/router';
 import { useAccount, useConnect } from 'wagmi'
-import { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import { useEffect } from 'react';
 import { Contract, ethers } from 'ethers';
 import { convertToHoursAndMinutesToSeconds } from '@/utils';
@@ -18,11 +18,18 @@ import { OptionType } from '@/types';
 import { createPoll } from '@/controllers/poll.controller';
 import { useFormStore } from "@/zustand/create";
 import { CREDENTIALS, CONTRACT_ADDRESS } from '@/src/constants'
-import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { DateTimePicker, LocalizationProvider, TimezoneProps } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
+import { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import moment from "moment-timezone";
 
-const CreatePollPage = () => {
+type TimeZoneType = {
+  timeZone: string;
+  timeZoneOffset: string;
+}
+
+const CreatePollPage = ({ myTimeZone }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
   const contractAbi = VotingContract.abi;
   const router = useRouter();
@@ -312,6 +319,7 @@ const CreatePollPage = () => {
               <DateTimePicker value={endDateTime} />
             </LocalizationProvider>
           </div>
+          <Label>{`Your TimeZone: ${myTimeZone.timeZone} ${myTimeZone.timeZoneOffset}`} </Label>
           <div className="flex flex-col gap-2">
             <Label className="text-2xl">Voting Method</Label>
             <div className="flex flex-col gap-1">
@@ -358,3 +366,18 @@ const CreatePollPage = () => {
   );
 };
 export default CreatePollPage;
+
+export const getServerSideProps: GetServerSideProps = (async () => {
+  const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const timeZoneAbbr = moment().tz(timeZone).format('zz');
+  const myTimeZone: TimeZoneType = {
+    timeZone: timeZone,
+    timeZoneOffset: timeZoneAbbr,
+  }
+  return {
+    props: {
+      myTimeZone
+    }
+  }
+});
