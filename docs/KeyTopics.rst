@@ -30,4 +30,14 @@ Voting power is linked to the length of time someone holds a token or asset, rat
 3. The storage of data
 --------------------------------
 
-There was a lot of discussion about where to store the data and structure, and the result was that we made both a Dapp and a back-end model to test and for the community to choose from. On top of that, Vitalik proposed a way to put structures on a Merkle tree (will add)
+There was a lot of discussion about where to store the data and structure, and the result was that we made both a Dapp and a back-end model to test and for the community to choose from.
+
+4. Nested poll
+--------------------------------
+
+In a later update, we will allow a poll to be open to multiple credential groups, and to count the votes of each group individually, which will allow the poll to better reflect the views of different credential groups on the poll. Of course, each group can have more than one credential, and they can overlap with each other.
+
+5.Off-chain Sinature
+--------------------------------
+
+@Petra
