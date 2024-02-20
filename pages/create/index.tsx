@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/Label';
 import TextEditor from '@/components/ui/TextEditor';
 import { useRouter } from 'next/router';
 import { useAccount, useConnect } from 'wagmi'
-import { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import { useEffect } from 'react';
 import { Contract, ethers } from 'ethers';
 import { convertToHoursAndMinutesToSeconds } from '@/utils';
@@ -18,7 +18,18 @@ import { OptionType } from '@/types';
 import { createPoll } from '@/controllers/poll.controller';
 import { useFormStore } from "@/zustand/create";
 import { CREDENTIALS, CONTRACT_ADDRESS } from '@/src/constants'
+import { DateTimePicker, LocalizationProvider, TimezoneProps } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from "dayjs";
+import { GetServerSideProps, GetStaticProps, InferGetServerSidePropsType, InferGetStaticPropsType } from "next";
+import moment from "moment-timezone";
 
+// type TimeZoneType = {
+//   timeZone: string;
+//   timeZoneOffset: string;
+// }
+
+// const CreatePollPage = ({ myTimeZone }: InferGetStaticPropsType<typeof getStaticProps>) => {
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
   const contractAbi = VotingContract.abi;
@@ -31,6 +42,8 @@ const CreatePollPage = () => {
   const [pollType, setpollType] = useState<0 | 1>(0);
   const { isConnected } = useAccount();
   const { connect } = useConnect();
+  const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timeZoneAbbr = moment().tz(timeZone).format('zz');
 
   const [options, setOptions] = useState<OptionType[]>([
     { name: '', isChecked: true },
@@ -41,6 +54,7 @@ const CreatePollPage = () => {
   // Zustand
   const selectedPOAPEvents = useFormStore((state) => state.selectedEvents)
   const resetFormStore = useFormStore((state) => state.reset)
+  const endDateTime = useState<Dayjs>();
 
   useEffect(() => {
     const doConnect = async () => {
@@ -103,6 +117,16 @@ const CreatePollPage = () => {
       setIsLoading(false)
       return;
     }
+
+    if (typeof endDateTime === null) {
+      toast({
+        title: 'Error',
+        description: 'End Date/Time is not selected',
+        variant: 'destructive',
+      });
+      setIsLoading(false)
+      return;
+    }
     let poll_type = 0;
     const optionNames = checkedOptions.map((option) => option.name);
     const pollMetadata = 'arbitrary data';
@@ -120,7 +144,8 @@ const CreatePollPage = () => {
         votingMethod: 'headCount',
         options: options.filter((option) => option.isChecked).map((option) => ({ option_description: option.name })),
         credentials: credentials,
-        poap_events: selectedPOAPEvents.map(event => event.id)
+        poap_events: selectedPOAPEvents.map(event => event.id),
+        endDateTime: endDateTime
       };
 
       const isProtocolGuildMember = credentials.includes(CREDENTIALS.ProtocolGuildMember.id);
@@ -279,7 +304,9 @@ const CreatePollPage = () => {
             {options.map((option, index) => (
               <div key={index} className="flex w-full space-x-2">
                 <CheckerButton option={option} idx={index} onInputChange={(e) => handleInputChange(index, e)} />
-                <button className="text-red-400" onClick={() => removeOption(index)}><FiTrash2 /></button>
+                {index > 1 &&
+                  <button className="text-red-400" onClick={() => removeOption(index)}><FiTrash2 /></button>
+                }
               </div>
             ))}
 
@@ -290,9 +317,13 @@ const CreatePollPage = () => {
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <Label className="text-2xl">Time Limit</Label>
-            <Input value={timeLimit} onChange={handleTimeLimitChange} placeholder={'4days 7hour 30m'}></Input>
+            <Label className="text-2xl">End Date/Time</Label>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DateTimePicker value={endDateTime} />
+            </LocalizationProvider>
           </div>
+          {/* <Label>{`Your TimeZone: ${myTimeZone.timeZone} ${myTimeZone.timeZoneOffset}`} </Label> */}
+          <Label>{`Your TimeZone: ${timeZone} ${timeZoneAbbr}`} </Label>
           <div className="flex flex-col gap-2">
             <Label className="text-2xl">Voting Method</Label>
             <div className="flex flex-col gap-1">
@@ -335,7 +366,37 @@ const CreatePollPage = () => {
           </Button>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 export default CreatePollPage;
+
+// export const getServerSideProps: GetServerSideProps = (async () => {
+//   const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+//   const timeZoneAbbr = moment().tz(timeZone).format('zz');
+//   const myTimeZone: TimeZoneType = {
+//     timeZone: timeZone,
+//     timeZoneOffset: timeZoneAbbr,
+//   }
+//   return {
+//     props: {
+//       myTimeZone
+//     }
+//   }
+// });
+
+// export const getStaticProps: GetStaticProps = async () => {
+//   const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+//   const timeZoneAbbr = moment().tz(timeZone).format('zz');
+//   const myTimeZone: TimeZoneType = {
+//     timeZone: timeZone,
+//     timeZoneOffset: timeZoneAbbr,
+//   }
+//   return {
+//     props: {
+//       myTimeZone
+//     }
+//   }
+// };
