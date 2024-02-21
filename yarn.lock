@@ -384,6 +384,33 @@
     stylis "4.2.0"
 
 "@emotion/hash@^0.9.0", "@emotion/hash@^0.9.1":
+"@editorjs/editorjs@^2.29.0":
+  version "2.29.0"
+  resolved "https://registry.yarnpkg.com/@editorjs/editorjs/-/editorjs-2.29.0.tgz#1c9846af19b2afab62a6bb3a815641721c0587f1"
+  integrity sha512-w2BVboSHokMBd/cAOZn0UU328o3gSZ8XUvFPA2e9+ciIGKILiRSPB70kkNdmhHkuNS3q2px+vdaIFaywBl7wGA==
+
+"@editorjs/header@^2.8.1":
+  version "2.8.1"
+  resolved "https://registry.yarnpkg.com/@editorjs/header/-/header-2.8.1.tgz#ba16f43aaf461aa920c3594bdf0d854c4b5119b9"
+  integrity sha512-y0HVXRP7m2W617CWo3fsb5HhXmSLaRpb9GzFx0Vkp/HEm9Dz5YO1s8tC7R8JD3MskwoYh7V0hRFQt39io/r6hA==
+  dependencies:
+    "@codexteam/icons" "^0.0.5"
+
+"@editorjs/marker@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@editorjs/marker/-/marker-1.4.0.tgz#c5553c54ced70d28502fb47f2dbc7d50c53fc88e"
+  integrity sha512-5ipEXfL44jTTRzgNp/p/YjMO7jT08S5z4V8qA3FFJTfdhKgQyM3mvP1zpdYKw47ZZpVWMCncvk5Nto3BxihEtg==
+  dependencies:
+    "@codexteam/icons" "^0.0.5"
+
+"@editorjs/simple-image@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@editorjs/simple-image/-/simple-image-1.6.0.tgz#711c3900e17845331d6667cf0fe91793a5557f84"
+  integrity sha512-WvdGfQPlozwZd3PXQrJnRXk6gEYbv1U2vRupYJ6lTd3/UsLInXYUX5jSFcnGB5ZMH3bd0JDZfcb4d4Sv1/1big==
+  dependencies:
+    "@codexteam/icons" "^0.0.6"
+
+"@emotion/hash@^0.9.0":
   version "0.9.1"
   resolved "https://registry.yarnpkg.com/@emotion/hash/-/hash-0.9.1.tgz#4ffb0055f7ef676ebc3a5a91fb621393294e2f43"
   integrity sha512-gJB6HLm5rYwSLI6PQa+X1t5CFGrv1J1TWG+sOyMCeKz2ojaj6Fnl/rZEspogG+cvqbt4AE/2eIyD2QfLKTBNlQ==
