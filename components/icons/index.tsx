@@ -5,6 +5,7 @@ import { BoltIcon } from "./bolt";
 import { PlusCirceIcon } from "./pluscircle";
 import { ArrowLeftIcon } from "./arrowleft";
 import { PlusIcon } from './plus';
+import { EthHoding } from "./ethhold";
 
 export {
   ThumbUpIcon,
@@ -13,5 +14,6 @@ export {
   BoltIcon,
   PlusCirceIcon,
   ArrowLeftIcon,
-  PlusIcon
+  PlusIcon,
+  EthHoding
 }

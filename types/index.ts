@@ -120,3 +120,13 @@ export interface VerifySignatureInput {
   requiredCred: string;
   signature: string;
 }
+
+export interface PollResultComponentType {
+  pollType: PollTypes;
+  optionsData: Option[];
+}
+
+export enum PollTypes {
+  ETH_HOLDING,
+  HEAD_COUNT,
+}
