@@ -459,8 +459,8 @@ const CreatePollPage = () => {
                 </Button>
               </div>
             </div>
-            <div className="flex flex-col gap-2">
-              <Label className="text-2xl">End Date/Time</Label>
+            <div className={styles.input_wrap_flex}>
+              <Label className={styles.input_header}>End Date/Time</Label>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DateTimePicker value={endDateTime} />
               </LocalizationProvider>
@@ -493,30 +493,53 @@ const CreatePollPage = () => {
                 />
                 <div className={styles.cred_details}>
                   <img src="images/eth_logo.svg" />
-                  <span>Ether Holding</span>
+                  <span>Ether Holding: On-Chain</span>
                 </div>
               </div>
               {toggleStates[0] ? (
                 <div className={styles.cred_details_toggled_on}>
                   <p className={styles.desc_p}>Desc</p>
+                  <div className={styles.radios_flex_col}>
+                    <div className={styles.radio_flex}>
+                      <div className={styles.active_radio}></div>
+                      <span>On-chain</span>
+                      <img src="/images/info_circle.svg" />
+                    </div>
+                    <div className={styles.radio_flex_disabled}>
+                      <div className={styles.disabled_radio}></div>
+                      <span>Off-chain</span>
+                      <span className={styles.radio_coming_soon}>
+                        OFF-CHAIN COMING SOON
+                      </span>
+                    </div>
+                  </div>
                 </div>
               ) : null}
             </div>
+
             <div className={styles.cred_container}>
-              <input
-                type="checkbox"
-                checked={toggleStates[1]}
-                onChange={() => handleToggle(1)}
-                className={styles.toggle_btn}
-              />
+              <div className={styles.cred_container_header}>
+                <input
+                  type="checkbox"
+                  checked={toggleStates[1]}
+                  onChange={() => handleToggle(1)}
+                  className={styles.toggle_btn}
+                />
+                <div className={styles.cred_details}>
+                  <img src="images/poaps.svg" />
+                  <span>POAPs Credentials</span>
+                </div>
+              </div>
               {toggleStates[1] ? (
                 <div className={styles.cred_details_toggled_on}>
-                  <div className={styles.cred_details}>
-                    <img src="images/poaps.svg" />
-                    <span>POAPs Credentials</span>
-                  </div>
                   <p className={styles.desc_p}>Desc</p>
                   <div className={styles.cred_content}>
+                    <div className="flex justify-end">
+                      <Button className={styles.add_poaps}>
+                        <span>Auto-add Ethereum event POAPs</span>
+                        <FiPlus />
+                      </Button>
+                    </div>
                     <div className={styles.cred_dropdown_container}>
                       <select
                         onChange={handleVotingSelect}
@@ -567,9 +590,7 @@ const CreatePollPage = () => {
                     </div>
                   </div>
                 </div>
-              ) : (
-                <span>Toggle is OFF</span>
-              )}
+              ) : null}
             </div>
             <div>
               <input

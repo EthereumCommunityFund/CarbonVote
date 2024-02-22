@@ -37,17 +37,17 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 14px;
+  gap: 13px;
 }
 
 .header_small {
   color: #000;
   font-family: 'Inter';
-  font-size: 14px;
+  font-size: 13px;
   font-style: normal;
   font-weight: 500;
-  line-height: 15.6px; /* 120% */
-  margin-bottom: 5px;
+  line-height: 15.6px;
+  opacity: 0.7;
 }
 
 .input_header {
@@ -71,7 +71,7 @@
   width: 100%;
   display: flex;
   padding: 10px 12px;
-  background: #f0f0f0;
+  background: #e7e7e7;
   border-radius: 10px;
   align-items: center;
 }
@@ -125,7 +125,7 @@
 .radio_toolbar label {
   display: inline-block;
   background-color: #f0f0f0;
-  padding: 14px 14px;
+  padding: 13px 13px;
   height: 45px;
   font-family: sans-serif, Arial;
   font-size: 16px;
@@ -158,7 +158,7 @@
   background: rgba(0, 0, 0, 0.1);
   border-radius: 50px;
   color: #000;
-  font-weight: bold;
+  font-weight: 600;
   font-size: 15px;
   margin-top: 10px;
   /* font-family: 'Inter'; */
@@ -168,7 +168,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
   width: 100%;
 }
@@ -214,7 +214,7 @@
   top: 2px;
   left: 9px;
   width: 6px;
-  height: 14px;
+  height: 13px;
   border: solid #0079bf;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
@@ -230,12 +230,13 @@
 .select_all {
   color: #000;
   font-size: 15px;
-  font-weight: bold;
+  font-weight: 600;
   line-height: 16.8px;
   background: rgba(0, 0, 0, 0.1);
   border-radius: 10px;
   padding: 10px;
   opacity: 0.7;
+  margin-bottom: 20px;
 }
 
 .cred_container {
@@ -248,6 +249,7 @@
   align-items: flex-start;
   gap: 20px;
   width: 100%;
+  margin-bottom: 20px;
 }
 
 .cred_container_header {
@@ -267,14 +269,14 @@
   align-items: center;
   gap: 20px;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 600;
 }
 
 .desc_p {
   color: #000;
   font-variant-numeric: lining-nums tabular-nums;
   font-family: Inter;
-  font-size: 14px;
+  font-size: 13px;
   font-style: normal;
   font-weight: 400;
   line-height: 140%; /* 18.2px */
@@ -301,8 +303,79 @@
   color: #000;
   font-size: 18px;
   font-style: normal;
-  font-weight: bold;
+  font-weight: 600;
   margin: 20px 0 20px 0;
+}
+
+.active_radio,
+.disabled_radio {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  border: 1px solid #c5c5c5;
+}
+
+.active_radio::before {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background: #000;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.disabled_radio::before {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background: #a3a3a3;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.radio_flex {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.radio_flex_disabled {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0.4;
+}
+
+.radio_flex span {
+  color: #666666;
+  font-weight: 500;
+}
+
+.radio_coming_soon {
+  color: #000 !important;
+}
+
+.radios_flex_col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.add_poaps {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: 50px;
+  background: #efefef;
+  margin-bottom: -20px;
+  gap: 10px;
+  font-size: 13px;
 }
 
 /* .radio_toolbar input[type='radio']:checked + label {
