@@ -378,6 +378,19 @@
   font-size: 13px;
 }
 
+.bottom_cta {
+  background: #e5e5e5;
+  border-radius: 50px;
+  padding: 10px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
 /* .radio_toolbar input[type='radio']:checked + label {
   background-color: #bfb;
   border-color: #4c4;

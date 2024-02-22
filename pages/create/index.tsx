@@ -547,7 +547,12 @@ const CreatePollPage = () => {
                         className={styles.select_dropdown}
                         title="Voting Method"
                       >
-                        <option className="" value="ethholding">
+                        <option
+                          className=""
+                          value="ethholding"
+                          disabled
+                          selected
+                        >
                           Select POAPs
                         </option>
                         <option className="" value="ethholding">
@@ -592,41 +597,122 @@ const CreatePollPage = () => {
                 </div>
               ) : null}
             </div>
-            <div>
-              <input
-                type="checkbox"
-                checked={toggleStates[2]}
-                onChange={() => handleToggle(2)}
-              />
+            <div className={styles.cred_container}>
+              <div className={styles.cred_container_header}>
+                <input
+                  type="checkbox"
+                  checked={toggleStates[2]}
+                  onChange={() => handleToggle(2)}
+                  className={styles.toggle_btn}
+                />
+                <div className={styles.cred_details}>
+                  <img src="images/zupass.svg" />
+                  <span>Zupass Credentials</span>
+                </div>
+              </div>
+
               {toggleStates[2] ? (
-                <span>Toggle is ON - Custom content for Div 3</span>
-              ) : (
-                <span>Toggle is OFF</span>
-              )}
+                <div className={styles.cred_details_toggled_on}>
+                  <p className={styles.desc_p}>Desc</p>
+                  <div className={styles.cred_content}>
+                    <div className={styles.cred_dropdown_container}>
+                      <select
+                        onChange={handleVotingSelect}
+                        value={votingMethod}
+                        className={styles.select_dropdown}
+                        title="Voting Method"
+                      >
+                        <option
+                          className=""
+                          value="ethholding"
+                          disabled
+                          selected
+                        >
+                          Select Credentials
+                        </option>
+                        <option className="" value="ethholding">
+                          EIP
+                        </option>
+                        <option className="" value="headcount">
+                          HeadCounting
+                        </option>
+                      </select>
+                      <div className={styles.selected_dropdown_items}>
+                        <div>
+                          <span>Zuzalu Resident</span>
+                          <FiX />
+                        </div>
+                        <div>
+                          <span>ZuConnect Resident</span>
+                          <FiX />
+                        </div>
+                        <div>
+                          <span>DevConnect Attendee</span>
+                          <FiX />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
-            <div>
-              <input
-                type="checkbox"
-                checked={toggleStates[3]}
-                onChange={() => handleToggle(3)}
-              />
+            <div className={styles.cred_container}>
+              <div className={styles.cred_container_header}>
+                <input
+                  type="checkbox"
+                  checked={toggleStates[3]}
+                  onChange={() => handleToggle(3)}
+                  className={styles.toggle_btn}
+                />
+                <div className={styles.cred_details}>
+                  <img src="images/guild.png" />
+                  <span>Protocol Guild Member Credential</span>
+                </div>
+              </div>
               {toggleStates[3] ? (
-                <span>Toggle is ON - Custom content for Div 4</span>
-              ) : (
-                <span>Toggle is OFF</span>
-              )}
+                <div className={styles.cred_details_toggled_on}>
+                  <p className={styles.desc_p}>Desc</p>
+                  <div className={styles.cred_content}>
+                    <div className={styles.selected_dropdown_items}>
+                      <div>
+                        <span>Protocol Guild Member</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
-            <div>
-              <input
-                type="checkbox"
-                checked={toggleStates[4]}
-                onChange={() => handleToggle(4)}
-              />
+            <div className={styles.cred_container}>
+              <div className={styles.cred_container_header}>
+                <input
+                  type="checkbox"
+                  checked={toggleStates[4]}
+                  onChange={() => handleToggle(4)}
+                  className={styles.toggle_btn}
+                />
+                <div className={styles.cred_details}>
+                  <img src="images/gitcoin.svg" />
+                  <span>Gitcoin Passport</span>
+                </div>
+              </div>
               {toggleStates[4] ? (
-                <span>Toggle is ON - Custom content for Div 5</span>
-              ) : (
-                <span>Toggle is OFF</span>
-              )}
+                <div className={styles.cred_details_toggled_on}>
+                  <p className={styles.desc_p}>Desc</p>
+                  <div className={styles.cred_content}>
+                    <div className={styles.input_wrap_flex}>
+                      <Label className={styles.header_small}>
+                        Input minimum score required
+                      </Label>
+                      <Input
+                        value={motionTitle}
+                        onChange={handleTitleInputChange}
+                        placeholder={'10'}
+                        className={styles.select_dropdown}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
           {/* <select
@@ -665,12 +751,12 @@ const CreatePollPage = () => {
             )
           )} */}
         </div>
-        <div className="flex gap-2.5 justify-end">
-          <Button className="rounded-full" leftIcon={FiX}>
+        <div className="flex gap-2.5">
+          <Button className={styles.bottom_cta} leftIcon={FiX}>
             Discard
           </Button>
           <Button
-            className="rounded-full"
+            className={styles.bottom_cta}
             leftIcon={FiPlusCircle}
             isLoading={isLoading}
             onClick={createNewPoll}
