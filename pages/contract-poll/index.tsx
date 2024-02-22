@@ -378,7 +378,7 @@ const PollPage = () => {
             </Label>
           </div>
         </div>
-        <PollResultComponent pollType={PollTypes.ETH_HOLDING} optionsData={optionsData} />
+        <PollResultComponent pollType={PollTypes.ETH_HOLDING} optionsData={convertOptionsToPollOptions(optionsData)} />
       </div>
     </div>
   );

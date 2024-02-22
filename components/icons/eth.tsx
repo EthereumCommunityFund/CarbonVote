@@ -1,4 +1,4 @@
-export const EthHoding = () => {
+export const EthIcon = () => {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M9.99751 1.54581L9.88086 1.91315V12.5728L9.99751 12.6807L15.338 9.75591L9.99751 1.54581Z" fill="black" />

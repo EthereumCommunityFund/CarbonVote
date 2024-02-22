@@ -18,7 +18,7 @@ import OptionVotingCountProgress from '@/components/OptionVotingCounts';
 import { useAccount, useConnect, useSignMessage } from 'wagmi';
 import { ethers } from 'ethers';
 import contractABI from '@/carbonvote-contracts/deployment/contracts/poapsverification.json';
-import { calculateTimeRemaining } from '@/utils/index';
+import { calculateTimeRemaining, convertOptionsToPollOptions } from '@/utils/index';
 import { v4 as uuidv4 } from 'uuid';
 import PoapDetails from '@/components/POAPDetails';
 import { fetchScore } from '@/controllers';
@@ -402,9 +402,8 @@ const PollPage = () => {
         <div className="bg-white flex flex-col gap-1.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
             <div
-              className={`${
-                pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
-              } px-2.5 rounded-lg items-center`}
+              className={`${pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
+                } px-2.5 rounded-lg items-center`}
             >
               {pollIsLive ? (
                 <Label className="text-[#44b678]">Live</Label>
@@ -439,7 +438,7 @@ const PollPage = () => {
             <>
               <Label className="text-2xl">Vote on Poll</Label>
               {(!poll?.poap_events || poll?.poap_events.length === 0) &&
-              credentialId === CREDENTIALS.POAPSVerification.id ? (
+                credentialId === CREDENTIALS.POAPSVerification.id ? (
                 <div>
                   <div>
                     <Label className="text-sm">
@@ -534,7 +533,7 @@ const PollPage = () => {
             )}
           </div>
         </div>
-        <PollResultComponent pollType={PollTypes.HEAD_COUNT} />
+        <PollResultComponent pollType={PollTypes.HEAD_COUNT} optionsData={options} />
       </div>
     </div>
   );

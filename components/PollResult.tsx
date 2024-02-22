@@ -3,7 +3,7 @@ import { Label } from './ui/Label';
 import Button from './ui/buttons/Button';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { TbChevronDown } from 'react-icons/tb';
-import { EthHoding } from './icons';
+import { EthIcon, HeadCountIcon } from './icons';
 import PieChartComponent from './ui/PieChart';
 import { convertOptionsToPollOptions } from '@/utils';
 
@@ -18,16 +18,23 @@ export const PollResultComponent = ({ pollType, optionsData }: PollResultCompone
       </div>
       {pollType === PollTypes.ETH_HOLDING ?
         <div className='w-full flex flex-col gap-2.5'>
-          <Label className='flex gap-2.5 items-center text-base'><EthHoding />Ether Holding Credential</Label>
+          <Label className='flex gap-2.5 items-center text-base'><EthIcon />Ether Holding Credential</Label>
           <Label className='text-xs'>Ether Holding results are updated every n block until the end of the poll's selected time.</Label>
           <Button variant="primary" className='w-full rounded-md flex justify-between'>
-            <Label className='flex gap-2.5 items-center text-base'><EthHoding />Ether Holding Results</Label>
+            <Label className='flex gap-2.5 items-center text-base'><EthIcon />Ether Holding Results</Label>
             <TbChevronDown />
           </Button>
         </div> :
-        <div></div>
+        <div className='w-full flex flex-col gap-2.5'>
+          <Label className='flex gap-2.5 items-center text-base'><HeadCountIcon />Head Count Credentials</Label>
+          <Label className='text-xs'>Ether Holding results are updated every n block until the end of the poll's selected time.</Label>
+          <Button variant="primary" className='w-full rounded-md flex justify-between'>
+            <Label className='flex gap-2.5 items-center text-base'><EthIcon />Zupass Holder Results</Label>
+            <TbChevronDown />
+          </Button>
+          <PieChartComponent votes={optionsData} votingType={pollType} /><PieChartComponent votes={optionsData} votingType={pollType} />
+        </div>
       }
-      <PieChartComponent votes={convertOptionsToPollOptions(optionsData)} votingType={pollType} />
     </div>
   );
 };

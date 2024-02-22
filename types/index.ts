@@ -123,7 +123,7 @@ export interface VerifySignatureInput {
 
 export interface PollResultComponentType {
   pollType: PollTypes;
-  optionsData: Option[];
+  optionsData: PollOptionType[];
 }
 
 export enum PollTypes {
