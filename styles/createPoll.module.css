@@ -391,6 +391,40 @@
   font-size: 16px;
 }
 
+.multiple_cred_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.multiple_cred_info1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  background: #f0f0f0;
+  border-radius: 10px;
+  color: #747474;
+  padding: 10px;
+  gap: 10px;
+}
+
+.multiple_cred_info2 {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #f0f0f0;
+  border-radius: 10px;
+  padding: 20px;
+  width: 100%;
+}
+
+.multiple_cred_info2 span {
+  font-size: 14px;
+}
+
 /* .radio_toolbar input[type='radio']:checked + label {
   background-color: #bfb;
   border-color: #4c4;

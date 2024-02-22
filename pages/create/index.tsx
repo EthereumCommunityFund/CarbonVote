@@ -5,6 +5,8 @@ import {
   FiX,
   FiPlus,
   FiTrash2,
+  FiChevronDown,
+  FiArrowDown,
 } from 'react-icons/fi';
 import { CredentialForm } from '@/components/templates/CredentialForm';
 import Button from '@/components/ui/buttons/Button';
@@ -81,19 +83,29 @@ const CreatePollPage = () => {
     false,
     false,
   ]); // Individual toggle states
+  const [showNestedInfoDiv, setShowNestedInfoDiv] = useState(false);
 
   // Function to toggle all buttons
   const toggleAll = () => {
-    setToggleStates((prevToggleStates) =>
-      prevToggleStates.map(() => !prevToggleStates.every((state) => state))
-    );
+    setToggleStates((prevToggleStates) => {
+      const allTrue = prevToggleStates.every((state) => state);
+      const newState = prevToggleStates.map(() => !allTrue);
+      const numChecked = newState.filter((state) => state).length;
+      setShowNestedInfoDiv(numChecked > 1);
+      return newState;
+    });
   };
 
   // Function to handle individual toggle button clicks
   const handleToggle = (index: number) => {
-    setToggleStates((prevToggleStates) =>
-      prevToggleStates.map((state, i) => (i === index ? !state : state))
-    );
+    setToggleStates((prevToggleStates) => {
+      const newState = prevToggleStates.map((state, i) =>
+        i === index ? !state : state
+      );
+      const numChecked = newState.filter((state) => state).length;
+      setShowNestedInfoDiv(numChecked > 1);
+      return newState;
+    });
   };
 
   useEffect(() => {
@@ -715,6 +727,28 @@ const CreatePollPage = () => {
               ) : null}
             </div>
           </div>
+
+          {showNestedInfoDiv && (
+            <div className={styles.multiple_cred_container}>
+              <div className={styles.multiple_cred_info1}>
+                <span>You Selected Multiple Credentials</span>
+                <FiArrowDown />
+              </div>
+              <div className={styles.multiple_cred_info2}>
+                <img src="/images/nes.svg" />
+                <div>
+                  <p>
+                    <strong>You are creating a nested poll.</strong> (One
+                    credential = One vote)
+                  </p>
+                  <span>
+                    This allows a user to vote separately with each available
+                    credential in a poll.
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
           {/* <select
             onChange={handleVotingSelect}
             value={votingMethod}
