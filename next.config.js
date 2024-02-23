@@ -8,9 +8,9 @@ module.exports = {
       new webpack.IgnorePlugin({
         checkResource: (resource, context) => {
           if (context.includes(path.resolve(__dirname, './carbonvote-contracts'))) {
-            return true; 
+            return true;
           }
-          return false; 
+          return false;
         },
       })
     );
@@ -18,5 +18,8 @@ module.exports = {
     config.resolve.fallback = { fs: false };
 
     return config;
+  },
+  images: {
+    domains: ["carbonvote.com", "beta.carbonvote.com", "staging.carbonvote.com", "localhost:3000"],
   },
 };
