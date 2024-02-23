@@ -8,6 +8,9 @@ import { PlusIcon } from './plus';
 import { EthIcon } from "./eth";
 import { HeadCountIcon } from './headcount';
 import { ZupassHolderIcon } from "./zupassholder";
+import { PoapIcon } from "./poap";
+import { ProtocolGuildIcon } from "./protocolguild";
+import { GitCoinIcon } from './gitcoin';
 
 export {
   ThumbUpIcon,
@@ -20,4 +23,7 @@ export {
   EthIcon,
   HeadCountIcon,
   ZupassHolderIcon,
+  PoapIcon,
+  ProtocolGuildIcon,
+  GitCoinIcon
 }
