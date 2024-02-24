@@ -43,3 +43,14 @@ Make sure to create an `.env` file following `.env.template`.
 Add Local Testnet to Metamask with:
 - ID: `1337`
 - RPC: `http://127.0.0.1:8545/`
+
+
+To run Ceramic locally you will need to install it like this:
+
+Setup Ceramic locallyfollowing one of the options listed in [the Ceramic docs](https://developers.ceramic.network/docs/composedb/set-up-your-environment).
+
+and then run it with this command:
+
+```
+ceramic daemon
+```

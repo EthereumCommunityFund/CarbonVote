@@ -255,6 +255,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
       },
       validEventIds: {
         argumentType: ArgumentTypeName.StringArray,
+        // FIXME: instead of validEventIds we should use current requited credetials
         value: validEventIds.length != 0 ? validEventIds : undefined,
         userProvided: false
       },

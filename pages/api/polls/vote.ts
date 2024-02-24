@@ -6,6 +6,7 @@ import getPoapOwnership from 'utils/getPoapOwnership';
 import { supabase } from 'utils/supabaseClient';
 import { CREDENTIALS } from '@/src/constants';
 import { VerifySignatureInput, CheckPOAPOwnershipInput, ProcessVoteInput } from '@/types'
+import { storeVote, checkNullifier, generateNullifier } from '@/utils/ceramicHelpers'
 
 const poapApiKey = process.env.POAP_API_KEY ?? "";
 
@@ -84,18 +85,18 @@ async function processVote({ vote_hash, poll_id, option_id }: ProcessVoteInput):
         }
     }
 
-    // Insert the new vote
-    const { error: insertError } = await supabase
-        .from('votes')
-        .insert([{
-            id: uuidv4(),
-            option_id,
-            vote_hash,
-            poll_id,
-            cast_at: new Date()
-        }]);
+    // // Insert the new vote
+    // const { error: insertError } = await supabase
+    //     .from('votes')
+    //     .insert([{
+    //         id: uuidv4(),
+    //         option_id,
+    //         vote_hash,
+    //         poll_id,
+    //         cast_at: new Date()
+    //     }]);
 
-    if (insertError) throw insertError;
+    // if (insertError) throw insertError;
 
     // Increment the vote count for the new option
     const { error: incrementError } = await supabase
@@ -111,6 +112,8 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
 
         await verifySignature({ pollId, option_id, voter_identifier, requiredCred, signature });
 
+        const voteData = req.body;
+
         const { data: pollData } = await supabase
             .from('votes')
             .select('*')
@@ -120,6 +123,20 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
         if (pollData?.poap_events && pollData?.poap_events.length) {
             await checkPOAPOwnership({ pollData, voter_identifier });
         }
+
+        console.log('voter_identifier', voter_identifier);
+
+        // Generate a nullifier for the voterCredential
+        const nullifier = generateNullifier(voter_identifier);
+
+        // Check if the nullifier already exists (indicating vote reuse)
+        // const isNullifierUsed = await checkNullifier(nullifier);
+        // if (isNullifierUsed) {
+        //     throw new Error('Credential has already been used.');
+        // }
+
+        // Store the vote with the nullifier as an identifier
+        await storeVote(voteData, nullifier);
 
         const vote_hash = crypto.createHash('sha256').update(voter_identifier).digest('hex');
         await processVote({ vote_hash, poll_id, option_id });
