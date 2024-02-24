@@ -31,7 +31,7 @@ const createPoll = async (req: NextApiRequest, res: NextApiResponse) => {
         if (pollError) throw pollError;
 
 
-        console.log(data)
+        console.log('data', data)
         let pollData = data[0];
 
 
