@@ -79,9 +79,8 @@ const PollPage = () => {
         try {
           // TODO: Replace ethers with wagmi.
           // ref: https://wagmi.sh/core/api/actions/readContract
-          const provider = new ethers.JsonRpcProvider(
-            'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
-          );
+          // TODO: Replace hardcoded URL with dynamic.
+          const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
           //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
           const contract = new ethers.Contract(
             CREDENTIALS.POAPSVerification.contract,

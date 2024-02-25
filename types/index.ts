@@ -1,5 +1,3 @@
-import { ethers } from 'ethers';
-
 export type OptionType = {
   name: string;
   isChecked: boolean;
@@ -95,6 +93,7 @@ export interface Poll {
   options: string[];
   pollMetadata: string;
   poap_events: number[]
+  block_number: number;
 }
 
 export interface ProcessVoteInput {
