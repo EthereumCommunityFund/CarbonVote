@@ -393,7 +393,7 @@ const CreatePollPage = () => {
               />
             </div>
 
-            <div className={styles.input_wrap_flex}>
+            {/*<div className={styles.input_wrap_flex}>
               <Label className={styles.input_header}>Select a Category</Label>
               <select
                 onChange={handleVotingSelect}
@@ -422,7 +422,7 @@ const CreatePollPage = () => {
                   <FiX />
                 </div>
               </div>
-            </div>
+            </div>*/}
 
             <div className={styles.input_wrap_flex}>
               <Label className={styles.input_header}>
