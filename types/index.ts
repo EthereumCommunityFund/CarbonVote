@@ -120,3 +120,20 @@ export interface VerifySignatureInput {
   requiredCred: string;
   signature: string;
 }
+
+export interface PollResultComponentType {
+  pollType: PollTypes;
+  optionsData: PollOptionType[];
+}
+
+export enum PollTypes {
+  ETH_HOLDING,
+  HEAD_COUNT,
+}
+
+export enum HeadCountCredential {
+  ZUPASS = 'Zupass Holder Results',
+  POAP = 'POAP Holder Results',
+  PROTOCOL = 'Protocol Guild Member Results',
+  GITCOIN = 'Gitcoin Passport Results',
+}

@@ -15,7 +15,8 @@ import { calculateTimeRemaining, convertOptionsToPollOptions } from '@/utils/ind
 import { Loader } from '@/components/ui/Loader';
 import { useUserPassportContext } from '@/context/PassportContext';
 import PieChartComponent from '@/components/ui/PieChart';
-import { Poll, Option } from '@/types'
+import { Poll, Option, PollTypes } from '@/types'
+import { PollResultComponent } from '@/components/PollResult';
 
 const PollPage = () => {
   const router = useRouter();
@@ -377,29 +378,7 @@ const PollPage = () => {
             </Label>
           </div>
         </div>
-        {optionsData &&
-          optionsData.map((option, index) => (
-            <div key={index} className="flex flex-col bg-white rounded-xl gap-5">
-              <div className="px-2.5 py-5 border-b border-b-black/40 pb-5">
-                <Label className="text-2xl">{option.optionName}</Label>
-              </div>
-              <div className="flex flex-col gap-2.5 pl-5 pb-5">
-                <Label>Number of voters: {option.votersCount.toString()}</Label>
-                {pollType?.toString() !== '1' && (
-                  <Label>Total Eth of Voters: {option.totalEth} ETH</Label>
-                )}
-
-                {/* You can also iterate over votersData if needed */}
-                {/* {option.votersData.map((voter, voterIndex) => (
-              <div key={voterIndex}>
-                <Label>Voter Address: {voter.address}</Label>
-                <Label>Voter Balance: {voter.balance}</Label>
-              </div>
-            ))} */}
-              </div>
-            </div>
-          ))}
-        <PieChartComponent votes={convertOptionsToPollOptions(optionsData)} />
+        <PollResultComponent pollType={PollTypes.ETH_HOLDING} optionsData={convertOptionsToPollOptions(optionsData)} />
       </div>
     </div>
   );

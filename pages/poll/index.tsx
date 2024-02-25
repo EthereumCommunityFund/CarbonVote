@@ -7,20 +7,26 @@ import { Label } from '@/components/ui/Label';
 import { useRouter } from 'next/router';
 import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
-import { VoteRequestData, castVote, fetchPollById, fetchVote, } from '@/controllers/poll.controller';
+import {
+  VoteRequestData,
+  castVote,
+  fetchPollById,
+  fetchVote,
+} from '@/controllers/poll.controller';
 import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
-import { useAccount, useConnect, useSignMessage } from 'wagmi'
-import { ethers } from "ethers";
+import { useAccount, useConnect, useSignMessage } from 'wagmi';
+import { ethers } from 'ethers';
 import contractABI from '@/carbonvote-contracts/deployment/contracts/poapsverification.json';
-import { calculateTimeRemaining } from '@/utils/index';
+import { calculateTimeRemaining, convertOptionsToPollOptions } from '@/utils/index';
 import { v4 as uuidv4 } from 'uuid';
-import PoapDetails from '@/components/POAPDetails'
+import PoapDetails from '@/components/POAPDetails';
 import { fetchScore } from '@/controllers';
 import { Loader } from '@/components/ui/Loader';
 import PieChartComponent from '@/components/ui/PieChart';
-import { PollOptionType, Poll } from '@/types';
-import { CREDENTIALS } from '@/src/constants'
+import { PollOptionType, Poll, PollTypes } from '@/types';
+import { CREDENTIALS } from '@/src/constants';
+import { PollResultComponent } from '@/components/PollResult';
 
 const PollPage = () => {
   const router = useRouter();
@@ -30,21 +36,22 @@ const PollPage = () => {
     router.push('/');
   };
   const [poll, setPoll] = useState<Poll>();
-  const { signIn, isPassportConnected, verifyticket, devconnectVerify } = useUserPassportContext(); // zupass
+  const { signIn, isPassportConnected, verifyticket, devconnectVerify } =
+    useUserPassportContext(); // zupass
   const { address: account, isConnected } = useAccount();
   const { connect } = useConnect();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [options, setOptions] = useState<PollOptionType[]>([]);
-  const [credentialId, setCredentialId] = useState("");
+  const [credentialId, setCredentialId] = useState('');
   const [score, setScore] = useState('0');
   const [remainingTime, settimeRemaining] = useState('');
   const [startDate, setstartDate] = useState<Date>();
   const [poapsNumber, setPoapsNumber] = useState('0');
-  const [eventDetails, setEventDetails] = useState<any[]>([])
-  const [message, setMessage] = useState('')
+  const [eventDetails, setEventDetails] = useState<any[]>([]);
+  const [message, setMessage] = useState('');
   const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
     message,
-  })
+  });
 
   useEffect(() => {
     fetchPollFromApi(id);
@@ -72,9 +79,15 @@ const PollPage = () => {
         try {
           // TODO: Replace ethers with wagmi.
           // ref: https://wagmi.sh/core/api/actions/readContract
-          const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
+          const provider = new ethers.JsonRpcProvider(
+            'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
+          );
           //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
-          const contract = new ethers.Contract(CREDENTIALS.POAPSVerification.contract, contractABI, provider);
+          const contract = new ethers.Contract(
+            CREDENTIALS.POAPSVerification.contract,
+            contractABI,
+            provider
+          );
           const events = await contract.getEventCountForCollection(account);
 
           setPoapsNumber(events.toString());
@@ -94,21 +107,24 @@ const PollPage = () => {
       setPoll(data);
       console.log(poll?.poap_events.length, 'poll?.poap_events');
       setOptions(data.options);
-      const newCredentialId = data.credentials?.[0]?.id || "";
+      const newCredentialId = data.credentials?.[0]?.id || '';
       let identifier: string | null = null;
       if (newCredentialId) {
         switch (newCredentialId) {
           case CREDENTIALS.ZuConnectResident.id: //Zuconnect
           case CREDENTIALS.DevConnect.id: //Devconnect
-            if (localStorage.getItem('userId')) { identifier = localStorage.getItem('userId'); }
+            if (localStorage.getItem('userId')) {
+              identifier = localStorage.getItem('userId');
+            }
             break;
           case CREDENTIALS.GitcoinPassport.id: //Gitcoin passport
           case CREDENTIALS.POAPSVerification.id: //POAPS verification
-            if (localStorage.getItem('account')) { identifier = localStorage.getItem('account'); }
+            if (localStorage.getItem('account')) {
+              identifier = localStorage.getItem('account');
+            }
             break;
         }
-      }
-      else {
+      } else {
         if (!localStorage.getItem('userUniqueId')) {
           const uniqueId = uuidv4();
           localStorage.setItem('userUniqueId', uniqueId);
@@ -117,8 +133,8 @@ const PollPage = () => {
       }
       const checkdata = {
         id: pollId as string,
-        identifier: identifier as string
-      }
+        identifier: identifier as string,
+      };
       const responsevote = await fetchVote(checkdata);
       if (responsevote.data.option_id !== '') {
         setSelectedOption(responsevote.data.option_id);
@@ -143,23 +159,32 @@ const PollPage = () => {
   };
 
   const getRequirement = () => {
-    const current = Object.values(CREDENTIALS).find(credential => credential.id === id);
+    const current = Object.values(CREDENTIALS).find(
+      (credential) => credential.id === id
+    );
     return current?.name;
-  }
+  };
 
   const warnAndConnect = () => {
-    console.error('You need to connect to Metamask to get this information, please try again');
+    console.error(
+      'You need to connect to Metamask to get this information, please try again'
+    );
     toast({
       title: 'Error',
-      description: 'You need to connect to Metamask to get this information, please try again',
+      description:
+        'You need to connect to Metamask to get this information, please try again',
       variant: 'destructive',
     });
     connect();
-  }
+  };
 
   const pollIsLive = remainingTime !== null && remainingTime !== 'Time is up!';
 
-  const handleCastVote = async (optionId: string, requiredCred: string, voterTag: string) => {
+  const handleCastVote = async (
+    optionId: string,
+    requiredCred: string,
+    voterTag: string
+  ) => {
     const pollId = poll?.id;
     const voter_identifier = localStorage.getItem(voterTag);
     try {
@@ -168,7 +193,7 @@ const PollPage = () => {
         option_id: optionId,
         voter_identifier: voter_identifier,
         requiredCred,
-        signature: null
+        signature: null,
       };
       console.log(voteData, 'voteData');
       const response = await castVote(voteData as VoteRequestData);
@@ -181,18 +206,21 @@ const PollPage = () => {
       console.error('Error casting vote:', error);
       return;
     }
-  }
+  };
 
-  const handleCastVoteSigned = async (optionId: string, requiredCred: string) => {
+  const handleCastVoteSigned = async (
+    optionId: string,
+    requiredCred: string
+  ) => {
     const pollId = poll?.id;
     try {
       const newMessage = `{ poll_id: ${pollId}, option_id: ${optionId}, voter_identifier: ${account}, requiredCred: ${requiredCred}`;
 
       if (account === null) return;
-      setMessage(newMessage)
+      setMessage(newMessage);
       const signature = await signMessage();
 
-      console.log("🚀 ~ handleCastVoteSigned ~ signature:", signature)
+      console.log('🚀 ~ handleCastVoteSigned ~ signature:', signature);
       if (isSuccess) {
         const voteData = {
           poll_id: pollId,
@@ -213,7 +241,7 @@ const PollPage = () => {
       console.error('Error signing vote:', error);
       return;
     }
-  }
+  };
 
   const handleVote = async (optionId: string) => {
     if (!localStorage.getItem('userUniqueId')) {
@@ -231,8 +259,17 @@ const PollPage = () => {
         await verifyticket();
         let usereventId = localStorage.getItem('event Id');
         console.log(usereventId);
-        if (usereventId == "91312aa1-5f74-4264-bdeb-f4a3ddb8670c" || usereventId == "54863995-10c4-46e4-9342-75e48b68d307" || usereventId == "797de414-2aec-4ef8-8655-09df7e2b6cc6" || usereventId == "a6109324-7ca0-4198-9583-77962d1b9d53") {
-          await handleCastVote(optionId, CREDENTIALS.ZuConnectResident.id, 'userId');
+        if (
+          usereventId == '91312aa1-5f74-4264-bdeb-f4a3ddb8670c' ||
+          usereventId == '54863995-10c4-46e4-9342-75e48b68d307' ||
+          usereventId == '797de414-2aec-4ef8-8655-09df7e2b6cc6' ||
+          usereventId == 'a6109324-7ca0-4198-9583-77962d1b9d53'
+        ) {
+          await handleCastVote(
+            optionId,
+            CREDENTIALS.ZuConnectResident.id,
+            'userId'
+          );
         }
       } catch (error) {
         console.error('Error in verifying ticket:', error);
@@ -304,19 +341,28 @@ const PollPage = () => {
         return;
       }
       try {
-        const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
+        const provider = new ethers.JsonRpcProvider(
+          'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
+        );
         //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
-        const contract = new ethers.Contract(CREDENTIALS.POAPSVerification.contract, contractABI, provider);
+        const contract = new ethers.Contract(
+          CREDENTIALS.POAPSVerification.contract,
+          contractABI,
+          provider
+        );
         const events = await contract.getEventCountForCollection(account);
 
         setPoapsNumber(events.toString());
         console.log(events.toString(), 'events');
       } catch (error) {
-        console.error("An error occurred:", error);
+        console.error('An error occurred:', error);
       }
 
       if (Number(poapsNumber) > 4) {
-        await handleCastVoteSigned(optionId, CREDENTIALS.ProtocolGuildMember.id);
+        await handleCastVoteSigned(
+          optionId,
+          CREDENTIALS.ProtocolGuildMember.id
+        );
       }
       // Protocol Guild
       else if (poll?.poap_events && poll?.poap_events.length) {
@@ -324,29 +370,41 @@ const PollPage = () => {
           warnAndConnect();
           return;
         }
-        await handleCastVote(optionId, CREDENTIALS.ProtocolGuildMember.id, 'userUniqueId');
+        await handleCastVote(
+          optionId,
+          CREDENTIALS.ProtocolGuildMember.id,
+          'userUniqueId'
+        );
       }
     }
   };
 
   if (!poll || isLoading) {
-    return <div className="flex justify-center items-center h-screen">
-      <Loader />
-    </div>
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader />
+      </div>
+    );
   }
 
   return (
     <div className="flex flex-col md:flex-row gap-20 px-20 pt-5 text-black w-full justify-center">
       <div className="flex flex-col gap-2.5 max-w-[1000px] w-full">
         <div>
-          <Button className="rounded-full" leftIcon={ArrowLeftIcon} onClick={handleBack}>
+          <Button
+            className="rounded-full"
+            leftIcon={ArrowLeftIcon}
+            onClick={handleBack}
+          >
             Back
           </Button>
         </div>
         <div className="bg-white flex flex-col gap-1.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
-            <div className={`${pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
-              } px-2.5 rounded-lg items-center`}>
+            <div
+              className={`${pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
+                } px-2.5 rounded-lg items-center`}
+            >
               {pollIsLive ? (
                 <Label className="text-[#44b678]">Live</Label>
               ) : (
@@ -364,9 +422,13 @@ const PollPage = () => {
             <Label className="text-black/60 text-base">Motion: </Label>
             <Label className="text-2xl">{poll?.title}</Label>
           </div>
-          <div className="flex justify-end pb-5 border-b border-black/30">{/* <Label>by: {mockPoll.creator}</Label> */}</div>
+          <div className="flex justify-end pb-5 border-b border-black/30">
+            {/* <Label>by: {mockPoll.creator}</Label> */}
+          </div>
           <div className="flex flex-col gap-2.5">
-            <Label className="text-black/60 text-lg font-bold">Description: </Label>
+            <Label className="text-black/60 text-lg font-bold">
+              Description:{' '}
+            </Label>
             <span dangerouslySetInnerHTML={{ __html: poll?.description }} />
           </div>
         </div>
@@ -375,16 +437,30 @@ const PollPage = () => {
           {pollIsLive ? (
             <>
               <Label className="text-2xl">Vote on Poll</Label>
-              {(!poll?.poap_events || poll?.poap_events.length === 0) && credentialId === CREDENTIALS.POAPSVerification.id ? (
+              {(!poll?.poap_events || poll?.poap_events.length === 0) &&
+                credentialId === CREDENTIALS.POAPSVerification.id ? (
                 <div>
-                  <div><Label className="text-sm">Number of POAPS you have: {poapsNumber}/5 (You need to have more than 5 Ethereum POAPS to vote)</Label></div>
-                  <div><Label className="text-sm">Please notice that for now in this test version, we only stored the participation list of 2 Ethereum events.</Label></div>
+                  <div>
+                    <Label className="text-sm">
+                      Number of POAPS you have: {poapsNumber}/5 (You need to
+                      have more than 5 Ethereum POAPS to vote)
+                    </Label>
+                  </div>
+                  <div>
+                    <Label className="text-sm">
+                      Please notice that for now in this test version, we only
+                      stored the participation list of 2 Ethereum events.
+                    </Label>
+                  </div>
                 </div>
               ) : (
                 <div></div>
               )}
-              {credentialId === "6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2" && (
-                <Label className="text-sm">Your gitcoin passport score is: {score}/100 (Your score must be higher than 0 to vote)</Label>
+              {credentialId === '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2' && (
+                <Label className="text-sm">
+                  Your gitcoin passport score is: {score}/100 (Your score must
+                  be higher than 0 to vote)
+                </Label>
               )}
               <div className="flex flex-col gap-2.5">
                 {options?.map((option) => (
@@ -409,7 +485,7 @@ const PollPage = () => {
         <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
           <Label className="text-2xl">Details</Label>
           <hr></hr>
-          <div className='flex flex-col gap-4 pt-3 text-base'>
+          <div className="flex flex-col gap-4 pt-3 text-base">
             <Label>Voting Method: HeadCounting</Label>
             <Label>
               {(() => {
@@ -421,43 +497,46 @@ const PollPage = () => {
                 return `End Date: ${new Date(Number(poll.endTime))}`;
               })()}
             </Label>
-            <Label className="text-1xl">
-              Requirements:
-            </Label>
+            <Label className="text-1xl">Requirements:</Label>
             <div>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                border: '1px solid #ccc',
-                borderRadius: '9999px',
-                padding: '4px 8px',
-                margin: '4px',
-              }}>
-                <img src={'/images/carbonvote.png'} alt="Requirement image" style={{ width: '30px', height: '30px', marginRight: '8px', borderRadius: 100 }} />
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  border: '1px solid #ccc',
+                  borderRadius: '9999px',
+                  padding: '4px 8px',
+                  margin: '4px',
+                }}
+              >
+                <img
+                  src={'/images/carbonvote.png'}
+                  alt="Requirement image"
+                  style={{
+                    width: '30px',
+                    height: '30px',
+                    marginRight: '8px',
+                    borderRadius: 100,
+                  }}
+                />
                 <span>{getRequirement()}</span>
                 <div style={{ marginLeft: 10 }}>⚪️</div>
               </div>
             </div>
-            {(poll?.poap_events?.length > 0) && (
-              <PoapDetails poapEvents={poll?.poap_events} account={account as string} eventDetails={eventDetails} setEventDetails={setEventDetails} />
+            {poll?.poap_events?.length > 0 && (
+              <PoapDetails
+                poapEvents={poll?.poap_events}
+                account={account as string}
+                eventDetails={eventDetails}
+                setEventDetails={setEventDetails}
+              />
             )}
           </div>
         </div>
-        <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
-          <Label className="text-2xl">Results</Label>
-          <hr></hr>
-          <div className='flex flex-col gap-2.5 pt-2.5'>
-            {options &&
-              options.map((option: PollOptionType) => (
-                <OptionVotingCountProgress description={option.option_description} votes={option.votes} />
-              ))
-            }
-          </div>
-          <PieChartComponent votes={options} />
-        </div>
+        <PollResultComponent pollType={PollTypes.HEAD_COUNT} optionsData={options} />
       </div>
     </div>
-  )
+  );
 };
 
 export default PollPage;
