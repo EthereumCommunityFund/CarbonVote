@@ -23,14 +23,14 @@ const streamId = 'carbon_vote_stream';
 
 
 // Utility function to generate a nullifier
-export const generateNullifier = (credential) => {
+export const generateNullifier = (credential: string) => {
     // Using Ethers.js to create a SHA-256 hash of the credential
     const hash = keccak256(toUtf8Bytes(credential));
     return `nullifier-${hash}`;
 };
 
 // Function to check if a nullifier already exists
-export const checkNullifier = async (nullifier) => {
+export const checkNullifier = async (nullifier: any) => {
     const idx = new IDX({ ceramic });
 
 
@@ -53,7 +53,7 @@ export const checkNullifier = async (nullifier) => {
  * @param {Object} voteData - The data of the vote to store.
  * @param {String} nullifier - A unique identifier derived from the voter's credential to prevent double voting.
  */
-export const storeVote = async (voteData, nullifier) => {
+export const storeVote = async (voteData: any, nullifier: string) => {
     try {
         // Create a DID instance with the Ed25519Provider
         const did = new DID({

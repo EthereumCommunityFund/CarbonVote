@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../../utils/supabaseClient';
-import pollSchema from '../../../schemas/pollSchema';
+import { supabase } from '@/utils/supabaseClient';
+import { getLatestBlockNumber } from '@/utils/getLatestBlockNumber';
+import pollSchema from '@/schemas/pollSchema';
 
 
 const createPoll = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -15,16 +16,14 @@ const createPoll = async (req: NextApiRequest, res: NextApiResponse) => {
         return;
     }
 
-    let { title, description, time_limit, votingMethod, options, credentials, poap_events } = value;
-
-    // time_limit = Math.floor(time_limit / 1000);
+    let { title, description, time_limit, votingMethod, options, credentials, poap_events } = value
 
 
     try {
-
+        const block_number = await getLatestBlockNumber();
         const { data, error: pollError } = await supabase
             .from('polls')
-            .insert([{ title, description, time_limit, votingMethod, poap_events }])
+            .insert([{ title, description, time_limit, votingMethod, poap_events, block_number }])
             .select("*");
 
 
