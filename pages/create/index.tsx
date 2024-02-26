@@ -41,6 +41,7 @@ import {
 } from 'next';
 import moment from 'moment-timezone';
 import styles from '@/styles/createPoll.module.css';
+import POAPEvents from '../../components/POAPEvents';
 
 // type TimeZoneType = {
 //   timeZone: string;
@@ -55,16 +56,19 @@ const CreatePollPage = () => {
   const [credentials, setCredentials] = useState<string[]>([]);
   const [motionTitle, setMotionTitle] = useState<string>();
   const [motionDescription, setMotionDescription] = useState<string>('');
-  const [timeLimit, setTimeLimit] = useState<string>();
+  const [gitcoinScore, setGitcoinScore] = useState<string>();
+  const [POAPNumber, setPOAPNumber] = useState<string>();
+  const [ZupassCredential, setZupassCredential] = useState<string[]>([]);
   const [votingMethod, setVotingMethod] = useState<'ethholding' | 'headcount'>(
-    'ethholding'
+    'headcount'
   );
   const [pollType, setpollType] = useState<0 | 1>(0);
   const { isConnected } = useAccount();
   const { connect } = useConnect();
   const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const timeZoneAbbr = moment().tz(timeZone).format('zz');
-
+  const [selectedEthHoldingOption, setSelectedEthHoldingOption] = useState<string>('');
+  const [selectedProtocolGuildOption, setSelectedProtocolGuildOption] = useState<string>('');
   const [options, setOptions] = useState<OptionType[]>([
     { name: '', isChecked: true },
     { name: '', isChecked: true },
@@ -84,7 +88,15 @@ const CreatePollPage = () => {
     false,
   ]); // Individual toggle states
   const [showNestedInfoDiv, setShowNestedInfoDiv] = useState(false);
-
+  interface ZupassOptionType {
+    value: string;
+    label: string;
+  }
+  const Options: ZupassOptionType[] = [
+    { value: 'Zuzalu', label: 'Zuzalu Resident' },
+    { value: 'Zuconnect', label: 'ZuConnect Resident' },
+    { value: 'Devconnect', label: 'DevConnect Attendee' },
+  ];
   // Function to toggle all buttons
   const toggleAll = () => {
     setToggleStates((prevToggleStates) => {
@@ -95,13 +107,25 @@ const CreatePollPage = () => {
       return newState;
     });
   };
-
+  const indexActions: { [key: number]: () => void } = {
+    0: () => setSelectedEthHoldingOption('off-chain'),
+    2: () => {
+      const allZupassOptions = Options.map(cred => cred.value);
+      setZupassCredential(allZupassOptions);
+    },
+    3: () => setSelectedProtocolGuildOption('off-chain'),
+    4: () => setGitcoinScore('10'),
+  };
   // Function to handle individual toggle button clicks
   const handleToggle = (index: number) => {
     setToggleStates((prevToggleStates) => {
       const newState = prevToggleStates.map((state, i) =>
         i === index ? !state : state
       );
+      if (indexActions[index]) {
+        indexActions[index]();
+      }
+
       const numChecked = newState.filter((state) => state).length;
       setShowNestedInfoDiv(numChecked > 1);
       return newState;
@@ -325,8 +349,11 @@ const CreatePollPage = () => {
   const handleDescriptionChange = (value: string) => {
     setMotionDescription(value);
   };
-  const handleTimeLimitChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setTimeLimit(event.target.value);
+  const handleGitcoinScoreChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setGitcoinScore(event.target.value);
+  };
+  const handlePOAPNumberChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setPOAPNumber(event.target.value);
   };
   const handleVotingSelect = (e: any) => {
     console.log(e.target.value, 'voting method: ');
@@ -336,6 +363,23 @@ const CreatePollPage = () => {
     } else {
       setpollType(0);
     }
+  };
+  const handleZupassSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setZupassCredential(prev =>
+      prev.includes(value) ? prev.filter(item => item !== value) : [...prev, value]
+    );
+  };
+  const removeZupassSelected = (value: string) => {
+    setZupassCredential(prev => prev.filter(item => item !== value));
+  };
+  const handleEthHoldingRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedEthHoldingOption(event.target.value);
+    console.log(event.target.value);
+  };
+  const handleProtocolGuildRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedProtocolGuildOption(event.target.value);
+    console.log(event.target.value);
   };
   const handleCheckboxChange = (index: number, isChecked: boolean) => {
     const newOptions = options.map((option, i) =>
@@ -498,25 +542,37 @@ const CreatePollPage = () => {
                 />
                 <div className={styles.cred_details}>
                   <img src="images/eth_logo.svg" />
-                  <span>Ether Holding: On-Chain</span>
+                  <span>Ether Holding: </span>
                 </div>
               </div>
               {toggleStates[0] ? (
                 <div className={styles.cred_details_toggled_on}>
                   <p className={styles.desc_p}>Desc</p>
                   <div className={styles.radios_flex_col}>
-                    <div className={styles.radio_flex}>
-                      <div className={styles.active_radio}></div>
+                    <label className={styles.radio_flex}>
+                      <input
+                        type="radio"
+                        name="chainOption"
+                        value="on-chain"
+                        checked={selectedEthHoldingOption === 'on-chain'}
+                        onChange={handleEthHoldingRadioChange}
+                        className={styles.hidden_radio}
+                      />
                       <span>On-chain</span>
-                      <img src="/images/info_circle.svg" />
-                    </div>
-                    <div className={styles.radio_flex_disabled}>
-                      <div className={styles.disabled_radio}></div>
+                      <img src="/images/info_circle.svg" alt="Info" />
+                    </label>
+                    <label className={styles.radio_flex}>
+                      <input
+                        type="radio"
+                        name="chainOption"
+                        value="off-chain"
+                        checked={selectedEthHoldingOption === 'off-chain'}
+                        onChange={handleEthHoldingRadioChange}
+                        className={styles.hidden_radio}
+                      />
                       <span>Off-chain</span>
-                      <span className={styles.radio_coming_soon}>
-                        OFF-CHAIN COMING SOON
-                      </span>
-                    </div>
+                      <img src="/images/info_circle.svg" alt="Info" />
+                    </label>
                   </div>
                 </div>
               ) : null}
@@ -539,52 +595,17 @@ const CreatePollPage = () => {
                 <div className={styles.cred_details_toggled_on}>
                   <p className={styles.desc_p}>Desc</p>
                   <div className={styles.cred_content}>
-                    <div className="flex justify-end">
-                      <Button className={styles.add_poaps}>
-                        <span>Auto-add Ethereum event POAPs</span>
-                        <FiPlus />
-                      </Button>
-                    </div>
-                    <div className={styles.cred_dropdown_container}>
-                      <select
-                        onChange={handleVotingSelect}
-                        value={votingMethod}
-                        className={styles.select_dropdown}
-                        title="Voting Method"
-                      >
-                        <option
-                          className=""
-                          value="ethholding"
-                          disabled
-                          selected
-                        >
-                          Select POAPs
-                        </option>
-                        <option className="" value="ethholding">
-                          EIP
-                        </option>
-                        <option className="" value="headcount">
-                          HeadCounting
-                        </option>
-                      </select>
-                      <div className={styles.selected_dropdown_items}>
-                        <div>
-                          <span>DevCon 5</span>
-                          <FiX />
-                        </div>
-                        <div>
-                          <span>DevCon 5</span>
-                          <FiX />
-                        </div>
-                        <div>
-                          <span>DevCon 5</span>
-                          <FiX />
-                        </div>
-                        <div>
-                          <span>DevCon 5</span>
-                          <FiX />
-                        </div>
-                      </div>
+                    {
+                      /*<div className="flex justify-end">
+                        <Button className={styles.add_poaps}>
+                          <span>Auto-add Ethereum event POAPs</span>
+                          <FiPlus />
+                        </Button>
+                      </div> */
+                    }
+                    <div className="flex flex-col gap-2">
+                      <Label className="text-2xl font-semibold">Select Event</Label>
+                      <POAPEvents />
                     </div>
 
                     <div className={styles.input_wrap_flex}>
@@ -593,8 +614,8 @@ const CreatePollPage = () => {
                       </Label>
                       <Input
                         value={motionTitle}
-                        onChange={handleTitleInputChange}
-                        placeholder={'3'}
+                        onChange={handlePOAPNumberChange}
+                        placeholder={'1'}
                         className={styles.select_dropdown}
                       />
                     </div>
@@ -621,40 +642,27 @@ const CreatePollPage = () => {
                   <p className={styles.desc_p}>Desc</p>
                   <div className={styles.cred_content}>
                     <div className={styles.cred_dropdown_container}>
-                      <select
-                        onChange={handleVotingSelect}
-                        value={votingMethod}
-                        className={styles.select_dropdown}
-                        title="Voting Method"
-                      >
-                        <option
-                          className=""
-                          value="ethholding"
-                          disabled
-                          selected
-                        >
+                      <select onChange={handleZupassSelect} className={styles.select_dropdown}
+                        title="Zupass Credential">
+                        <option value="" disabled>
                           Select Credentials
                         </option>
-                        <option className="" value="ethholding">
-                          EIP
-                        </option>
-                        <option className="" value="headcount">
-                          HeadCounting
-                        </option>
+                        {Options.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
                       </select>
                       <div className={styles.selected_dropdown_items}>
-                        <div>
-                          <span>Zuzalu Resident</span>
-                          <FiX />
-                        </div>
-                        <div>
-                          <span>ZuConnect Resident</span>
-                          <FiX />
-                        </div>
-                        <div>
-                          <span>DevConnect Attendee</span>
-                          <FiX />
-                        </div>
+                        {ZupassCredential.map((value, index) => {
+                          const option = Options.find(option => option.value === value);
+                          return (
+                            <div key={index}>
+                              <span>{option?.label}</span>
+                              <FiX onClick={() => removeZupassSelected(value)} />
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
@@ -677,12 +685,31 @@ const CreatePollPage = () => {
               {toggleStates[3] ? (
                 <div className={styles.cred_details_toggled_on}>
                   <p className={styles.desc_p}>Desc</p>
-                  <div className={styles.cred_content}>
-                    <div className={styles.selected_dropdown_items}>
-                      <div>
-                        <span>Protocol Guild Member</span>
-                      </div>
-                    </div>
+                  <div className={styles.radios_flex_col}>
+                    <label className={styles.radio_flex}>
+                      <input
+                        type="radio"
+                        name="chainOption"
+                        value="on-chain"
+                        checked={selectedProtocolGuildOption === 'on-chain'}
+                        onChange={handleProtocolGuildRadioChange}
+                        className={styles.hidden_radio}
+                      />
+                      <span>On-chain: Smart Contract verification and voting</span>
+                      <img src="/images/info_circle.svg" alt="Info" />
+                    </label>
+                    <label className={styles.radio_flex}>
+                      <input
+                        type="radio"
+                        name="chainOption"
+                        value="off-chain"
+                        checked={selectedProtocolGuildOption === 'off-chain'}
+                        onChange={handleProtocolGuildRadioChange}
+                        className={styles.hidden_radio}
+                      />
+                      <span>Off-chain</span>
+                      <img src="/images/info_circle.svg" alt="Info" />
+                    </label>
                   </div>
                 </div>
               ) : null}
@@ -710,7 +737,7 @@ const CreatePollPage = () => {
                       </Label>
                       <Input
                         value={motionTitle}
-                        onChange={handleTitleInputChange}
+                        onChange={handleGitcoinScoreChange}
                         placeholder={'10'}
                         className={styles.select_dropdown}
                       />

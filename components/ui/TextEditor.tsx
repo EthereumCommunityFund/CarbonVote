@@ -11,7 +11,7 @@ const SimpleMdeReactWithNoSSR = dynamic(() => import('react-simplemde-editor'), 
 
 const TextEditor: React.FC<TextEditorProps> = ({ value, onChange }) => {
   const editorRef = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState<number>(500);
+  const [height, setHeight] = useState<number>(400);
   const [isClient, setIsClient] = useState<boolean>(false);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -29,7 +29,7 @@ const TextEditor: React.FC<TextEditorProps> = ({ value, onChange }) => {
     <>
       {isClient &&
         // <div ref={editorRef} className="relative" style={{ height: `${height}px` }} onMouseMove={handleMouseMove}>
-        <SimpleMdeReactWithNoSSR value={value} onChange={onChange} style={{ height: `${height}px` }} />
+        <SimpleMdeReactWithNoSSR value={value} onChange={onChange} style={{ height: `${height}px`, width: '800px' }} />
         // </div> 
       }
     </>
