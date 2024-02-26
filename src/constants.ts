@@ -60,6 +60,10 @@ export const CREDENTIALS = {
     id: '5e5aba01-ebe7-45d7-8534-07c8895d362b',
     name: "Eth Holding (Offchain)",
   },
+  ZuzaluResident: {
+    id: '287e7cf7-83ea-4aac-8311-8d55b49ac85b',
+    name: "Zuzalu Resident"
+  },
 };
 
 // TODO: improve naming (ethholding?)

@@ -110,6 +110,7 @@ const CreatePollPage = () => {
   };
 
   useEffect(() => {
+    console.log(gitcoinScore, 'gitcoinscore');
     const doConnect = async () => {
       const provider = new ethers.JsonRpcProvider(
         'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
@@ -500,7 +501,7 @@ const CreatePollPage = () => {
                         onChange={handleEthHoldingRadioChange}
                         className={styles.hidden_radio}
                       />
-                      <span>On-chain: Smart Contract verification and voting</span>
+                      <span>On-chain: Poll will be created by smart contract, creator and voters have to pay gas fee.</span>
                       <img src="/images/info_circle.svg" alt="Info" />
                     </label>
                     <label className={styles.radio_flex}>
@@ -512,8 +513,7 @@ const CreatePollPage = () => {
                         onChange={handleEthHoldingRadioChange}
                         className={styles.hidden_radio}
                       />
-                      <span>Off-chain</span>
-                      <img src="/images/info_circle.svg" alt="Info" />
+                      <span>Off-chain: Based on off-chain signature method combined with Ceramic, creator and voters don't have to pay (recommend)</span>
                     </label>
                   </div>
                 </div>
@@ -629,7 +629,7 @@ const CreatePollPage = () => {
                         onChange={handleProtocolGuildRadioChange}
                         className={styles.hidden_radio}
                       />
-                      <span>On-chain: Smart Contract verification and voting</span>
+                      <span>On-chain: Poll will be created by smart contract, creator and voters have to pay gas fee.</span>
                       <img src="/images/info_circle.svg" alt="Info" />
                     </label>
                     <label className={styles.radio_flex}>
@@ -641,8 +641,7 @@ const CreatePollPage = () => {
                         onChange={handleProtocolGuildRadioChange}
                         className={styles.hidden_radio}
                       />
-                      <span>Off-chain</span>
-                      <img src="/images/info_circle.svg" alt="Info" />
+                      <span>Off-chain: Based on off-chain signature method combined with Ceramic, creator and voters don't have to pay (recommend)</span>
                     </label>
                   </div>
                 </div>
