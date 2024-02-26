@@ -55,6 +55,10 @@ export const CREDENTIALS = {
     name: "POAPS Verification",
     contract: '0xD07E11aeA30DC68E42327F116e47f12C7E434d77'
   },
+  ZuzaluResident: {
+    id: '287e7cf7-83ea-4aac-8311-8d55b49ac85b',
+    name: "Zuzalu Resident"
+  },
 };
 
 // TODO: improve naming (ethholding?)
