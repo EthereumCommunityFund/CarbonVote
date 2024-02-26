@@ -74,7 +74,7 @@ const CreatePollPage = () => {
   // Zustand
   const selectedPOAPEvents = useFormStore((state) => state.selectedEvents);
   const resetFormStore = useFormStore((state) => state.reset);
-  const endDateTime = useState<Dayjs>();
+  const [endDateTime, setEndDateTime] = useState<Dayjs | null>(null);
 
   const [toggleStates, setToggleStates] = useState([
     false,
@@ -134,7 +134,7 @@ const CreatePollPage = () => {
 
   const createNewPoll = async () => {
     setIsLoading(true);
-    if (!motionTitle || !motionDescription || !timeLimit) {
+    if (!motionTitle || !motionDescription || !endDateTime) {
       toast({
         title: 'Error',
         description: 'All fields are required',
@@ -143,22 +143,15 @@ const CreatePollPage = () => {
       setIsLoading(false);
       return;
     }
-    let durationInSeconds: number;
-    try {
-      durationInSeconds = convertToHoursAndMinutesToSeconds(timeLimit);
-      if (durationInSeconds <= 0) {
-        toast({
-          title: 'Error',
-          description: 'Invalid duration',
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return;
-      }
-    } catch (error) {
+    const endDate = new Date(String(endDateTime));
+    const durationInSeconds = endDate.getTime() / 1000;
+    console.log(durationInSeconds, 'endDate');
+    const currentSeconds = (Date.now() / 1000) + 60; //time now plus 1 minute
+
+    if (durationInSeconds < currentSeconds) {
       toast({
         title: 'Error',
-        description: 'Invalid duration',
+        description: "The end time cannot be earlier than the current time.",
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -474,7 +467,7 @@ const CreatePollPage = () => {
             <div className={styles.input_wrap_flex}>
               <Label className={styles.input_header}>End Date/Time</Label>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DateTimePicker value={endDateTime} />
+                <DateTimePicker value={endDateTime} onChange={setEndDateTime} />
               </LocalizationProvider>
             </div>
           </div>
