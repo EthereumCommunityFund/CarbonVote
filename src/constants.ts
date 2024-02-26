@@ -55,6 +55,11 @@ export const CREDENTIALS = {
     name: "POAPS Verification",
     contract: '0xD07E11aeA30DC68E42327F116e47f12C7E434d77'
   },
+  // TODO: Create 
+  EthHoldingOffchain: {
+    id: '5e5aba01-ebe7-45d7-8534-07c8895d362b',
+    name: "Eth Holding (Offchain)",
+  },
 };
 
 // TODO: improve naming (ethholding?)

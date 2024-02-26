@@ -236,9 +236,7 @@ const CreatePollPage = () => {
 
       if (votingMethod === 'headcount' && isProtocolGuildMember) {
         poll_type = 1;
-        //setpollType(1);
       } else {
-        //setpollType(0);
         poll_type = 0;
       }
       console.log(pollType, 'polltype');
@@ -283,10 +281,8 @@ const CreatePollPage = () => {
             return;
           }
           if (votingMethod != 'ethholding') {
-            //setpollType(1);
             poll_type = 1;
           } else {
-            //setpollType(0);
             poll_type = 0;
           }
           console.log(votingMethod);

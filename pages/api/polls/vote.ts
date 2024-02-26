@@ -7,6 +7,7 @@ import { supabase } from 'utils/supabaseClient';
 import { CREDENTIALS } from '@/src/constants';
 import { VerifySignatureInput, CheckPOAPOwnershipInput, ProcessVoteInput } from '@/types'
 import { storeVote, checkNullifier, generateNullifier } from '@/utils/ceramicHelpers'
+import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock'
 
 const poapApiKey = process.env.POAP_API_KEY ?? "";
 
@@ -22,7 +23,7 @@ async function validateRequest(req: NextApiRequest) {
 }
 
 async function verifySignature({ pollId, option_id, voter_identifier, requiredCred, signature }: VerifySignatureInput): Promise<void> {
-    if (requiredCred === CREDENTIALS.GitcoinPassport.id || requiredCred === CREDENTIALS.POAPapi.id || requiredCred === CREDENTIALS.ProtocolGuildMember.id) {
+    if (requiredCred === CREDENTIALS.GitcoinPassport.id || requiredCred === CREDENTIALS.POAPapi.id || requiredCred === CREDENTIALS.ProtocolGuildMember.id || requiredCred === CREDENTIALS.EthHoldingOffchain.id) {
         const message = `{ poll_id: ${pollId}, option_id: ${option_id}, voter_identifier: ${voter_identifier}, requiredCred: ${requiredCred}`;
         const signerAddress = verifyMessage(message, signature);
 
@@ -46,7 +47,7 @@ async function checkPOAPOwnership({ pollData, voter_identifier }: CheckPOAPOwner
     }
 }
 
-async function processVote({ vote_hash, poll_id, option_id }: ProcessVoteInput): Promise<void> {
+async function processVote({ vote_hash, poll_id, option_id, eth_count }: ProcessVoteInput): Promise<void> {
     const { data: existingVoteOnOption } = await supabase
         .from('votes')
         .select('*')
@@ -93,7 +94,8 @@ async function processVote({ vote_hash, poll_id, option_id }: ProcessVoteInput):
     //         option_id,
     //         vote_hash,
     //         poll_id,
-    //         cast_at: new Date()
+    //         cast_at: new Date(),
+    //         eth_count
     //     }]);
 
     // if (insertError) throw insertError;
@@ -106,6 +108,7 @@ async function processVote({ vote_hash, poll_id, option_id }: ProcessVoteInput):
 }
 
 const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
+    let ethCount;
     try {
         await validateRequest(req);
         const { pollId, option_id, voter_identifier, poll_id, requiredCred, signature } = req.body;
@@ -124,6 +127,12 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
             await checkPOAPOwnership({ pollData, voter_identifier });
         }
 
+        // EthHolding count
+        if (requiredCred === CREDENTIALS.EthHoldingOffchain.id) {
+            const blockNumber = pollData.block_number;
+            const ethCount = await getBalanceAtBlock(voter_identifier, blockNumber);
+        }
+
         console.log('voter_identifier', voter_identifier);
 
         // Generate a nullifier for the voterCredential
@@ -136,10 +145,10 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
         // }
 
         // Store the vote with the nullifier as an identifier
-        await storeVote(voteData, nullifier);
+        await storeVote(voteData, nullifier, ethCount);
 
         const vote_hash = crypto.createHash('sha256').update(voter_identifier).digest('hex');
-        await processVote({ vote_hash, poll_id, option_id });
+        await processVote({ vote_hash, poll_id, option_id, eth_count: ethCount });
 
         res.status(201).send('Vote recorded successfully');
     } catch (error: any) {
