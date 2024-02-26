@@ -333,6 +333,17 @@ const PollPage = () => {
       }
       await handleCastVoteSigned(optionId, CREDENTIALS.POAPapi.id);
     }
+    //  EthHolding
+    else if (credentialId == CREDENTIALS.EthHoldingOffchain.id) {
+      if (!isConnected) {
+        warnAndConnect();
+        return;
+      }
+
+      // TODO: Check if address has Ether?
+
+      await handleCastVoteSigned(optionId, CREDENTIALS.EthHoldingOffchain.id);
+    }
     // POAPS ONCHAIN
     else if (credentialId == CREDENTIALS.POAPSVerification.id) {
       if (!isConnected) {

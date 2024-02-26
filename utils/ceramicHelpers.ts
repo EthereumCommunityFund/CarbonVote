@@ -53,7 +53,7 @@ export const checkNullifier = async (nullifier: any) => {
  * @param {Object} voteData - The data of the vote to store.
  * @param {String} nullifier - A unique identifier derived from the voter's credential to prevent double voting.
  */
-export const storeVote = async (voteData: any, nullifier: string) => {
+export const storeVote = async (voteData: any, nullifier: string, ethCount: number | undefined) => {
     try {
         // Create a DID instance with the Ed25519Provider
         const did = new DID({
@@ -69,7 +69,8 @@ export const storeVote = async (voteData: any, nullifier: string) => {
         const content = {
             ...voteData,
             nullifier,
-            timestamp: new Date().toISOString() // Optional: add a timestamp for when the vote was recorded
+            timestamp: new Date().toISOString(), // Optional: add a timestamp for when the vote was recorded
+            eth_count: ethCount
         };
 
         const cleanContent = cleanObject(content);
