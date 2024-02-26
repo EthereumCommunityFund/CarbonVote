@@ -5,10 +5,8 @@ import {
   FiX,
   FiPlus,
   FiTrash2,
-  FiChevronDown,
   FiArrowDown,
 } from 'react-icons/fi';
-import { CredentialForm } from '@/components/templates/CredentialForm';
 import Button from '@/components/ui/buttons/Button';
 import CheckerButton from '@/components/ui/buttons/CheckerButton';
 import { Input } from '@/components/ui/Input';
@@ -19,7 +17,6 @@ import { useAccount, useConnect } from 'wagmi';
 import React, { ChangeEvent, useState } from 'react';
 import { useEffect } from 'react';
 import { Contract, ethers } from 'ethers';
-import { convertToHoursAndMinutesToSeconds } from '@/utils';
 import VotingContract from '../../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
 import { toast } from '@/components/ui/use-toast';
 import { OptionType } from '@/types';
@@ -28,27 +25,27 @@ import { useFormStore } from '@/zustand/create';
 import { CREDENTIALS, CONTRACT_ADDRESS } from '@/src/constants';
 import {
   DateTimePicker,
-  LocalizationProvider,
-  TimezoneProps,
+  LocalizationProvider
 } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs, { Dayjs } from 'dayjs';
-import {
-  GetServerSideProps,
-  GetStaticProps,
-  InferGetServerSidePropsType,
-  InferGetStaticPropsType,
-} from 'next';
+import { Dayjs } from 'dayjs';
 import moment from 'moment-timezone';
 import styles from '@/styles/createPoll.module.css';
 import POAPEvents from '../../components/POAPEvents';
 
-// type TimeZoneType = {
-//   timeZone: string;
-//   timeZoneOffset: string;
-// }
+interface ZupassOptionType {
+  value: string;
+  label: string;
+}
 
-// const CreatePollPage = ({ myTimeZone }: InferGetStaticPropsType<typeof getStaticProps>) => {
+const Options: ZupassOptionType[] = [
+  { value: 'Zuzalu', label: 'Zuzalu Resident' },
+  { value: 'Zuconnect', label: 'ZuConnect Resident' },
+  { value: 'Devconnect', label: 'DevConnect Attendee' },
+];
+
+const allZupassOptions = Options.map(cred => cred.value);
+
 const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
   const contractAbi = VotingContract.abi;
@@ -56,9 +53,9 @@ const CreatePollPage = () => {
   const [credentials, setCredentials] = useState<string[]>([]);
   const [motionTitle, setMotionTitle] = useState<string>();
   const [motionDescription, setMotionDescription] = useState<string>('');
-  const [gitcoinScore, setGitcoinScore] = useState<string>();
+  const [gitcoinScore, setGitcoinScore] = useState<string>('10');
   const [POAPNumber, setPOAPNumber] = useState<string>();
-  const [ZupassCredential, setZupassCredential] = useState<string[]>([]);
+  const [ZupassCredential, setZupassCredential] = useState<string[]>(allZupassOptions);
   const [votingMethod, setVotingMethod] = useState<'ethholding' | 'headcount'>(
     'headcount'
   );
@@ -67,8 +64,9 @@ const CreatePollPage = () => {
   const { connect } = useConnect();
   const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const timeZoneAbbr = moment().tz(timeZone).format('zz');
-  const [selectedEthHoldingOption, setSelectedEthHoldingOption] = useState<string>('');
-  const [selectedProtocolGuildOption, setSelectedProtocolGuildOption] = useState<string>('');
+  const [selectedEthHoldingOption, setSelectedEthHoldingOption] = useState<string>('off-chain');
+  console.log("🚀 ~ CreatePollPage ~ selectedEthHoldingOption:", selectedEthHoldingOption)
+  const [selectedProtocolGuildOption, setSelectedProtocolGuildOption] = useState<string>('off-chain');
   const [options, setOptions] = useState<OptionType[]>([
     { name: '', isChecked: true },
     { name: '', isChecked: true },
@@ -88,15 +86,6 @@ const CreatePollPage = () => {
     false,
   ]); // Individual toggle states
   const [showNestedInfoDiv, setShowNestedInfoDiv] = useState(false);
-  interface ZupassOptionType {
-    value: string;
-    label: string;
-  }
-  const Options: ZupassOptionType[] = [
-    { value: 'Zuzalu', label: 'Zuzalu Resident' },
-    { value: 'Zuconnect', label: 'ZuConnect Resident' },
-    { value: 'Devconnect', label: 'DevConnect Attendee' },
-  ];
   // Function to toggle all buttons
   const toggleAll = () => {
     setToggleStates((prevToggleStates) => {
@@ -107,25 +96,13 @@ const CreatePollPage = () => {
       return newState;
     });
   };
-  const indexActions: { [key: number]: () => void } = {
-    0: () => setSelectedEthHoldingOption('off-chain'),
-    2: () => {
-      const allZupassOptions = Options.map(cred => cred.value);
-      setZupassCredential(allZupassOptions);
-    },
-    3: () => setSelectedProtocolGuildOption('off-chain'),
-    4: () => setGitcoinScore('10'),
-  };
+
   // Function to handle individual toggle button clicks
   const handleToggle = (index: number) => {
     setToggleStates((prevToggleStates) => {
       const newState = prevToggleStates.map((state, i) =>
         i === index ? !state : state
       );
-      if (indexActions[index]) {
-        indexActions[index]();
-      }
-
       const numChecked = newState.filter((state) => state).length;
       setShowNestedInfoDiv(numChecked > 1);
       return newState;
@@ -426,37 +403,6 @@ const CreatePollPage = () => {
               />
             </div>
 
-            {/*<div className={styles.input_wrap_flex}>
-              <Label className={styles.input_header}>Select a Category</Label>
-              <select
-                onChange={handleVotingSelect}
-                value={votingMethod}
-                className={styles.select_dropdown}
-                title="Voting Method"
-              >
-                <option className="" value="ethholding">
-                  EIP
-                </option>
-                <option className="" value="headcount">
-                  HeadCounting
-                </option>
-              </select>
-              <div className={styles.selected_dropdown_items}>
-                <div>
-                  <span>EID</span>
-                  <FiX />
-                </div>
-                <div>
-                  <span>EID</span>
-                  <FiX />
-                </div>
-                <div>
-                  <span>EID</span>
-                  <FiX />
-                </div>
-              </div>
-            </div>*/}
-
             <div className={styles.input_wrap_flex}>
               <Label className={styles.input_header}>
                 Motion Description:{' '}
@@ -548,19 +494,19 @@ const CreatePollPage = () => {
                     <label className={styles.radio_flex}>
                       <input
                         type="radio"
-                        name="chainOption"
+                        name="EthHoldingOption"
                         value="on-chain"
                         checked={selectedEthHoldingOption === 'on-chain'}
                         onChange={handleEthHoldingRadioChange}
                         className={styles.hidden_radio}
                       />
-                      <span>On-chain</span>
+                      <span>On-chain: Smart Contract verification and voting</span>
                       <img src="/images/info_circle.svg" alt="Info" />
                     </label>
                     <label className={styles.radio_flex}>
                       <input
                         type="radio"
-                        name="chainOption"
+                        name="EthHoldingOption"
                         value="off-chain"
                         checked={selectedEthHoldingOption === 'off-chain'}
                         onChange={handleEthHoldingRadioChange}
@@ -591,14 +537,6 @@ const CreatePollPage = () => {
                 <div className={styles.cred_details_toggled_on}>
                   <p className={styles.desc_p}>Desc</p>
                   <div className={styles.cred_content}>
-                    {
-                      /*<div className="flex justify-end">
-                        <Button className={styles.add_poaps}>
-                          <span>Auto-add Ethereum event POAPs</span>
-                          <FiPlus />
-                        </Button>
-                      </div> */
-                    }
                     <div className="flex flex-col gap-2">
                       <Label className="text-2xl font-semibold">Select Event</Label>
                       <POAPEvents />
@@ -765,41 +703,6 @@ const CreatePollPage = () => {
               </div>
             </div>
           )}
-          {/* <select
-            onChange={handleVotingSelect}
-            value={votingMethod}
-            className="flex w-full text-black outline-none rounded-lg py-2.5 pr-3 pl-2.5 bg-inputField gap-2.5 items-center border border-white/10 border-opacity-10"
-            title="Voting Method"
-          >
-            <option
-              className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-              value="ethholding"
-            >
-              EthHolding
-            </option>
-            <option
-              className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-              value="headcount"
-            >
-              HeadCounting
-            </option>
-          </select> */}
-
-          {/* {votingMethod === 'ethholding' ? (
-            <></>
-          ) : (
-            votingMethod === 'headcount' && (
-              <div className="flex flex-col gap-2">
-                <Label className="text-2xl">Access Rules</Label>
-                <CredentialForm
-                  selectedCredentials={credentials}
-                  onCredentialsChange={(selectedUuids) =>
-                    setCredentials(selectedUuids)
-                  }
-                />
-              </div>
-            )
-          )} */}
         </div>
         <div className="flex gap-2.5">
           <Button className={styles.bottom_cta} leftIcon={FiX}>
@@ -819,33 +722,3 @@ const CreatePollPage = () => {
   );
 };
 export default CreatePollPage;
-
-// export const getServerSideProps: GetServerSideProps = (async () => {
-//   const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-//   const timeZoneAbbr = moment().tz(timeZone).format('zz');
-//   const myTimeZone: TimeZoneType = {
-//     timeZone: timeZone,
-//     timeZoneOffset: timeZoneAbbr,
-//   }
-//   return {
-//     props: {
-//       myTimeZone
-//     }
-//   }
-// });
-
-// export const getStaticProps: GetStaticProps = async () => {
-//   const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-//   const timeZoneAbbr = moment().tz(timeZone).format('zz');
-//   const myTimeZone: TimeZoneType = {
-//     timeZone: timeZone,
-//     timeZoneOffset: timeZoneAbbr,
-//   }
-//   return {
-//     props: {
-//       myTimeZone
-//     }
-//   }
-// };
