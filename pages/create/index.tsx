@@ -50,27 +50,19 @@ const CreatePollPage = () => {
   const [pollContract, setPollContract] = useState<Contract | null>(null);
   const contractAbi = VotingContract.abi;
   const router = useRouter();
-  const [credentials, setCredentials] = useState<string[]>([]);
   const [motionTitle, setMotionTitle] = useState<string>();
   const [motionDescription, setMotionDescription] = useState<string>('');
   const [gitcoinScore, setGitcoinScore] = useState<string>('10');
-  const [POAPNumber, setPOAPNumber] = useState<string>();
-  const [ZupassCredential, setZupassCredential] = useState<string[]>(allZupassOptions);
-  const [votingMethod, setVotingMethod] = useState<'ethholding' | 'headcount'>(
-    'headcount'
-  );
-  const [pollType, setpollType] = useState<0 | 1>(0);
+  const [POAPNumber, setPOAPNumber] = useState<string>('1');
   const { isConnected } = useAccount();
   const { connect } = useConnect();
   const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const timeZoneAbbr = moment().tz(timeZone).format('zz');
+
+  const [zupassCredential, setZupassCredential] = useState<string[]>(allZupassOptions);
   const [selectedEthHoldingOption, setSelectedEthHoldingOption] = useState<string>('off-chain');
-  console.log("🚀 ~ CreatePollPage ~ selectedEthHoldingOption:", selectedEthHoldingOption)
   const [selectedProtocolGuildOption, setSelectedProtocolGuildOption] = useState<string>('off-chain');
-  const [options, setOptions] = useState<OptionType[]>([
-    { name: '', isChecked: true },
-    { name: '', isChecked: true },
-  ]);
+  const [options, setOptions] = useState<OptionType[]>([{ name: '', color: 'blue' }, { name: '', color: 'green' }]);
   const [isLoading, setIsLoading] = useState(false);
 
   // Zustand
@@ -127,7 +119,8 @@ const CreatePollPage = () => {
   }, []);
 
   const addOption = () => {
-    setOptions([...options, { name: '', isChecked: true }]);
+    // TODO: Add color picker for different options
+    setOptions([...options, { name: '', color: "yellow" }]);
   };
 
   const removeOption = (index: number) => {
@@ -160,11 +153,10 @@ const CreatePollPage = () => {
       return;
     }
 
-    const checkedOptions = options.filter((option) => option.isChecked);
-    if (checkedOptions.length < 2) {
+    if (options.length < 2) {
       toast({
         title: 'Error',
-        description: 'At least two options should be selected',
+        description: 'At least two options should be included',
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -180,45 +172,33 @@ const CreatePollPage = () => {
       setIsLoading(false);
       return;
     }
-    let poll_type = 0;
-    const optionNames = checkedOptions.map((option) => option.name);
+    // FIXME: Remove poll_type from Supabase
+    // let poll_type = 0;
+    const optionNames = options.map((option) => option.name);
     const pollMetadata = 'arbitrary data';
     console.log('Title:', motionTitle);
     console.log('Description:', motionDescription);
     console.log('Duration (seconds):', durationInSeconds);
     console.log('Option Names:', optionNames);
     console.log('Poll Metadata:', pollMetadata);
-    console.log(
-      `votingMethod: ${votingMethod}, credentials[0]: ${credentials[0]}`
-    );
-    if (
-      votingMethod === 'headcount' &&
-      credentials[0] !== '635a93d1-4d2c-47d9-82f4-9acd8ff68350'
-    ) {
+
+    // Protocol Guild
+    if ( !== CREDENTIALS.ProtocolGuildMember.id) {
+
+      // TODO: Add offchain/onchain if/else using 'selectedProtocolGuildOption'
+
       const pollData = {
         title: motionTitle,
         description: motionDescription,
         time_limit: durationInSeconds,
         votingMethod: 'headCount',
         options: options
-          .filter((option) => option.isChecked)
           .map((option) => ({ option_description: option.name })),
-        credentials: credentials,
+        credentials: ,
         poap_events: selectedPOAPEvents.map((event) => event.id),
         endDateTime: endDateTime,
       };
 
-      const isProtocolGuildMember = credentials.includes(
-        CREDENTIALS.ProtocolGuildMember.id
-      );
-
-      if (votingMethod === 'headcount' && isProtocolGuildMember) {
-        poll_type = 1;
-      } else {
-        poll_type = 0;
-      }
-      console.log(pollType, 'polltype');
-      console.log(poll_type, 'poll_type');
       try {
         console.log('Creating poll...', pollData);
 
@@ -228,7 +208,6 @@ const CreatePollPage = () => {
         toast({
           title: 'Poll created successfully',
         });
-        setCredentials([]);
         resetFormStore();
         router.push('/').then(() => window.location.reload());
       } catch (error) {
@@ -241,80 +220,74 @@ const CreatePollPage = () => {
           variant: 'destructive',
         });
       }
-    } else {
-      try {
-        if (pollContract) {
-          if (!isConnected) {
-            console.error(
-              'You need to connect to Metamask to create, please try again'
-            );
-            toast({
-              title: 'Error',
-              description:
-                'You need to connect to Metamask to create, please try again',
-              variant: 'destructive',
-            });
-            setIsLoading(false);
-            connect();
-            return;
-          }
-          if (votingMethod != 'ethholding') {
-            poll_type = 1;
-          } else {
-            poll_type = 0;
-          }
-          console.log(votingMethod);
-          console.log(poll_type, 'poll_type');
-          const provider = new ethers.BrowserProvider(window.ethereum as any);
-          const signer = await provider.getSigner();
-          const contract = new ethers.Contract(
-            CONTRACT_ADDRESS,
-            contractAbi,
-            signer
-          );
-          console.log(provider, signer, contract);
-          const network = await provider.getNetwork();
-
-          if (Number(network.chainId) === 11155111) {
-            console.log('Connected to Sepolia');
-
-            const tx = await contract.createPoll(
-              motionTitle,
-              motionDescription,
-              durationInSeconds,
-              optionNames,
-              poll_type,
-              pollMetadata
-            );
-            await tx.wait();
-            toast({
-              title: 'Poll created successfully, please wait',
-            });
-            console.log('Poll created successfully');
-            setCredentials([]);
-            resetFormStore();
-            router.push('/').then(() => window.location.reload());
-          } else {
-            console.error('You should connect to Sepolia, please try again');
-            toast({
-              title: 'Error',
-              description: 'You should connect to Sepolia, please try again',
-              variant: 'destructive',
-            });
-            setIsLoading(false);
-          }
-        }
-      } catch (error: any) {
-        console.error('Error creating poll:', error);
-        setIsLoading(false);
-        resetFormStore();
-        toast({
-          title: 'Error',
-          description: error.message,
-          variant: 'destructive',
-        });
-      }
     }
+
+    // FIXME: Add ethholding onchain option
+    // if (XXXXXXXXXXX) {
+    //   try {
+    //     if (pollContract) {
+    //       if (!isConnected) {
+    //         console.error(
+    //           'You need to connect to Metamask to create, please try again'
+    //         );
+    //         toast({
+    //           title: 'Error',
+    //           description:
+    //             'You need to connect to Metamask to create, please try again',
+    //           variant: 'destructive',
+    //         });
+    //         setIsLoading(false);
+    //         connect();
+    //         return;
+    //       }
+    //       const provider = new ethers.BrowserProvider(window.ethereum as any);
+    //       const signer = await provider.getSigner();
+    //       const contract = new ethers.Contract(
+    //         CONTRACT_ADDRESS,
+    //         contractAbi,
+    //         signer
+    //       );
+    //       console.log(provider, signer, contract);
+    //       const network = await provider.getNetwork();
+
+    //       if (Number(network.chainId) === 11155111) {
+    //         console.log('Connected to Sepolia');
+
+    //         const tx = await contract.createPoll(
+    //           motionTitle,
+    //           motionDescription,
+    //           durationInSeconds,
+    //           optionNames,
+    //           pollMetadata
+    //         );
+    //         await tx.wait();
+    //         toast({
+    //           title: 'Poll created successfully, please wait',
+    //         });
+    //         console.log('Poll created successfully');
+    //         resetFormStore();
+    //         router.push('/').then(() => window.location.reload());
+    //       } else {
+    //         console.error('You should connect to Sepolia, please try again');
+    //         toast({
+    //           title: 'Error',
+    //           description: 'You should connect to Sepolia, please try again',
+    //           variant: 'destructive',
+    //         });
+    //         setIsLoading(false);
+    //       }
+    //     }
+    //   } catch (error: any) {
+    //     console.error('Error creating poll:', error);
+    //     setIsLoading(false);
+    //     resetFormStore();
+    //     toast({
+    //       title: 'Error',
+    //       description: error.message,
+    //       variant: 'destructive',
+    //     });
+    //   }
+    // }
   };
 
   const handleTitleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -328,15 +301,6 @@ const CreatePollPage = () => {
   };
   const handlePOAPNumberChange = (event: ChangeEvent<HTMLInputElement>) => {
     setPOAPNumber(event.target.value);
-  };
-  const handleVotingSelect = (e: any) => {
-    console.log(e.target.value, 'voting method: ');
-    setVotingMethod(e.target.value);
-    if (votingMethod !== 'ethholding') {
-      setpollType(1);
-    } else {
-      setpollType(0);
-    }
   };
   const handleZupassSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value;
@@ -354,12 +318,6 @@ const CreatePollPage = () => {
   const handleProtocolGuildRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedProtocolGuildOption(event.target.value);
     console.log(event.target.value);
-  };
-  const handleCheckboxChange = (index: number, isChecked: boolean) => {
-    const newOptions = options.map((option, i) =>
-      i === index ? { ...option, isChecked } : option
-    );
-    setOptions(newOptions);
   };
   const handleInputChange = (
     index: number,
@@ -547,7 +505,7 @@ const CreatePollPage = () => {
                         Select minimum amount of POAPs required
                       </Label>
                       <Input
-                        value={motionTitle}
+                        value={POAPNumber}
                         onChange={handlePOAPNumberChange}
                         placeholder={'1'}
                         className={styles.select_dropdown}
@@ -588,7 +546,7 @@ const CreatePollPage = () => {
                         ))}
                       </select>
                       <div className={styles.selected_dropdown_items}>
-                        {ZupassCredential.map((value, index) => {
+                        {zupassCredential.map((value, index) => {
                           const option = Options.find(option => option.value === value);
                           return (
                             <div key={index}>
@@ -669,7 +627,7 @@ const CreatePollPage = () => {
                         Input minimum score required
                       </Label>
                       <Input
-                        value={motionTitle}
+                        value={gitcoinScore}
                         onChange={handleGitcoinScoreChange}
                         placeholder={'10'}
                         className={styles.select_dropdown}
