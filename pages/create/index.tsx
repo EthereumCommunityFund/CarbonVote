@@ -20,7 +20,6 @@ import { Contract, ethers } from 'ethers';
 import VotingContract from '../../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
 import { toast } from '@/components/ui/use-toast';
 import { OptionType } from '@/types';
-import { createPoll } from '@/controllers/poll.controller';
 import { useFormStore } from '@/zustand/create';
 import { CREDENTIALS, CONTRACT_ADDRESS } from '@/src/constants';
 import {
@@ -32,6 +31,7 @@ import { Dayjs } from 'dayjs';
 import moment from 'moment-timezone';
 import styles from '@/styles/createPoll.module.css';
 import POAPEvents from '../../components/POAPEvents';
+import { createPoll } from '@/controllers/poll.controller';
 
 interface ZupassOptionType {
   value: string;
@@ -70,35 +70,26 @@ const CreatePollPage = () => {
   const resetFormStore = useFormStore((state) => state.reset);
   const [endDateTime, setEndDateTime] = useState<Dayjs | null>(null);
 
-  const [toggleStates, setToggleStates] = useState([
-    false,
-    false,
-    false,
-    false,
-    false,
-  ]); // Individual toggle states
-  const [showNestedInfoDiv, setShowNestedInfoDiv] = useState(false);
-  // Function to toggle all buttons
-  const toggleAll = () => {
-    setToggleStates((prevToggleStates) => {
-      const allTrue = prevToggleStates.every((state) => state);
-      const newState = prevToggleStates.map(() => !allTrue);
-      const numChecked = newState.filter((state) => state).length;
-      setShowNestedInfoDiv(numChecked > 1);
-      return newState;
-    });
-  };
+  const [ethHolding, setEthHolding] = useState(false);
+  const [poapsEnabled, setPoapsEnabled] = useState(false);
+  const [zupassEnabled, setZupassEnabled] = useState(false);
+  const [protocolGuildMemberEnabled, setProtocolGuildMemberEnabled] = useState(false);
+  const [gitcoinPassport, setGitcoinPassport] = useState(false);
 
-  // Function to handle individual toggle button clicks
-  const handleToggle = (index: number) => {
-    setToggleStates((prevToggleStates) => {
-      const newState = prevToggleStates.map((state, i) =>
-        i === index ? !state : state
-      );
-      const numChecked = newState.filter((state) => state).length;
-      setShowNestedInfoDiv(numChecked > 1);
-      return newState;
-    });
+  // TODO: Check if more than one is selected and enable showNestedInfoDiv
+  const [showNestedInfoDiv, setShowNestedInfoDiv] = useState(false);
+
+  // Check if all toggles are true or false
+  const areAllSelected = ethHolding && poapsEnabled && zupassEnabled && protocolGuildMemberEnabled && gitcoinPassport;
+
+  // Function to toggle all states
+  const toggleAll = () => {
+    const newValue = !areAllSelected; // If all are selected, turn off, otherwise turn on
+    setEthHolding(newValue);
+    setPoapsEnabled(newValue);
+    setZupassEnabled(newValue);
+    setProtocolGuildMemberEnabled(newValue);
+    setGitcoinPassport(newValue);
   };
 
   useEffect(() => {
@@ -118,6 +109,11 @@ const CreatePollPage = () => {
     resetFormStore();
   }, []);
 
+  const endDate = new Date(String(endDateTime));
+  const durationInSeconds = endDate.getTime() / 1000;
+  console.log(durationInSeconds, 'endDate');
+  const currentSeconds = (Date.now() / 1000) + 60; //time now plus 1 minute
+
   const addOption = () => {
     // TODO: Add color picker for different options
     setOptions([...options, { name: '', color: "yellow" }]);
@@ -126,6 +122,45 @@ const CreatePollPage = () => {
   const removeOption = (index: number) => {
     setOptions(options.filter((_, i) => i !== index));
   };
+
+  const handleOffchainCreatePoll = async (credential: string) => {
+
+    if (!motionTitle || !credential) return;
+
+    const pollData = {
+      title: motionTitle,
+      description: motionDescription,
+      time_limit: durationInSeconds,
+      votingMethod: 'headCount',
+      options: options
+        .map((option) => ({ option_description: option.name })),
+      credentials: [credential],
+      poap_events: selectedPOAPEvents.map((event) => event.id),
+      endDateTime: endDateTime,
+    };
+
+    try {
+      console.log('Creating poll...', pollData);
+
+      const response = await createPoll(pollData);
+
+      console.log('Poll created successfully', response);
+      toast({
+        title: 'Poll created successfully',
+      });
+      resetFormStore();
+      router.push('/').then(() => window.location.reload());
+    } catch (error) {
+      console.error('Error creating poll:', error);
+      setIsLoading(false);
+      resetFormStore();
+      toast({
+        title: 'Error',
+        description: 'Failed to create poll',
+        variant: 'destructive',
+      });
+    }
+  }
 
   const createNewPoll = async () => {
     setIsLoading(true);
@@ -138,10 +173,6 @@ const CreatePollPage = () => {
       setIsLoading(false);
       return;
     }
-    const endDate = new Date(String(endDateTime));
-    const durationInSeconds = endDate.getTime() / 1000;
-    console.log(durationInSeconds, 'endDate');
-    const currentSeconds = (Date.now() / 1000) + 60; //time now plus 1 minute
 
     if (durationInSeconds < currentSeconds) {
       toast({
@@ -182,43 +213,33 @@ const CreatePollPage = () => {
     console.log('Option Names:', optionNames);
     console.log('Poll Metadata:', pollMetadata);
 
+    // ethHolding
+    if (ethHolding) {
+      if (selectedProtocolGuildOption === 'off-chain') {
+        handleOffchainCreatePoll(CREDENTIALS.EthHoldingOffchain.id)
+      } else {
+        // TODO: contract based poll
+      }
+    }
+
+    // poapsEnabled
+    if (poapsEnabled) {
+      handleOffchainCreatePoll(CREDENTIALS.POAPapi.id)
+    }
+
+    // zupassEnabled
+    if (zupassEnabled) {
+
+    }
+
     // Protocol Guild
-    if ( !== CREDENTIALS.ProtocolGuildMember.id) {
-
+    if (protocolGuildMemberEnabled) {
       // TODO: Add offchain/onchain if/else using 'selectedProtocolGuildOption'
+      if (selectedProtocolGuildOption === 'off-chain') {
+        handleOffchainCreatePoll(CREDENTIALS.ProtocolGuildMember.id)
 
-      const pollData = {
-        title: motionTitle,
-        description: motionDescription,
-        time_limit: durationInSeconds,
-        votingMethod: 'headCount',
-        options: options
-          .map((option) => ({ option_description: option.name })),
-        credentials: ,
-        poap_events: selectedPOAPEvents.map((event) => event.id),
-        endDateTime: endDateTime,
-      };
-
-      try {
-        console.log('Creating poll...', pollData);
-
-        const response = await createPoll(pollData);
-
-        console.log('Poll created successfully', response);
-        toast({
-          title: 'Poll created successfully',
-        });
-        resetFormStore();
-        router.push('/').then(() => window.location.reload());
-      } catch (error) {
-        console.error('Error creating poll:', error);
-        setIsLoading(false);
-        resetFormStore();
-        toast({
-          title: 'Error',
-          description: 'Failed to create poll',
-          variant: 'destructive',
-        });
+      } else {
+        // TODO: contract based poll
       }
     }
 
@@ -437,8 +458,8 @@ const CreatePollPage = () => {
               <div className={styles.cred_container_header}>
                 <input
                   type="checkbox"
-                  checked={toggleStates[0]}
-                  onChange={() => handleToggle(0)}
+                  checked={ethHolding}
+                  onChange={() => setEthHolding(prevState => !prevState)}
                   className={styles.toggle_btn}
                 />
                 <div className={styles.cred_details}>
@@ -446,7 +467,7 @@ const CreatePollPage = () => {
                   <span>Ether Holding: </span>
                 </div>
               </div>
-              {toggleStates[0] ? (
+              {ethHolding ? (
                 <div className={styles.cred_details_toggled_on}>
                   <p className={styles.desc_p}>Desc</p>
                   <div className={styles.radios_flex_col}>
@@ -482,8 +503,8 @@ const CreatePollPage = () => {
               <div className={styles.cred_container_header}>
                 <input
                   type="checkbox"
-                  checked={toggleStates[1]}
-                  onChange={() => handleToggle(1)}
+                  checked={poapsEnabled}
+                  onChange={() => setPoapsEnabled(prevState => !prevState)}
                   className={styles.toggle_btn}
                 />
                 <div className={styles.cred_details}>
@@ -491,7 +512,7 @@ const CreatePollPage = () => {
                   <span>POAPs Credentials</span>
                 </div>
               </div>
-              {toggleStates[1] ? (
+              {poapsEnabled ? (
                 <div className={styles.cred_details_toggled_on}>
                   <p className={styles.desc_p}>Desc</p>
                   <div className={styles.cred_content}>
@@ -519,8 +540,8 @@ const CreatePollPage = () => {
               <div className={styles.cred_container_header}>
                 <input
                   type="checkbox"
-                  checked={toggleStates[2]}
-                  onChange={() => handleToggle(2)}
+                  checked={zupassEnabled}
+                  onChange={() => setZupassEnabled(prevState => !prevState)}
                   className={styles.toggle_btn}
                 />
                 <div className={styles.cred_details}>
@@ -529,7 +550,7 @@ const CreatePollPage = () => {
                 </div>
               </div>
 
-              {toggleStates[2] ? (
+              {zupassEnabled ? (
                 <div className={styles.cred_details_toggled_on}>
                   <p className={styles.desc_p}>Desc</p>
                   <div className={styles.cred_content}>
@@ -565,8 +586,8 @@ const CreatePollPage = () => {
               <div className={styles.cred_container_header}>
                 <input
                   type="checkbox"
-                  checked={toggleStates[3]}
-                  onChange={() => handleToggle(3)}
+                  checked={protocolGuildMemberEnabled}
+                  onChange={() => setProtocolGuildMemberEnabled(prevState => !prevState)}
                   className={styles.toggle_btn}
                 />
                 <div className={styles.cred_details}>
@@ -574,7 +595,7 @@ const CreatePollPage = () => {
                   <span>Protocol Guild Member Credential</span>
                 </div>
               </div>
-              {toggleStates[3] ? (
+              {protocolGuildMemberEnabled ? (
                 <div className={styles.cred_details_toggled_on}>
                   <p className={styles.desc_p}>Desc</p>
                   <div className={styles.radios_flex_col}>
@@ -609,8 +630,8 @@ const CreatePollPage = () => {
               <div className={styles.cred_container_header}>
                 <input
                   type="checkbox"
-                  checked={toggleStates[4]}
-                  onChange={() => handleToggle(4)}
+                  checked={gitcoinPassport}
+                  onChange={() => setGitcoinPassport(prevState => !prevState)}
                   className={styles.toggle_btn}
                 />
                 <div className={styles.cred_details}>
@@ -618,7 +639,7 @@ const CreatePollPage = () => {
                   <span>Gitcoin Passport</span>
                 </div>
               </div>
-              {toggleStates[4] ? (
+              {gitcoinPassport ? (
                 <div className={styles.cred_details_toggled_on}>
                   <p className={styles.desc_p}>Desc</p>
                   <div className={styles.cred_content}>

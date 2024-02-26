@@ -1,6 +1,6 @@
 export type OptionType = {
   name: string;
-  isChecked: boolean;
+  color: string;
 }
 
 export interface PollStatusType {
@@ -136,3 +136,17 @@ export enum HeadCountCredential {
   PROTOCOL = 'Protocol Guild Member Results',
   GITCOIN = 'Gitcoin Passport Results',
 }
+
+export type OptionData = {
+  option_description: string;
+};
+
+export type PollRequestData = {
+  title: string;
+  description: string;
+  time_limit: number;
+  votingMethod: string;
+  options: OptionData[];
+  credentials: string[];
+  poap_events: number[];
+};

@@ -11,6 +11,7 @@ const pollSchema = Joi.object({
     votingMethod: Joi.string().valid('headCount').required(),
     options: Joi.array().items(optionSchema).required(),
     credentials: Joi.array().items(Joi.string().guid({ version: 'uuidv4' })).required(),
+    endDateTime: Joi.date().required(),
     poap_events: Joi.array()
 });
 
