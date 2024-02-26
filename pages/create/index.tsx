@@ -493,7 +493,7 @@ const CreatePollPage = () => {
                         onChange={handleEthHoldingRadioChange}
                         className={styles.hidden_radio}
                       />
-                      <span>On-chain: Poll will be created by smart contract, creator and voters have to pay gas fee.</span>
+                      <span>On-chain: Smart Contract verification and voting</span>
                       <img src="/images/info_circle.svg" alt="Info" />
                     </label>
                     <label className={styles.radio_flex}>
