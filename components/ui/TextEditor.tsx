@@ -1,39 +1,38 @@
-import dynamic from "next/dynamic";
-
-const ReactQuillNoSSR = dynamic(() => import('react-quill'), { ssr: false });
+import { useEffect, useRef, useState } from 'react';
+import "easymde/dist/easymde.min.css";
+import dynamic from 'next/dynamic';
 
 interface TextEditorProps {
   value: string;
   onChange: (value: string) => void;
 }
 
-const TextEditor: React.FC<TextEditorProps> = ({ value, onChange }) => {
-  const modules = {
-    toolbar: [
-      [{ header: [1, 2, 3, 4, 5, 6, false] }],
-      ["bold", "italic", "underline", "strike", "blockquote"],
-      [{ size: [] }],
-      [{ font: [] }],
-      [{ align: ["right", "center", "justify"] }],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["link", "image"],
-      [{ color: ["red", "#785412"] }],
-      [{ background: ["red", "#785412"] }]
-    ]
-  }
+const SimpleMdeReactWithNoSSR = dynamic(() => import('react-simplemde-editor'), { ssr: false }); // Import SimpleMdeReact dynamically with no SSR
 
-  const formats = [
-    "header", "bold", "italic", "underline", "strike", "blockquote", "list", "bullet", "link", "color", "image", "background", "align", "size", "font"
-  ]
+const TextEditor: React.FC<TextEditorProps> = ({ value, onChange }) => {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number>(500);
+  const [isClient, setIsClient] = useState<boolean>(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.buttons !== 1 || !editorRef.current) return; // Check if left mouse button is pressed
+
+    const newHeight = e.clientY - editorRef.current.getBoundingClientRect().top;
+    setHeight(newHeight);
+  };
+
+  useEffect(() => {
+    setIsClient(true);
+    // if (!editorRef.current) return;
+  }, [])
   return (
-    <ReactQuillNoSSR
-      className={"w-full flex flex-col gap-2"}
-      placeholder={"Enter Description"}
-      value={value}
-      onChange={onChange}
-      modules={modules}
-      formats={formats}
-    />
+    <>
+      {isClient &&
+        // <div ref={editorRef} className="relative" style={{ height: `${height}px` }} onMouseMove={handleMouseMove}>
+        <SimpleMdeReactWithNoSSR value={value} onChange={onChange} style={{ height: `${height}px` }} />
+        // </div> 
+      }
+    </>
   );
 };
 
