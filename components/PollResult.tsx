@@ -52,16 +52,16 @@ export const PollResultComponent = ({ pollType, optionsData }: PollResultCompone
         <Label className='flex gap-2.5 items-center text-base'><EthIcon />Ether Holding Credential</Label>
         <Label className='text-xs'>Ether Holding results are updated every n block until the end of the poll's selected time.</Label>
         <Button variant="primary" className='w-full rounded-md flex justify-between'>
-          <Label className='flex gap-2.5 items-center text-base'><EthIcon />Ether Holding Results</Label>
+          <Label className='flex gap-2.5 items-center text-base'><EthIcon />Ether Holding</Label>
           <TbChevronDown />
         </Button>
       </div>
       <div className='w-full flex flex-col gap-2.5'>
         <Label className='flex gap-2.5 items-center text-base'><HeadCountIcon />Head Count Credentials</Label>
-        <PollResultCredentialComponent pollType={PollTypes.HEAD_COUNT} credentialType={'Zuppass Holder Results'} icon={ZupassHolderIcon} optionsData={optionsData} toggleExpanded={toggleZuZaluExpanded} isExpanded={isZuPassExpanded} />
-        <PollResultCredentialComponent pollType={PollTypes.HEAD_COUNT} credentialType={'POAP Holder Results'} icon={PoapIcon} optionsData={optionsData} toggleExpanded={togglePOAPExpanded} isExpanded={isPOAPExpanded} />
-        <PollResultCredentialComponent pollType={PollTypes.HEAD_COUNT} credentialType={'Protocol Guild Member Results'} icon={ProtocolGuildIcon} optionsData={optionsData} toggleExpanded={toggleProtocolExpanded} isExpanded={isProtocolExpanded} />
-        <PollResultCredentialComponent pollType={PollTypes.HEAD_COUNT} credentialType={'Gitcoin Passport Results'} icon={GitCoinIcon} optionsData={optionsData} toggleExpanded={toggleGitCoinExpanded} isExpanded={isGitCoinExpanded} />
+        <PollResultCredentialComponent pollType={PollTypes.HEAD_COUNT} credentialType={'Zuppass Holder'} icon={ZupassHolderIcon} optionsData={optionsData} toggleExpanded={toggleZuZaluExpanded} isExpanded={isZuPassExpanded} />
+        <PollResultCredentialComponent pollType={PollTypes.HEAD_COUNT} credentialType={'POAP Holder'} icon={PoapIcon} optionsData={optionsData} toggleExpanded={togglePOAPExpanded} isExpanded={isPOAPExpanded} />
+        <PollResultCredentialComponent pollType={PollTypes.HEAD_COUNT} credentialType={'Protocol Guild Member'} icon={ProtocolGuildIcon} optionsData={optionsData} toggleExpanded={toggleProtocolExpanded} isExpanded={isProtocolExpanded} />
+        <PollResultCredentialComponent pollType={PollTypes.HEAD_COUNT} credentialType={'Gitcoin Passport'} icon={GitCoinIcon} optionsData={optionsData} toggleExpanded={toggleGitCoinExpanded} isExpanded={isGitCoinExpanded} />
       </div>
     </div>
   );

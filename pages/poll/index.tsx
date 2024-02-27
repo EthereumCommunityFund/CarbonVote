@@ -32,7 +32,7 @@ import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock'
 import { generateMessage } from '@/utils/generateMessage'
 import VotingContract from '../../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
 import VotingOption from '../../carbonvote-contracts/deployment/contracts/VotingOption.sol/VotingOption.json';
-
+import { getProviderUrl } from '@/utils/getProviderUrl';
 
 const PollPage = () => {
   const router = useRouter();
@@ -48,7 +48,9 @@ const PollPage = () => {
   const { connect } = useConnect();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [options, setOptions] = useState<PollOptionType[]>([]);
+  // FIXME: For multiple votes this single CredentialId might break the logic. Implementing an agregated credential requirement 
   const [credentialId, setCredentialId] = useState('');
+  const [requiredCred, setRequiredCred] = useState([]);
   const [userEthHolding, setUserEthHolding] = useState('0');
   const [score, setScore] = useState('0');
   const [remainingTime, settimeRemaining] = useState('');
@@ -58,17 +60,16 @@ const PollPage = () => {
   const [message, setMessage] = useState('');
   const contractAbi = VotingContract.abi;
   const [pollContract, setPollContract] = useState<Contract | null>(null);
-  const [pollType, setPollType] = useState<string | number>();
   const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
     message,
   });
 
-  console.log("🚀 ~ PollPage ~ data:", data)
+  const providerUrl = getProviderUrl();
+
   useEffect(() => {
     if (id !== undefined) {
       if (isValidUuidV4(id as string)) {
         fetchPollFromApi(id);
-        getEthHoldings();
       }
       else {
         fetchPollFromContract()
@@ -76,34 +77,45 @@ const PollPage = () => {
     }
   }, [id]);
 
-  /*useEffect(() => {
-    async () => {
-      if (isSuccess && data !== undefined) {
+  useEffect(() => {
+    if (poll?.block_number) {
+      getEthHoldings();
+    }
+  }, [id, poll?.block_number]);
+
+  useEffect(() => {
+    const invokeCastVote = async () => {
+      if (isSuccess && data !== undefined && selectedOption && poll?.id && account) {
         const voteData = {
-          poll_id: poll?.id,
-          option_id: optionId, // FIXME: Add optionId
+          poll_id: poll.id,
+          option_id: selectedOption, // Assuming `selectedOption` is correctly set when an option is selected
           voter_identifier: account,
-          requiredCred,// FIXME: Add requiredCre
           signature: data,
         };
         console.log(voteData, 'voteData');
-        const response = await castVote(voteData as VoteRequestData);
-        console.log(response, 'response');
-        toast({
-          title: 'Vote cast successfully',
-        });
-        await fetchPollFromApi(id);
+        try {
+          const response = await castVote(voteData as VoteRequestData);
+          console.log(response, 'response');
+          toast({
+            title: 'Vote cast successfully',
+          });
+          await fetchPollFromApi(id);
+        } catch (error) {
+          console.error('Error casting vote:', error);
+        }
       }
-    }
-  }, [isSuccess, data]);*/
+    };
+    invokeCastVote();
+  }, [isSuccess, data, selectedOption, poll?.id, account]);
 
   useEffect(() => {
     console.log('account changed');
     setSelectedOption(null);
     if (isValidUuidV4(id as string)) {
       fetchPollFromApi(id);
-      if (credentialId == '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2') {
+      if (credentialId == CREDENTIALS.GitcoinPassport.id) {
         const fetchNewScore = async () => {
+          // FIXME: SHOULD THIS SCORE ID BE HARDCODED HERE?
           let fetchScoreData = { address: account as string, scorerId: '6347' };
           try {
             let scoreResponse = await fetchScore(fetchScoreData);
@@ -118,11 +130,8 @@ const PollPage = () => {
       } else if (credentialId == CREDENTIALS.POAPSVerification.id) {
         const fetchNewNumber = async () => {
           try {
-            // TODO: Replace ethers with wagmi.
-            // ref: https://wagmi.sh/core/api/actions/readContract
             // TODO: Replace hardcoded URL with dynamic.
-            const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
-            //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
+            const provider = new ethers.JsonRpcProvider(providerUrl);
             const contract = new ethers.Contract(
               CREDENTIALS.POAPSVerification.contract,
               contractABI,
@@ -150,14 +159,14 @@ const PollPage = () => {
     const balanceInEth = ethers.formatEther(userBalance); // ethers.js returns balances in wei, convert it to ether
     console.log(`Balance at block ${blockNumber}: ${balanceInEth} ETH`);
 
-    setUserEthHolding(parseFloat(balanceInEth).toFixed(4));
+    setUserEthHolding(parseFloat(balanceInEth).toFixed(2));
   };
 
   const fetchPollFromApi = async (pollId: string | string[] | undefined) => {
     try {
       const response = await fetchPollById(pollId as string);
       const data = await response.data;
-      console.log(data, 'pollData');
+      console.log('pollData:', data);
       setPoll(data);
       setOptions(data.options);
       const newCredentialId = data.credentials?.[0]?.id || '';
@@ -205,21 +214,15 @@ const PollPage = () => {
         setCredentialId(newCredentialId);
         console.log('credential ID', newCredentialId);
       }
-      //console.log(pollIsLive, 'live');
     } catch (error) {
       console.error('Error fetching poll from API:', error);
     }
   };
   const fetchPollFromContract = async () => {
     if (id) {
-      //let provider = new ethers.BrowserProvider(window.ethereum as any);
-      //let signer = await provider.getSigner();
-      //const contract = new ethers.Contract(contractAddress, contractAbi, signer);
       console.log('fetching', id)
       try {
-        const provider = new ethers.JsonRpcProvider(
-          'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
-        );
+        const provider = new ethers.JsonRpcProvider(providerUrl);
         const contract = new ethers.Contract(
           CONTRACT_ADDRESS,
           contractAbi,
@@ -228,12 +231,10 @@ const PollPage = () => {
         setPollContract(contract);
         if (contract !== null) {
           const pollData = await contract.getPoll(id);
-          // console.log(contract);
           console.log(pollData, 'pollData');
 
           setPoll(pollData);
-          setPollType(pollData.pollType);
-          //pollType = pollData.pollType;
+          const pollType = pollData.pollType;
           if (pollType) { console.log(pollType.toString(), 'poll_type123'); } else { console.log('no poll type'); }
           let startdate = new Date(Number(pollData.startTime) * 1000);
           console.log(startdate, 'start time', pollData.endTime, 'end time');
@@ -243,7 +244,7 @@ const PollPage = () => {
             settimeRemaining(timeleft);
             console.log(timeleft, 'time left');
           }
-          const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
+          const provider = new ethers.JsonRpcProvider(providerUrl);
           const newOptions: PollOptionType[] = [];
           console.log(pollData.options, 'poll.options');
           const optionContractAbi = VotingOption.abi;
@@ -342,7 +343,7 @@ const PollPage = () => {
   ) => {
     const pollId = poll?.id as string;
     try {
-      const newMessage = generateMessage(pollId, optionId, account as string, requiredCred);
+      const newMessage = generateMessage(pollId, optionId, account as string);
       if (account === null) return;
       setMessage(newMessage);
       signMessage();
@@ -357,6 +358,7 @@ const PollPage = () => {
   };
 
   const handleVote = async (optionId: string) => {
+    setSelectedOption(optionId);
     if (!localStorage.getItem('userUniqueId')) {
       const uniqueId = uuidv4();
       localStorage.setItem('userUniqueId', uniqueId);
@@ -454,7 +456,14 @@ const PollPage = () => {
         return;
       }
 
-      // TODO: Check if address has Ether?
+      if (parseInt(userEthHolding) === 0) {
+        toast({
+          title: 'Error',
+          description: 'You need to own some ETH to vote',
+          variant: 'destructive',
+        });
+        return;
+      }
 
       await handleCastVoteSigned(optionId, CREDENTIALS.EthHoldingOffchain.id);
     }
@@ -465,10 +474,7 @@ const PollPage = () => {
         return;
       }
       try {
-        const provider = new ethers.JsonRpcProvider(
-          'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
-        );
-        //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
+        const provider = new ethers.JsonRpcProvider(providerUrl);
         const contract = new ethers.Contract(
           CREDENTIALS.POAPSVerification.contract,
           contractABI,
@@ -644,7 +650,7 @@ const PollPage = () => {
                     borderRadius: 100,
                   }}
                 />
-                <span>{userEthHolding} ETH</span>
+                <span>Hold ETH (Voting power: {userEthHolding} ETH)</span>
                 <div style={{ marginLeft: 10 }}><EthIcon /></div>
               </div>
             )}

@@ -105,7 +105,7 @@ export interface ProcessVoteInput {
   vote_hash: string;
   poll_id: string;
   option_id: string;
-  eth_count?: string;
+  weight?: string;
 }
 
 interface PollData {
@@ -119,10 +119,9 @@ export interface CheckPOAPOwnershipInput {
 
 
 export interface VerifySignatureInput {
-  pollId: string;
+  poll_id: string;
   option_id: string;
   voter_identifier: string;
-  requiredCred: string;
   signature: string;
 }
 
@@ -151,7 +150,6 @@ export type PollRequestData = {
   title: string;
   description: string;
   time_limit: number;
-  votingMethod: string;
   options: OptionData[];
   credentials: string[];
   poap_events: number[];
