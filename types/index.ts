@@ -24,10 +24,15 @@ export type CredentialType = {
 
 export type PollOptionType = {
   id: string;
-  option_description: string;
   pollId: string;
-  totalWeight: number;
-  votes: number;
+  totalWeight?: number;
+  votes?: number;
+  option_description: string;
+  votersCount?: number;
+  totalEth?: string;
+  votersData?: any;
+  address?: string;
+  optionindex?: number;
 }
 
 export type PollType = {

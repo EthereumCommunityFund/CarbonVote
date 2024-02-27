@@ -17,19 +17,22 @@ import {
 import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
 import { useAccount, useConnect, useSignMessage } from 'wagmi';
-import { ethers } from 'ethers';
+import { Contract, ethers } from 'ethers';
 import contractABI from '@/carbonvote-contracts/deployment/contracts/poapsverification.json';
-import { calculateTimeRemaining, convertOptionsToPollOptions } from '@/utils/index';
+import { calculateTimeRemaining } from '@/utils/index';
 import { v4 as uuidv4 } from 'uuid';
 import PoapDetails from '@/components/POAPDetails';
 import { fetchScore } from '@/controllers';
 import { Loader } from '@/components/ui/Loader';
 import PieChartComponent from '@/components/ui/PieChart';
 import { PollOptionType, Poll, PollTypes } from '@/types';
-import { CREDENTIALS } from '@/src/constants';
+import { CREDENTIALS, CONTRACT_ADDRESS } from '@/src/constants';
 import { PollResultComponent } from '@/components/PollResult';
 import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock'
 import { generateMessage } from '@/utils/generateMessage'
+import VotingContract from '../../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
+import VotingOption from '../../carbonvote-contracts/deployment/contracts/VotingOption.sol/VotingOption.json';
+
 
 const PollPage = () => {
   const router = useRouter();
@@ -53,6 +56,9 @@ const PollPage = () => {
   const [poapsNumber, setPoapsNumber] = useState('0');
   const [eventDetails, setEventDetails] = useState<any[]>([]);
   const [message, setMessage] = useState('');
+  const contractAbi = VotingContract.abi;
+  const [pollContract, setPollContract] = useState<Contract | null>(null);
+  const [pollType, setPollType] = useState<string | number>();
   const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
     message,
   });
@@ -60,12 +66,17 @@ const PollPage = () => {
   console.log("🚀 ~ PollPage ~ data:", data)
   useEffect(() => {
     if (id !== undefined) {
-      fetchPollFromApi(id);
-      getEthHoldings();
+      if (isValidUuidV4(id as string)) {
+        fetchPollFromApi(id);
+        getEthHoldings();
+      }
+      else {
+        fetchPollFromContract()
+      }
     }
   }, [id]);
 
-  useEffect(() => {
+  /*useEffect(() => {
     async () => {
       if (isSuccess && data !== undefined) {
         const voteData = {
@@ -84,49 +95,55 @@ const PollPage = () => {
         await fetchPollFromApi(id);
       }
     }
-  }, [isSuccess, data]);
+  }, [isSuccess, data]);*/
 
   useEffect(() => {
     console.log('account changed');
     setSelectedOption(null);
-    fetchPollFromApi(id);
-    if (credentialId == '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2') {
-      const fetchNewScore = async () => {
-        let fetchScoreData = { address: account as string, scorerId: '6347' };
-        try {
-          let scoreResponse = await fetchScore(fetchScoreData);
-          let scoreData = scoreResponse.data;
-          console.log(scoreData.score.toString(), 'score');
-          setScore(scoreData.score.toString());
-        } catch (error) {
-          console.error('Error fetching score:', error);
-        }
-      };
-      fetchNewScore();
-    } else if (credentialId == CREDENTIALS.POAPSVerification.id) {
-      const fetchNewNumber = async () => {
-        try {
-          // TODO: Replace ethers with wagmi.
-          // ref: https://wagmi.sh/core/api/actions/readContract
-          // TODO: Replace hardcoded URL with dynamic.
-          const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
-          //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
-          const contract = new ethers.Contract(
-            CREDENTIALS.POAPSVerification.contract,
-            contractABI,
-            provider
-          );
-          const events = await contract.getEventCountForCollection(account);
+    if (isValidUuidV4(id as string)) {
+      fetchPollFromApi(id);
+      if (credentialId == '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2') {
+        const fetchNewScore = async () => {
+          let fetchScoreData = { address: account as string, scorerId: '6347' };
+          try {
+            let scoreResponse = await fetchScore(fetchScoreData);
+            let scoreData = scoreResponse.data;
+            console.log(scoreData.score.toString(), 'score');
+            setScore(scoreData.score.toString());
+          } catch (error) {
+            console.error('Error fetching score:', error);
+          }
+        };
+        fetchNewScore();
+      } else if (credentialId == CREDENTIALS.POAPSVerification.id) {
+        const fetchNewNumber = async () => {
+          try {
+            // TODO: Replace ethers with wagmi.
+            // ref: https://wagmi.sh/core/api/actions/readContract
+            // TODO: Replace hardcoded URL with dynamic.
+            const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
+            //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
+            const contract = new ethers.Contract(
+              CREDENTIALS.POAPSVerification.contract,
+              contractABI,
+              provider
+            );
+            const events = await contract.getEventCountForCollection(account);
 
-          setPoapsNumber(events.toString());
-        } catch (error) {
-          console.error('Error fetching score:', error);
-        }
-      };
-      fetchNewNumber();
+            setPoapsNumber(events.toString());
+          } catch (error) {
+            console.error('Error fetching score:', error);
+          }
+        };
+        fetchNewNumber();
+      }
     }
   }, [account]);
 
+  const isValidUuidV4 = (uuid: string): boolean => {
+    const uuidV4Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidV4Pattern.test(uuid);
+  };
   const getEthHoldings = async () => {
     const blockNumber = poll?.block_number ?? 0;
     const userBalance = await getBalanceAtBlock(account as string, blockNumber);
@@ -193,7 +210,82 @@ const PollPage = () => {
       console.error('Error fetching poll from API:', error);
     }
   };
+  const fetchPollFromContract = async () => {
+    if (id) {
+      //let provider = new ethers.BrowserProvider(window.ethereum as any);
+      //let signer = await provider.getSigner();
+      //const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+      console.log('fetching', id)
+      try {
+        const provider = new ethers.JsonRpcProvider(
+          'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
+        );
+        const contract = new ethers.Contract(
+          CONTRACT_ADDRESS,
+          contractAbi,
+          provider
+        );
+        setPollContract(contract);
+        if (contract !== null) {
+          const pollData = await contract.getPoll(id);
+          // console.log(contract);
+          console.log(pollData, 'pollData');
 
+          setPoll(pollData);
+          setPollType(pollData.pollType);
+          //pollType = pollData.pollType;
+          if (pollType) { console.log(pollType.toString(), 'poll_type123'); } else { console.log('no poll type'); }
+          let startdate = new Date(Number(pollData.startTime) * 1000);
+          console.log(startdate, 'start time', pollData.endTime, 'end time');
+          const timeleft = calculateTimeRemaining(Number(pollData.endTime) * 1000);
+          if (!timeleft) { }
+          else {
+            settimeRemaining(timeleft);
+            console.log(timeleft, 'time left');
+          }
+          const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
+          const newOptions: PollOptionType[] = [];
+          console.log(pollData.options, 'poll.options');
+          const optionContractAbi = VotingOption.abi;
+          for (const address of pollData.options) {
+            const contract = new ethers.Contract(address, optionContractAbi, provider);
+            // console.log(contract, 'contract');
+
+            try {
+              const optionName = await contract.name();
+              const index = await contract.option_index();
+              console.log(index, 'index');
+              //optionNames.push(optionName);
+              newOptions.push({
+                id: index,
+                pollId: id as string,
+                option_description: optionName,
+                address: address,
+                votersCount: 0,
+                totalEth: '0',
+                votersData: [],
+                optionindex: Number(index)
+              });
+              newOptions.sort((a, b) => {
+                if (typeof a.optionindex === 'number' && typeof b.optionindex === 'number') {
+                  return a.optionindex - b.optionindex;
+                }
+                return 0;
+              });
+
+            } catch (error) {
+              console.error('Error fetching options:', error);
+            }
+          }
+          setOptions(newOptions);
+        } else {
+          console.log('Poll contract not existe');
+        }
+      } catch (error) {
+        console.error('Error fetching poll:', error);
+      }
+    }
+  };
   const getRequirement = () => {
     const current = Object.values(CREDENTIALS).find(
       (credential) => credential.id === id
@@ -203,12 +295,12 @@ const PollPage = () => {
 
   const warnAndConnect = () => {
     console.error(
-      'You need to connect to Metamask to get this information, please try again'
+      'You need to connect to Wallet to get this information, please try again'
     );
     toast({
       title: 'Error',
       description:
-        'You need to connect to Metamask to get this information, please try again',
+        'You need to connect to Wallet to get this information, please try again',
       variant: 'destructive',
     });
     connect();
@@ -452,7 +544,7 @@ const PollPage = () => {
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-black/60 text-base">Motion: </Label>
-            <Label className="text-2xl">{poll?.title}</Label>
+            <Label className="text-2xl">{poll?.title || poll?.name}</Label>
           </div>
           <div className="flex justify-end pb-5 border-b border-black/30">
             {/* <Label>by: {mockPoll.creator}</Label> */}
