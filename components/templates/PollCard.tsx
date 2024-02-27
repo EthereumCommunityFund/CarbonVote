@@ -54,10 +54,10 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
     // Update path if the voting method is 'ethholding' for contract polls
     console.log(polltype, 'poll type');
     const biginteth = BigInt(1);
-    if (votingMethod === 'EthHolding' || (polltype && polltype.toString() == '1')) {
+    /*if (votingMethod === 'EthHolding' || (polltype && polltype.toString() == '1')) {
       path = '/contract-poll';
-    }
-    const pollId = votingMethod === 'headCount' ? poll.id : id;
+    }*/
+    const pollId = id;
     // Navigate to the appropriate path with the poll ID
     router.push({
       pathname: path,

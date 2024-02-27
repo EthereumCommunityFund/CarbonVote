@@ -31,9 +31,14 @@ import { PollOptionType, Option } from "@/types";
 
   return `${days} days ${hours} hours ${minutes} mins and ${seconds} seconds remaining`;
 };*/
-export const calculateTimeRemaining = (endDate: number): string | null => {
+export const calculateTimeRemaining = (endDate: number | BigInt): string | null => {
+  let endTime: Date;
+  if (typeof endDate === 'bigint') {
+    endTime = new Date(Number(endDate));
+  } else {
+    endTime = new Date(endDate as number);
+  }
 
-  let endTime = new Date(endDate);
 
   if (!endTime) {
     return null;
@@ -101,7 +106,7 @@ export const convertToHoursAndMinutesToSeconds = (timeLimitString: string): numb
   return seconds;
 };
 
-export const convertOptionsToPollOptions = (options: Option[]): PollOptionType[] => {
+/*export const convertOptionsToPollOptions = (options: Option[]): PollOptionType[] => {
   return options.map((option, index) => {
     // You may need to generate unique IDs based on your requirements
     const id = `option_${index + 1}`;
@@ -114,4 +119,4 @@ export const convertOptionsToPollOptions = (options: Option[]): PollOptionType[]
       votes: Number(option.totalEth), // Assuming initial votes count is 0, adjust accordingly
     };
   });
-};
+};*/

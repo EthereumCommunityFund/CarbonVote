@@ -11,7 +11,7 @@ import VotingContract from '../../carbonvote-contracts/deployment/contracts/Vote
 import VotingOption from '../../carbonvote-contracts/deployment/contracts/VotingOption.sol/VotingOption.json';
 import OptionButton from '@/components/ui/buttons/OptionButton';
 import { toast } from '@/components/ui/use-toast';
-import { calculateTimeRemaining, convertOptionsToPollOptions } from '@/utils/index';
+import { calculateTimeRemaining, } from '@/utils/index';
 import { Loader } from '@/components/ui/Loader';
 import { useUserPassportContext } from '@/context/PassportContext';
 import PieChartComponent from '@/components/ui/PieChart';
@@ -378,7 +378,7 @@ const PollPage = () => {
             </Label>
           </div>
         </div>
-        <PollResultComponent pollType={PollTypes.ETH_HOLDING} optionsData={convertOptionsToPollOptions(optionsData)} />
+        {/*<PollResultComponent pollType={PollTypes.ETH_HOLDING} optionsData={convertOptionsToPollOptions(optionsData)} />*/}
       </div>
     </div>
   );

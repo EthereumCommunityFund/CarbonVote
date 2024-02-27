@@ -16,13 +16,14 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@ceramicnetwork/http-client": "^5.1.0",
+    "@ceramicnetwork/stream-tile": "^5.1.0",
+    "@ceramicstudio/idx": "^0.12.2",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
     "@headlessui/react": "^1.7.18",
     "@mui/material": "^5.15.10",
     "@mui/x-date-pickers": "^6.19.4",
-    "@ceramicnetwork/http-client": "^5.1.0",
-    "@ceramicstudio/idx": "^0.12.2",
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "@openzeppelin/contracts-upgradeable": "^5.0.1",
     "@pcd/email-pcd": "^0.3.0",

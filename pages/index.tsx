@@ -24,6 +24,7 @@ interface Poll {
   time_limit: number;
   startTime: number;
   id: string;
+  contractpoll_index?: number[];
 }
 
 export default function Home() {
@@ -52,10 +53,10 @@ export default function Home() {
     const { names, descriptions, options, endTimes, pollTypes, pollMetadatas, startTimes } = await contract.getAllPolls();
     const polls = names.map((name: any, index: string | number) => {
       const pollType = pollTypes[index];
-      const votingMethod = pollType.toString() == '0' ? 'EthHolding' : 'HeadCounting';
+      const votingMethod = 'EthHolding';
       return {
         name,
-        id: index, //add id for ethholding polls so there will not have redirection problems
+        id: String(index), //add id for ethholding polls so there will not have redirection problems
         description: descriptions[index],
         options: options[index],
         endTime: Number(endTimes[index]) * 1000,
@@ -71,9 +72,13 @@ export default function Home() {
   const fetchPolls = async () => {
     const pollsFromContract = await fetchPollsFromContract();
     const { data: pollsFromAPI } = await fetchAllPollsFromAPI();
-    // TODO: Improve sorting to show most relevant Polls first
-    // Combine and sort the polls based on endTime
-    return [...pollsFromContract, ...pollsFromAPI].sort((a, b) => {
+    const indexesFromAPI = pollsFromAPI.flatMap((poll: Poll) => poll.contractpoll_index || []);
+    const indexesFromAPIAsString = indexesFromAPI.map((index: number) => index.toString());
+    const filteredPollsFromContract = pollsFromContract.filter(
+      (poll: Poll) => !indexesFromAPIAsString.includes(poll.id)
+    );
+
+    return [...filteredPollsFromContract, ...pollsFromAPI].sort((a: Poll, b: Poll) => {
       return b.startTime - a.startTime;
     });
   };
