@@ -11,11 +11,12 @@ import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 
 const envChains: any = process.env.NODE_ENV === 'production' ? [mainnet] : [sepolia];
+const alchemyApi: any = process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_ALCHEMY_ID : process.env.NEXT_PUBLIC_ALCHEMY_ID_SEPOLIA;
 
 const { chains, publicClient } = configureChains(
   envChains,
   [
-    alchemyProvider({ apiKey: process.env.ALCHEMY_ID ?? "" }),
+    alchemyProvider({ apiKey: alchemyApi ?? "" }),
     publicProvider()
   ]
 );

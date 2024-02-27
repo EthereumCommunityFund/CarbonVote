@@ -1,5 +1,6 @@
+'use client'
 import { useEffect, useState } from 'react';
-import { ArrowLeftIcon } from '@/components/icons';
+import { ArrowLeftIcon, EthIcon } from '@/components/icons';
 import { ClockIcon } from '@/components/icons/clock';
 import Button from '@/components/ui/buttons/Button';
 import CountdownTimer from '@/components/ui/CountDownTimer';
@@ -27,6 +28,8 @@ import PieChartComponent from '@/components/ui/PieChart';
 import { PollOptionType, Poll, PollTypes } from '@/types';
 import { CREDENTIALS } from '@/src/constants';
 import { PollResultComponent } from '@/components/PollResult';
+import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock'
+import { generateMessage } from '@/utils/generateMessage'
 
 const PollPage = () => {
   const router = useRouter();
@@ -43,6 +46,7 @@ const PollPage = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [options, setOptions] = useState<PollOptionType[]>([]);
   const [credentialId, setCredentialId] = useState('');
+  const [userEthHolding, setUserEthHolding] = useState('0');
   const [score, setScore] = useState('0');
   const [remainingTime, settimeRemaining] = useState('');
   const [startDate, setstartDate] = useState<Date>();
@@ -53,9 +57,34 @@ const PollPage = () => {
     message,
   });
 
+  console.log("🚀 ~ PollPage ~ data:", data)
   useEffect(() => {
-    fetchPollFromApi(id);
+    if (id !== undefined) {
+      fetchPollFromApi(id);
+      getEthHoldings();
+    }
   }, [id]);
+
+  useEffect(() => {
+    async () => {
+      if (isSuccess && data !== undefined) {
+        const voteData = {
+          poll_id: poll?.id,
+          option_id: optionId, // FIXME: Add optionId
+          voter_identifier: account,
+          requiredCred,// FIXME: Add requiredCre
+          signature: data,
+        };
+        console.log(voteData, 'voteData');
+        const response = await castVote(voteData as VoteRequestData);
+        console.log(response, 'response');
+        toast({
+          title: 'Vote cast successfully',
+        });
+        await fetchPollFromApi(id);
+      }
+    }
+  }, [isSuccess, data]);
 
   useEffect(() => {
     console.log('account changed');
@@ -98,13 +127,21 @@ const PollPage = () => {
     }
   }, [account]);
 
+  const getEthHoldings = async () => {
+    const blockNumber = poll?.block_number ?? 0;
+    const userBalance = await getBalanceAtBlock(account as string, blockNumber);
+    const balanceInEth = ethers.formatEther(userBalance); // ethers.js returns balances in wei, convert it to ether
+    console.log(`Balance at block ${blockNumber}: ${balanceInEth} ETH`);
+
+    setUserEthHolding(parseFloat(balanceInEth).toFixed(4));
+  };
+
   const fetchPollFromApi = async (pollId: string | string[] | undefined) => {
     try {
       const response = await fetchPollById(pollId as string);
       const data = await response.data;
       console.log(data, 'pollData');
       setPoll(data);
-      console.log(poll?.poap_events.length, 'poll?.poap_events');
       setOptions(data.options);
       const newCredentialId = data.credentials?.[0]?.id || '';
       let identifier: string | null = null;
@@ -211,31 +248,16 @@ const PollPage = () => {
     optionId: string,
     requiredCred: string
   ) => {
-    const pollId = poll?.id;
+    const pollId = poll?.id as string;
     try {
-      const newMessage = `{ poll_id: ${pollId}, option_id: ${optionId}, voter_identifier: ${account}, requiredCred: ${requiredCred}`;
-
+      const newMessage = generateMessage(pollId, optionId, account as string, requiredCred);
       if (account === null) return;
       setMessage(newMessage);
-      const signature = await signMessage();
-
-      console.log('🚀 ~ handleCastVoteSigned ~ signature:', signature);
-      if (isSuccess) {
-        const voteData = {
-          poll_id: pollId,
-          option_id: optionId,
-          voter_identifier: account,
-          requiredCred,
-          signature,
-        };
-        console.log(voteData, 'voteData');
-        const response = await castVote(voteData as VoteRequestData);
-        console.log(response, 'response');
-        toast({
-          title: 'Vote cast successfully',
-        });
-        await fetchPollFromApi(id);
-      }
+      signMessage();
+      // 
+      // TODO: We need to sign the message and submit. Wait until isSuccess === true and send the transaction
+      // For this we need to save the data
+      // 
     } catch (error) {
       console.error('Error signing vote:', error);
       return;
@@ -508,6 +530,33 @@ const PollPage = () => {
               })()}
             </Label>
             <Label className="text-1xl">Requirements:</Label>
+
+            {poll?.block_number !== undefined && (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  border: '1px solid #ccc',
+                  borderRadius: '9999px',
+                  padding: '4px 8px',
+                  margin: '4px',
+                }}
+              >
+                <img
+                  src={'/images/carbonvote.png'}
+                  alt="Requirement image"
+                  style={{
+                    width: '30px',
+                    height: '30px',
+                    marginRight: '8px',
+                    borderRadius: 100,
+                  }}
+                />
+                <span>{userEthHolding} ETH</span>
+                <div style={{ marginLeft: 10 }}><EthIcon /></div>
+              </div>
+            )}
+
             <div>
               <div
                 style={{

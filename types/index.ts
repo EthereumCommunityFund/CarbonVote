@@ -100,6 +100,7 @@ export interface ProcessVoteInput {
   vote_hash: string;
   poll_id: string;
   option_id: string;
+  eth_count?: string;
 }
 
 interface PollData {

@@ -117,7 +117,6 @@ const CreatePollPage = () => {
 
   const endDate = new Date(String(endDateTime));
   const durationInSeconds = Math.round((endDate.getTime() - Date.now()) / 1000);
-  console.log(durationInSeconds, 'endDate');
   const currentSeconds = (Date.now() / 1000) + 60; //time now plus 1 minute
 
   const addOption = () => {

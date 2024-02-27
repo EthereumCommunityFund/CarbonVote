@@ -8,6 +8,7 @@ import { CREDENTIALS } from '@/src/constants';
 import { VerifySignatureInput, CheckPOAPOwnershipInput, ProcessVoteInput } from '@/types'
 import { storeVote, checkNullifier, generateNullifier } from '@/utils/ceramicHelpers'
 import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock'
+import { generateMessage } from '@/utils/generateMessage'
 
 const poapApiKey = process.env.POAP_API_KEY ?? "";
 
@@ -22,16 +23,18 @@ async function validateRequest(req: NextApiRequest) {
     }
 }
 
-async function verifySignature({ pollId, option_id, voter_identifier, requiredCred, signature }: VerifySignatureInput): Promise<void> {
-    if (requiredCred === CREDENTIALS.GitcoinPassport.id || requiredCred === CREDENTIALS.POAPapi.id || requiredCred === CREDENTIALS.ProtocolGuildMember.id || requiredCred === CREDENTIALS.EthHoldingOffchain.id) {
-        const message = `{ poll_id: ${pollId}, option_id: ${option_id}, voter_identifier: ${voter_identifier}, requiredCred: ${requiredCred}`;
-        const signerAddress = verifyMessage(message, signature);
+async function verifySignature({ pollId, option_id, voter_identifier, requiredCred, signature }: VerifySignatureInput): Promise<string | undefined> {
+    let signerAddress;
+    const message = generateMessage(pollId, option_id, voter_identifier, requiredCred);
+    console.log("🚀 ~ verifySignature ~ signature:", signature)
+    console.log("🚀 ~ verifySignature ~ message:", message)
+    signerAddress = verifyMessage(message, signature);
 
-        if (signerAddress !== voter_identifier) {
-            throw new Error("Signature doesn't correspond with address.");
-        }
+    if (signerAddress !== voter_identifier) {
+        throw new Error("Signature doesn't correspond with address.");
     }
     // Additional verification logic for other credentials can be added here
+    return signerAddress;
 }
 
 async function checkPOAPOwnership({ pollData, voter_identifier }: CheckPOAPOwnershipInput): Promise<void> {
@@ -87,16 +90,16 @@ async function processVote({ vote_hash, poll_id, option_id, eth_count }: Process
     }
 
     // // Insert the new vote
-    // const { error: insertError } = await supabase
-    //     .from('votes')
-    //     .insert([{
-    //         id: uuidv4(),
-    //         option_id,
-    //         vote_hash,
-    //         poll_id,
-    //         cast_at: new Date(),
-    //         eth_count
-    //     }]);
+    const { error: insertError } = await supabase
+        .from('votes')
+        .insert([{
+            id: uuidv4(),
+            option_id,
+            vote_hash,
+            poll_id,
+            cast_at: new Date(),
+            eth_count
+        }]);
 
     // if (insertError) throw insertError;
 
@@ -109,12 +112,18 @@ async function processVote({ vote_hash, poll_id, option_id, eth_count }: Process
 
 const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
     let ethCount;
+    let signerAddress;
     try {
         await validateRequest(req);
         const { pollId, option_id, voter_identifier, poll_id, requiredCred, signature } = req.body;
 
-        await verifySignature({ pollId, option_id, voter_identifier, requiredCred, signature });
+        if (requiredCred === CREDENTIALS.GitcoinPassport.id || requiredCred === CREDENTIALS.POAPapi.id || requiredCred === CREDENTIALS.ProtocolGuildMember.id || requiredCred === CREDENTIALS.EthHoldingOffchain.id) {
+            signerAddress = await verifySignature({ pollId, option_id, voter_identifier, requiredCred, signature });
 
+            if (signerAddress === undefined) {
+                res.status(401).json({ error: 'Signer not verified' });
+            }
+        }
         const voteData = req.body;
 
         const { data: pollData } = await supabase
@@ -130,7 +139,9 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
         // EthHolding count
         if (requiredCred === CREDENTIALS.EthHoldingOffchain.id) {
             const blockNumber = pollData.block_number;
-            const ethCount = await getBalanceAtBlock(voter_identifier, blockNumber);
+            if (signerAddress) {
+                ethCount = await getBalanceAtBlock(signerAddress, blockNumber);
+            }
         }
 
         console.log('voter_identifier', voter_identifier);
