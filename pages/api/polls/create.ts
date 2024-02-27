@@ -12,18 +12,19 @@ const createPoll = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const { value, error } = pollSchema.validate(req.body);
     if (error) {
+        console.log('error validating');
         res.status(400).json({ error: error.details[0].message });
         return;
     }
 
-    let { title, description, time_limit, votingMethod, options, credentials, poap_events } = value
+    let { title, description, time_limit, votingMethod, options, credentials, poap_events, poap_number, gitcoin_score, contractpoll_index } = value
 
 
     try {
         const block_number = await getLatestBlockNumber();
         const { data, error: pollError } = await supabase
             .from('polls')
-            .insert([{ title, description, time_limit, votingMethod, poap_events, block_number }])
+            .insert([{ title, description, time_limit, votingMethod, poap_events, block_number, poap_number, gitcoin_score, contractpoll_index }])
             .select("*");
 
 

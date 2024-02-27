@@ -75,8 +75,6 @@ const CreatePollPage = () => {
   const [zupassEnabled, setZupassEnabled] = useState(false);
   const [protocolGuildMemberEnabled, setProtocolGuildMemberEnabled] = useState(false);
   const [gitcoinPassport, setGitcoinPassport] = useState(false);
-
-  // TODO: Check if more than one is selected and enable showNestedInfoDiv
   const [showNestedInfoDiv, setShowNestedInfoDiv] = useState(false);
 
   // Check if all toggles are true or false
@@ -109,8 +107,16 @@ const CreatePollPage = () => {
     resetFormStore();
   }, []);
 
+  useEffect(() => {
+    const trueCount = [ethHolding, poapsEnabled, zupassEnabled, protocolGuildMemberEnabled, gitcoinPassport].filter(Boolean).length;
+
+    if (trueCount >= 2) {
+      setShowNestedInfoDiv(true);
+    }
+  }, [ethHolding, poapsEnabled, zupassEnabled, protocolGuildMemberEnabled, gitcoinPassport]);
+
   const endDate = new Date(String(endDateTime));
-  const durationInSeconds = endDate.getTime() / 1000;
+  const durationInSeconds = Math.round((endDate.getTime() - Date.now()) / 1000);
   console.log(durationInSeconds, 'endDate');
   const currentSeconds = (Date.now() / 1000) + 60; //time now plus 1 minute
 
@@ -122,45 +128,6 @@ const CreatePollPage = () => {
   const removeOption = (index: number) => {
     setOptions(options.filter((_, i) => i !== index));
   };
-
-  const handleOffchainCreatePoll = async (credential: string) => {
-
-    if (!motionTitle || !credential) return;
-
-    const pollData = {
-      title: motionTitle,
-      description: motionDescription,
-      time_limit: durationInSeconds,
-      votingMethod: 'headCount',
-      options: options
-        .map((option) => ({ option_description: option.name })),
-      credentials: [credential],
-      poap_events: selectedPOAPEvents.map((event) => event.id),
-      endDateTime: endDateTime,
-    };
-
-    try {
-      console.log('Creating poll...', pollData);
-
-      const response = await createPoll(pollData);
-
-      console.log('Poll created successfully', response);
-      toast({
-        title: 'Poll created successfully',
-      });
-      resetFormStore();
-      router.push('/').then(() => window.location.reload());
-    } catch (error) {
-      console.error('Error creating poll:', error);
-      setIsLoading(false);
-      resetFormStore();
-      toast({
-        title: 'Error',
-        description: 'Failed to create poll',
-        variant: 'destructive',
-      });
-    }
-  }
 
   const createNewPoll = async () => {
     setIsLoading(true);
@@ -174,7 +141,7 @@ const CreatePollPage = () => {
       return;
     }
 
-    if (durationInSeconds < currentSeconds) {
+    if (endDate.getTime() / 1000 < currentSeconds) {
       toast({
         title: 'Error',
         description: "The end time cannot be earlier than the current time.",
@@ -213,102 +180,148 @@ const CreatePollPage = () => {
     console.log('Option Names:', optionNames);
     console.log('Poll Metadata:', pollMetadata);
 
+    let credentialsTable: string[] = [];
+    let indexTable: number[] = [];
     // ethHolding
     if (ethHolding) {
-      if (selectedProtocolGuildOption === 'off-chain') {
-        handleOffchainCreatePoll(CREDENTIALS.EthHoldingOffchain.id)
+      if (selectedEthHoldingOption === 'on-chain') {
+        if (!isConnected) {
+          console.error('You need to connect to Wallet to create, please try again');
+          toast({
+            title: 'Error',
+            description: 'You need to connect to Wallet to create, please try again',
+            variant: 'destructive',
+          });
+          setIsLoading(false)
+          connect();
+          return;
+        }
+        const contractPollIndexEth = await contractPollCreation(0);
+        indexTable.push(contractPollIndexEth as number);
       } else {
-        // TODO: contract based poll
+        credentialsTable.push(CREDENTIALS.EthHoldingOffchain.id)
+      }
+    }
+
+    // Protocol Guild
+    if (protocolGuildMemberEnabled) {
+      if (selectedProtocolGuildOption === 'on-chain') {
+        if (!isConnected) {
+          console.error('You need to connect to Wallet to create, please try again');
+          toast({
+            title: 'Error',
+            description: 'You need to connect to Wallet to create, please try again',
+            variant: 'destructive',
+          });
+          setIsLoading(false)
+          connect();
+          return;
+        }
+        const contractPollIndexPro = await contractPollCreation(1);
+        indexTable.push(contractPollIndexPro as number);
+      }
+      else {
+        credentialsTable.push(CREDENTIALS.ProtocolGuildMember.id)
       }
     }
 
     // poapsEnabled
     if (poapsEnabled) {
-      handleOffchainCreatePoll(CREDENTIALS.POAPapi.id)
+      credentialsTable.push(CREDENTIALS.POAPapi.id)
     }
 
     // zupassEnabled
+    console.log(zupassCredential);
     if (zupassEnabled) {
-
+      if (zupassCredential.includes('Zuzalu')) { credentialsTable.push(CREDENTIALS.ZuzaluResident.id) };
+      if (zupassCredential.includes('Zuconnect')) { credentialsTable.push(CREDENTIALS.ZuConnectResident.id) };
+      if (zupassCredential.includes('Devconnect')) { credentialsTable.push(CREDENTIALS.DevConnect.id) }
     }
 
-    // Protocol Guild
-    if (protocolGuildMemberEnabled) {
-      // TODO: Add offchain/onchain if/else using 'selectedProtocolGuildOption'
-      if (selectedProtocolGuildOption === 'off-chain') {
-        handleOffchainCreatePoll(CREDENTIALS.ProtocolGuildMember.id)
+    // gitcoinEnabled
+    if (gitcoinPassport) {
+      credentialsTable.push(CREDENTIALS.GitcoinPassport.id)
+    }
 
-      } else {
-        // TODO: contract based poll
+    console.log(indexTable, 'indextable');
+    const pollData = {
+      title: motionTitle,
+      description: motionDescription,
+      time_limit: durationInSeconds,
+      votingMethod: 'headCount',
+      options: options
+        .map((option) => ({ option_description: option.name })),
+      credentials: credentialsTable,
+      poap_events: selectedPOAPEvents.map((event) => event.id),
+      poap_number: POAPNumber,
+      gitcoin_score: gitcoinScore,
+      contractpoll_index: indexTable,
+    };
+
+    try {
+      console.log('Creating poll...', pollData);
+
+      const response = await createPoll(pollData);
+
+      console.log('Poll created successfully', response);
+      toast({
+        title: 'Poll created successfully',
+      });
+      resetFormStore();
+      setTimeout(() => {
+        router.push('/').then(() => window.location.reload());
+      }, 1000);
+    } catch (error) {
+      console.error('Error creating poll:', error);
+      setIsLoading(false);
+      resetFormStore();
+      toast({
+        title: 'Error',
+        description: 'Failed to create poll',
+        variant: 'destructive',
+      });
+    }
+  };
+  const contractPollCreation = async (pollType: number) => {
+    try {
+      if (pollContract) {
+        console.log(pollType, 'poll_type');
+        const optionNames = options.map((option) => option.name);
+        const pollMetadata = 'arbitrary data';
+        const provider = new ethers.BrowserProvider(window.ethereum as any);
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, signer);
+        console.log(provider, signer, contract);
+        const network = await provider.getNetwork();
+
+        console.log('Connected to Sepolia');
+
+        const tx = await contract.createPoll(motionTitle, motionDescription, durationInSeconds, optionNames, pollType, pollMetadata);
+        await tx.wait();
+        toast({
+          title: 'On-chain poll created successfully, please wait',
+        });
+        console.log('Poll created successfully');
+
+        if ((ethHolding && !poapsEnabled && !zupassEnabled && !protocolGuildMemberEnabled && !gitcoinPassport) || (!ethHolding && !poapsEnabled && !zupassEnabled && protocolGuildMemberEnabled && !gitcoinPassport)) {
+          router.push('/').then(() => window.location.reload());
+        } else {
+          //Get created contract poll's index
+          const { names } = await contract.getAllPolls();
+          const contractPollIndex = names.length - 1;
+          return contractPollIndex;
+        }
       }
+    } catch (error: any) {
+      console.error('Error creating poll:', error);
+      setIsLoading(false);
+      resetFormStore();
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
-
-    // FIXME: Add ethholding onchain option
-    // if (XXXXXXXXXXX) {
-    //   try {
-    //     if (pollContract) {
-    //       if (!isConnected) {
-    //         console.error(
-    //           'You need to connect to Metamask to create, please try again'
-    //         );
-    //         toast({
-    //           title: 'Error',
-    //           description:
-    //             'You need to connect to Metamask to create, please try again',
-    //           variant: 'destructive',
-    //         });
-    //         setIsLoading(false);
-    //         connect();
-    //         return;
-    //       }
-    //       const provider = new ethers.BrowserProvider(window.ethereum as any);
-    //       const signer = await provider.getSigner();
-    //       const contract = new ethers.Contract(
-    //         CONTRACT_ADDRESS,
-    //         contractAbi,
-    //         signer
-    //       );
-    //       console.log(provider, signer, contract);
-    //       const network = await provider.getNetwork();
-
-    //       if (Number(network.chainId) === 11155111) {
-    //         console.log('Connected to Sepolia');
-
-    //         const tx = await contract.createPoll(
-    //           motionTitle,
-    //           motionDescription,
-    //           durationInSeconds,
-    //           optionNames,
-    //           pollMetadata
-    //         );
-    //         await tx.wait();
-    //         toast({
-    //           title: 'Poll created successfully, please wait',
-    //         });
-    //         console.log('Poll created successfully');
-    //         resetFormStore();
-    //         router.push('/').then(() => window.location.reload());
-    //       } else {
-    //         console.error('You should connect to Sepolia, please try again');
-    //         toast({
-    //           title: 'Error',
-    //           description: 'You should connect to Sepolia, please try again',
-    //           variant: 'destructive',
-    //         });
-    //         setIsLoading(false);
-    //       }
-    //     }
-    //   } catch (error: any) {
-    //     console.error('Error creating poll:', error);
-    //     setIsLoading(false);
-    //     resetFormStore();
-    //     toast({
-    //       title: 'Error',
-    //       description: error.message,
-    //       variant: 'destructive',
-    //     });
-    //   }
-    // }
   };
 
   const handleTitleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -464,7 +477,7 @@ const CreatePollPage = () => {
                 />
                 <div className={styles.cred_details}>
                   <img src="images/eth_logo.svg" />
-                  <span>Ether Holding: </span>
+                  <span>Ether Holding </span>
                 </div>
               </div>
               {ethHolding ? (
