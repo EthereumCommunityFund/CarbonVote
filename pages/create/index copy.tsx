@@ -1,4 +1,4 @@
-'use client'
+/*'use client'
 import { FiArrowLeft, FiPlusCircle, FiXCircle, FiPlus, FiTrash2 } from "react-icons/fi";
 import { CredentialForm } from '@/components/templates/CredentialForm';
 import Button from '@/components/ui/buttons/Button';
@@ -275,7 +275,7 @@ const CreatePollPage = () => {
     resetFormStore();
     router.push('/');
   };
-
+  
   return (
     <div className="flex gap-20 px-20 py-5 text-black w-full justify-center overflow-y-auto">
       <div className="flex flex-col gap-2.5 py-5">
@@ -299,75 +299,75 @@ const CreatePollPage = () => {
             <div className="flex gap-2 items-center">
               <Label className="text-2xl">Options</Label>
               <Label className="text-black/60 text-sm">min 2</Label>
-              {/* <Label className="text-black/60 text-base">max: 3</Label> */}
-            </div>
-            {options.map((option, index) => (
-              <div key={index} className="flex w-full space-x-2">
-                <CheckerButton option={option} idx={index} onInputChange={(e) => handleInputChange(index, e)} />
-                {index > 1 &&
-                  <button className="text-red-400" onClick={() => removeOption(index)}><FiTrash2 /></button>
-                }
-              </div>
-            ))}
+              {/* <Label className="text-black/60 text-base">max: 3</Label> */
+/*</div>
+{options.map((option, index) => (
+  <div key={index} className="flex w-full space-x-2">
+    <CheckerButton option={option} idx={index} onInputChange={(e) => handleInputChange(index, e)} />
+    {index > 1 &&
+      <button className="text-red-400" onClick={() => removeOption(index)}><FiTrash2 /></button>
+    }
+  </div>
+))}
 
-            <div className="flex justify-end">
-              <Button className="rounded-full" leftIcon={FiPlus} onClick={addOption}>
-                Add Option
-              </Button>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label className="text-2xl">End Date/Time</Label>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DateTimePicker value={endDateTime} />
-            </LocalizationProvider>
-          </div>
-          {/* <Label>{`Your TimeZone: ${myTimeZone.timeZone} ${myTimeZone.timeZoneOffset}`} </Label> */}
-          <Label>{`Your TimeZone: ${timeZone} ${timeZoneAbbr}`} </Label>
-          <div className="flex flex-col gap-2">
-            <Label className="text-2xl">Voting Method</Label>
-            <div className="flex flex-col gap-1">
-              <Label className="text-base">Select a Method</Label>
-              <select
-                onChange={handleVotingSelect}
-                value={votingMethod}
-                className="flex w-full text-black outline-none rounded-lg py-2.5 pr-3 pl-2.5 bg-inputField gap-2.5 items-center border border-white/10 border-opacity-10"
-                title="Voting Method"
-              >
-                <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="ethholding">
-                  EthHolding
-                </option>
-                <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="headcount">
-                  HeadCounting
-                </option>
-              </select>
-            </div>
-          </div>
-          {votingMethod === 'ethholding' ? (
-            <></>
-          ) : (
-            votingMethod === 'headcount' && (
-              <div className="flex flex-col gap-2">
-                <Label className="text-2xl">Access Rules</Label>
-                <CredentialForm
-                  selectedCredentials={credentials}
-                  onCredentialsChange={(selectedUuids) => setCredentials(selectedUuids)}
-                />
-              </div>
-            )
-          )}
-        </div>
-        <div className="flex gap-2.5 justify-end">
-          <Button className="rounded-full" leftIcon={FiXCircle}>
-            Discard
-          </Button>
-          <Button className="rounded-full" leftIcon={FiPlusCircle} isLoading={isLoading} onClick={createNewPoll}>
-            Create Poll
-          </Button>
-        </div>
-      </div>
-    </div >
-  );
+<div className="flex justify-end">
+  <Button className="rounded-full" leftIcon={FiPlus} onClick={addOption}>
+    Add Option
+  </Button>
+</div>
+</div>
+<div className="flex flex-col gap-2">
+<Label className="text-2xl">End Date/Time</Label>
+<LocalizationProvider dateAdapter={AdapterDayjs}>
+  <DateTimePicker value={endDateTime} />
+</LocalizationProvider>
+  </div>*/
+{/* <Label>{`Your TimeZone: ${myTimeZone.timeZone} ${myTimeZone.timeZoneOffset}`} </Label> */ }
+/*<Label>{`Your TimeZone: ${timeZone} ${timeZoneAbbr}`} </Label>
+<div className="flex flex-col gap-2">
+  <Label className="text-2xl">Voting Method</Label>
+  <div className="flex flex-col gap-1">
+    <Label className="text-base">Select a Method</Label>
+    <select
+      onChange={handleVotingSelect}
+      value={votingMethod}
+      className="flex w-full text-black outline-none rounded-lg py-2.5 pr-3 pl-2.5 bg-inputField gap-2.5 items-center border border-white/10 border-opacity-10"
+      title="Voting Method"
+    >
+      <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="ethholding">
+        EthHolding
+      </option>
+      <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="headcount">
+        HeadCounting
+      </option>
+    </select>
+  </div>
+</div>
+{votingMethod === 'ethholding' ? (
+  <></>
+) : (
+  votingMethod === 'headcount' && (
+    <div className="flex flex-col gap-2">
+      <Label className="text-2xl">Access Rules</Label>
+      <CredentialForm
+        selectedCredentials={credentials}
+        onCredentialsChange={(selectedUuids) => setCredentials(selectedUuids)}
+      />
+    </div>
+  )
+)}
+</div>
+<div className="flex gap-2.5 justify-end">
+<Button className="rounded-full" leftIcon={FiXCircle}>
+  Discard
+</Button>
+<Button className="rounded-full" leftIcon={FiPlusCircle} isLoading={isLoading} onClick={createNewPoll}>
+  Create Poll
+</Button>
+</div>
+</div>
+</div >
+);
 };
 export default CreatePollPage;
 
@@ -399,4 +399,4 @@ export default CreatePollPage;
 //       myTimeZone
 //     }
 //   }
-// };
+// };*/
