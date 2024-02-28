@@ -116,14 +116,14 @@ const containsSignatureCredential = (requiredCredentials: any[] | null) => {
     const signatureCredentials = [CREDENTIALS.GitcoinPassport.id, CREDENTIALS.POAPapi.id, CREDENTIALS.ProtocolGuildMember.id, CREDENTIALS.EthHoldingOffchain.id]
 
     return requiredCredentials.some(credential =>
-        signatureCredentials.every(searchString => credential.id.includes(searchString))
+        signatureCredentials.some(searchString => credential.credential_id.includes(searchString))
     );
 }
 
 const containsCredentialById = (requiredCredentials: any[] | null, credId: string) => {
     if (requiredCredentials === null) return;
     return requiredCredentials.some(credential =>
-        credential.id.includes(credId)
+        credential.credential_id.includes(credId)
     );
 }
 
@@ -141,7 +141,7 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
             .single();
 
         // Get required credentials so user can't inject them from the frontend
-        const { data: requiredCredentials } = await supabase
+        const { data: requiredCredentials, error: credentialsError } = await supabase
             .from('pollcredentials')
             .select('*')
             .eq('poll_id', poll_id)
@@ -161,12 +161,10 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
 
         // EthHolding count
         const isEthHoldingPoll = containsCredentialById(requiredCredentials, CREDENTIALS.EthHoldingOffchain.id)
-        console.log("🚀 ~ createVote ~ isEthHoldingPoll:", isEthHoldingPoll)
         if (isEthHoldingPoll) {
             const blockNumber = pollData.block_number;
-            if (signerAddress) {
+            if (signerAddress !== undefined) {
                 weight = await getBalanceAtBlock(signerAddress, blockNumber);
-                console.log("🚀 ~ createVote ~ ethCount:", weight)
             }
         }
 
