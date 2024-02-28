@@ -32,7 +32,12 @@ import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock'
 import { generateMessage } from '@/utils/generateMessage'
 import VotingContract from '../../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
 import VotingOption from '../../carbonvote-contracts/deployment/contracts/VotingOption.sol/VotingOption.json';
+import styles from '@/styles/createPoll.module.css';
 
+interface CredentialTable {
+  credential: string;
+  id: string;
+}
 
 const PollPage = () => {
   const router = useRouter();
@@ -59,10 +64,28 @@ const PollPage = () => {
   const contractAbi = VotingContract.abi;
   const [pollContract, setPollContract] = useState<Contract | null>(null);
   const [pollType, setPollType] = useState<string | number>();
+  const [credentialTable, setNestedCredentialTable] = useState<CredentialTable[]>([]);
   const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
     message,
   });
-
+  const [voteTable, setVoteTable] = useState<string[]>([]);
+  const [selectedCredentialId, setSelectedCredentialId] = useState<string | null>(null);
+  const [votedOptions, setVotedOptions] = useState({});
+  const handleVotesRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const credentialId = event.target.value;
+    setVoteTable(prevVoteTable => {
+      const index = prevVoteTable.indexOf(credentialId);
+      if (index > -1) {
+        return prevVoteTable.filter(id => id !== credentialId);
+      } else {
+        return [...prevVoteTable, credentialId];
+      }
+    });
+    console.log(voteTable, 'vote Table');
+  };
+  useEffect(() => {
+    console.log(voteTable, 'vote Table in useEffect');
+  }, [voteTable]);
   console.log("🚀 ~ PollPage ~ data:", data)
   useEffect(() => {
     if (id !== undefined) {
@@ -71,11 +94,42 @@ const PollPage = () => {
         getEthHoldings();
       }
       else {
-        fetchPollFromContract()
+        fetchPollFromContract(id as string)
       }
     }
   }, [id]);
 
+  useEffect(() => {
+    async function checkAndSetVotes() {
+      for (const credential of credentialTable) {
+        let identifier;
+
+        if ([CREDENTIALS.ZuConnectResident.id, CREDENTIALS.DevConnect.id, CREDENTIALS.ZuzaluResident.id].includes(credential.id)) {
+          identifier = localStorage.getItem('userId');
+        } else if ([CREDENTIALS.GitcoinPassport.id, CREDENTIALS.POAPapi.id, CREDENTIALS.ProtocolGuildMember.id, CREDENTIALS.EthHoldingOffchain.id].includes(credential.id)) {
+          identifier = localStorage.getItem('account');
+        } else {
+          if (!localStorage.getItem('userUniqueId')) {
+            const uniqueId = uuidv4();
+            localStorage.setItem('userUniqueId', uniqueId);
+          }
+          identifier = localStorage.getItem('userUniqueId');
+        }
+
+        const checkdata = {
+          id: credential.id,
+          identifier: identifier,
+        };
+
+        const responsevote = await fetchVote(checkdata);
+
+        if (responsevote.data.option_id !== '') {
+          setVotedOptions(responsevote.data.option_id);
+        }
+      }
+    }
+    checkAndSetVotes();
+  }, [credentialTable]);
   /*useEffect(() => {
     async () => {
       if (isSuccess && data !== undefined) {
@@ -157,10 +211,40 @@ const PollPage = () => {
     try {
       const response = await fetchPollById(pollId as string);
       const data = await response.data;
+      const nestedCredentialTable: CredentialTable[] = [];
       console.log(data, 'pollData');
       setPoll(data);
       setOptions(data.options);
-      const newCredentialId = data.credentials?.[0]?.id || '';
+      console.log(data.contractpoll_index?.length, 'length');
+      if (data.contractpoll_index?.length == 1) {
+        await fetchPollFromContract(data.contractpoll_index[0]);
+        console.log(pollType?.toString(), 'pollType');
+        if (pollType?.toString() == '0') {
+          nestedCredentialTable.push({ credential: 'EthHolding on-chain', id: data.contractpoll_index[0] });
+        } else {
+          nestedCredentialTable.push({ credential: 'ProtocolGuild on-chain', id: data.contractpoll_index[1] });
+        }
+      }
+      //If nested poll with Ethholding on-chain and Protocol guild on-chain
+      if (data.contractpoll_index?.length == 2) {
+        await fetchPollFromContract(data.contractpoll_index[0]);
+        nestedCredentialTable.push({ credential: 'EthHolding on-chain', id: data.contractpoll_index[0].toString() });
+        await fetchPollFromContract(data.contractpoll_index[1]);
+        nestedCredentialTable.push({ credential: 'ProtocolGuild on-chain', id: data.contractpoll_index[1].toString() });
+      }
+      console.log(nestedCredentialTable, 'nestedTable');
+      data.credentials.forEach((cred: any) => {
+        Object.values(CREDENTIALS).forEach(credential => {
+          if (cred.id === credential.id) {
+            nestedCredentialTable.push({
+              credential: credential.name,
+              id: cred.id,
+            });
+          }
+        });
+      });
+      console.log(nestedCredentialTable, 'nestedcredentialtable');
+      /*const newCredentialId = data.credentials?.[0]?.id || '';
       let identifier: string | null = null;
       if (newCredentialId) {
         switch (newCredentialId) {
@@ -191,7 +275,7 @@ const PollPage = () => {
       const responsevote = await fetchVote(checkdata);
       if (responsevote.data.option_id !== '') {
         setSelectedOption(responsevote.data.option_id);
-      }
+      }*/
       const timeleft = calculateTimeRemaining(data.endTime);
       console.log(data.endTime);
       console.log(data.startTime);
@@ -201,17 +285,18 @@ const PollPage = () => {
       if (timeleft) {
         settimeRemaining(timeleft);
       }
-      if (newCredentialId) {
+      /*if (newCredentialId) {
         setCredentialId(newCredentialId);
         console.log('credential ID', newCredentialId);
-      }
+      }*/
+      setNestedCredentialTable(nestedCredentialTable);
       //console.log(pollIsLive, 'live');
     } catch (error) {
       console.error('Error fetching poll from API:', error);
     }
   };
-  const fetchPollFromContract = async () => {
-    if (id) {
+  const fetchPollFromContract = async (pollId: string) => {
+    if (pollId) {
       //let provider = new ethers.BrowserProvider(window.ethereum as any);
       //let signer = await provider.getSigner();
       //const contract = new ethers.Contract(contractAddress, contractAbi, signer);
@@ -227,7 +312,7 @@ const PollPage = () => {
         );
         setPollContract(contract);
         if (contract !== null) {
-          const pollData = await contract.getPoll(id);
+          const pollData = await contract.getPoll(pollId);
           // console.log(contract);
           console.log(pollData, 'pollData');
 
@@ -286,12 +371,12 @@ const PollPage = () => {
       }
     }
   };
-  const getRequirement = () => {
+  /*const getRequirement = () => {
     const current = Object.values(CREDENTIALS).find(
       (credential) => credential.id === id
     );
     return current?.name;
-  };
+  };*/
 
   const warnAndConnect = () => {
     console.error(
@@ -329,7 +414,6 @@ const PollPage = () => {
       toast({
         title: 'Vote cast successfully',
       });
-      await fetchPollFromApi(id);
     } catch (error) {
       console.error('Error casting vote:', error);
       return;
@@ -356,153 +440,277 @@ const PollPage = () => {
     }
   };
 
-  const handleVote = async (optionId: string) => {
+  const handleVote = async (optionId: string, credentialIds: string[], optionIndex: number | undefined) => {
     if (!localStorage.getItem('userUniqueId')) {
       const uniqueId = uuidv4();
       localStorage.setItem('userUniqueId', uniqueId);
     }
-    // Zuconnect credentials voting
-    if (credentialId == CREDENTIALS.ZuConnectResident.id) {
-      console.log('Zuconnect resident"');
-      if (!isPassportConnected) {
-        await signIn();
-      }
-      try {
-        // TODO: Verify again on backend
-        await verifyticket();
-        let usereventId = localStorage.getItem('event Id');
-        console.log(usereventId);
-        if (
-          usereventId == '91312aa1-5f74-4264-bdeb-f4a3ddb8670c' ||
-          usereventId == '54863995-10c4-46e4-9342-75e48b68d307' ||
-          usereventId == '797de414-2aec-4ef8-8655-09df7e2b6cc6' ||
-          usereventId == 'a6109324-7ca0-4198-9583-77962d1b9d53'
-        ) {
-          await handleCastVote(
-            optionId,
-            CREDENTIALS.ZuConnectResident.id,
-            'userId'
-          );
+    if (voteTable.length > 0) {
+      for (let credentialId of credentialIds) {
+        if (isValidUuidV4(credentialId)) {
+          switch (credentialId) {
+            case CREDENTIALS.ZuConnectResident.id:
+              console.log('Zuconnect resident"');
+              if (!isPassportConnected) {
+                await signIn();
+              }
+              try {
+                // TODO: Verify again on backend
+                await verifyticket();
+                let usereventId = localStorage.getItem('event Id');
+                console.log(usereventId);
+                if (
+                  usereventId == '91312aa1-5f74-4264-bdeb-f4a3ddb8670c' ||
+                  usereventId == '54863995-10c4-46e4-9342-75e48b68d307' ||
+                  usereventId == '797de414-2aec-4ef8-8655-09df7e2b6cc6' ||
+                  usereventId == 'a6109324-7ca0-4198-9583-77962d1b9d53'
+                ) {
+                  await handleCastVote(
+                    optionId,
+                    CREDENTIALS.ZuConnectResident.id,
+                    'userId'
+                  );
+                }
+              } catch (error) {
+                console.error('Error in verifying ticket:', error);
+                return;
+              }
+              break;
+            // Devconnect
+            case CREDENTIALS.DevConnect.id:
+              if (!isPassportConnected) {
+                await signIn();
+                return;
+              }
+              try {
+                await devconnectVerify();
+                if (localStorage.getItem('devconnectNullifier')) {
+                  await handleCastVote(optionId, CREDENTIALS.DevConnect.id, 'userId');
+                }
+              } catch (error) {
+                console.error('Error in verifying ticket:', error);
+                return;
+              }
+              break;
+            // Gitcoin
+            case CREDENTIALS.GitcoinPassport.id:
+              if (!isConnected) {
+                warnAndConnect();
+                return;
+              }
+              if (account !== null) {
+                let fetchScoreData = { address: account as string, scorerId: '6347' };
+                let scoreResponse = await fetchScore(fetchScoreData);
+                let scoreData = scoreResponse.data;
+                console.log(scoreData.score.toString(), 'score');
+                setScore(scoreData.score.toString());
+                if (scoreData.score.toString() != '0') {
+                  await handleCastVoteSigned(optionId, CREDENTIALS.GitcoinPassport.id);
+                }
+              }
+              break;
+            // POAPS API
+            case CREDENTIALS.POAPapi.id:
+              if (poll?.poap_events && poll?.poap_events.length) {
+                if (!isConnected) {
+                  warnAndConnect();
+                  return;
+                }
+
+                if (!eventDetails || !Array.isArray(eventDetails)) {
+                  console.error('Invalid or empty event details');
+                  return; // Exit if eventDetails is not an array
+                }
+
+                for (let detail of eventDetails) {
+                  if (!detail?.data?.owner) {
+                    console.error('Error: An event is missing an owner');
+                    toast({
+                      title: 'Error',
+                      description: 'You need to own all required POAPs',
+                      variant: 'destructive',
+                    });
+                    return; // Exit the function if an event without an owner is found
+                  }
+                }
+                await handleCastVoteSigned(optionId, CREDENTIALS.POAPapi.id);
+              }
+              break;
+            //  EthHolding
+            case CREDENTIALS.EthHoldingOffchain.id:
+              if (!isConnected) {
+                warnAndConnect();
+                return;
+              }
+
+              // TODO: Check if address has Ether?
+
+              await handleCastVoteSigned(optionId, CREDENTIALS.EthHoldingOffchain.id);
+              break;
+            // POAPS ONCHAIN
+            /*else if (credentialId == CREDENTIALS.POAPSVerification.id) {
+              if (!isConnected) {
+                warnAndConnect();
+                return;
+              }
+              try {
+                const provider = new ethers.JsonRpcProvider(
+                  'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
+                );
+                //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
+                const contract = new ethers.Contract(
+                  CREDENTIALS.POAPSVerification.contract,
+                  contractABI,
+                  provider
+                );
+                const events = await contract.getEventCountForCollection(account);
+        
+                setPoapsNumber(events.toString());
+                console.log(events.toString(), 'events');
+              } catch (error) {
+                console.error('An error occurred:', error);
+              }
+        
+              if (Number(poapsNumber) > 4) {
+                await handleCastVoteSigned(
+                  optionId,
+                  CREDENTIALS.ProtocolGuildMember.id
+                );
+              }*/
+            // Protocol Guild
+            case CREDENTIALS.ProtocolGuildMember.id:
+              if (!isConnected) {
+                warnAndConnect();
+                return;
+              }
+              await handleCastVote(
+                optionId,
+                CREDENTIALS.ProtocolGuildMember.id,
+                'userUniqueId'
+              );
+              break;
+          }
+        } else {
+          console.log(credentialId, 'credentialId');
+          console.log(optionIndex as number, 'option index');
+          await handleContractVote(credentialId, optionIndex as number)
         }
-      } catch (error) {
-        console.error('Error in verifying ticket:', error);
-        return;
+        await fetchPollFromApi(id);
+      }
+    } else {
+      await handleContractVote(id as string, optionIndex as number)
+    }
+  }
+  function canOpenPopup() {
+    let windowReference = window.open('', '_blank');
+    if (!windowReference || windowReference.closed || typeof windowReference.closed == 'undefined') {
+      // Pop-up was blocked
+      return false;
+    }
+    windowReference.close();
+    return true;
+  }
+  const handleContractVote = async (pollId: string, optionIndex: number) => {
+    if (!isConnected) {
+      console.error('You need to connect to vote, please try again');
+      toast({
+        title: 'Error',
+        description: 'You need to connect to vote, please try again',
+        variant: 'destructive',
+      });
+      connect();
+      return;
+    }
+    const generateSignature = async (message: string) => {
+      const response = await fetch('/api/auth/generate_signature', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({ message }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate signature');
+      }
+
+      const data = await response.json();
+      console.log(data.data.message, 'message');
+      console.log(data.data.signed_message, 'signature');
+      return data.data.signed_message;
+    };
+    if (!isPassportConnected) {
+      const signature = await generateSignature(account as string);
+      const message = account as string;
+      if (signature) {
+        localStorage.setItem('signature', signature);
+        localStorage.setItem('message', message);
       }
     }
-    // Devconnect
-    else if (credentialId == CREDENTIALS.DevConnect.id) {
-      if (!isPassportConnected) {
-        await signIn();
+    const signature = localStorage.getItem('signature');
+    const message = localStorage.getItem('message');
+    if (!signature) {
+      console.error('No signature found. Please connect your wallet');
+      return;
+    }
+    if (!message) {
+      console.error('No message found. Please connect your wallet');
+      return;
+    }
+
+    if (!window.ethereum) {
+      console.error('Please install MetaMask to perform this action.');
+      return;
+    }
+
+    try {
+      let provider = new ethers.BrowserProvider(window.ethereum as any);
+      let signer = await provider.getSigner();
+      //let provider = ethers.getDefaultProvider("http://localhost:8545/");
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, signer);
+      const pollIndex = Number(pollId);
+      const newOptionIndex = Number(optionIndex);
+      // console.log(pollIndex, 'pollIndex');
+      // console.log(newOptionIndex, 'newOptionIndex');
+      // console.log(signature, 'signature');
+      // console.log(message, 'message');
+      const network = await provider.getNetwork();
+      if (!canOpenPopup()) {
+        toast({
+          title: 'Error',
+          description: 'Please enable pop-ups in your browser settings to proceed with the transaction.',
+          variant: 'destructive',
+        });
         return;
       }
-      try {
-        await devconnectVerify();
-        if (localStorage.getItem('devconnectNullifier')) {
-          await handleCastVote(optionId, CREDENTIALS.DevConnect.id, 'userId');
-        }
-      } catch (error) {
-        console.error('Error in verifying ticket:', error);
-        return;
+      if (Number(network.chainId) === 11155111) {
+        console.log('Connected to Sepolia');
+        const transactionResponse = await contract.vote(pollIndex, newOptionIndex, signature, message);
+        await transactionResponse.wait(); // Wait for the transaction to be mined
+        console.log('Vote cast successfully');
+        toast({
+          title: 'Vote cast successfully',
+        });
+        await fetchPollFromContract(pollId as string);
+      } else {
+        console.error('You should connect to Sepolia, please try again');
+        toast({
+          title: 'Error',
+          description: 'You should connect to Sepolia, please try again',
+          variant: 'destructive',
+        });
       }
     }
-    // Gitcoin
-    else if (credentialId == CREDENTIALS.GitcoinPassport.id) {
-      if (!isConnected) {
-        warnAndConnect();
-        return;
-      }
-      if (account !== null) {
-        let fetchScoreData = { address: account as string, scorerId: '6347' };
-        let scoreResponse = await fetchScore(fetchScoreData);
-        let scoreData = scoreResponse.data;
-        console.log(scoreData.score.toString(), 'score');
-        setScore(scoreData.score.toString());
-        if (scoreData.score.toString() != '0') {
-          await handleCastVoteSigned(optionId, CREDENTIALS.GitcoinPassport.id);
-        }
-      }
-    }
-    // POAPS API
-    else if (poll?.poap_events && poll?.poap_events.length) {
-      if (!isConnected) {
-        warnAndConnect();
-        return;
-      }
-
-      if (!eventDetails || !Array.isArray(eventDetails)) {
-        console.error('Invalid or empty event details');
-        return; // Exit if eventDetails is not an array
-      }
-
-      for (let detail of eventDetails) {
-        if (!detail?.data?.owner) {
-          console.error('Error: An event is missing an owner');
-          toast({
-            title: 'Error',
-            description: 'You need to own all required POAPs',
-            variant: 'destructive',
-          });
-          return; // Exit the function if an event without an owner is found
-        }
-      }
-      await handleCastVoteSigned(optionId, CREDENTIALS.POAPapi.id);
-    }
-    //  EthHolding
-    else if (credentialId == CREDENTIALS.EthHoldingOffchain.id) {
-      if (!isConnected) {
-        warnAndConnect();
-        return;
-      }
-
-      // TODO: Check if address has Ether?
-
-      await handleCastVoteSigned(optionId, CREDENTIALS.EthHoldingOffchain.id);
-    }
-    // POAPS ONCHAIN
-    else if (credentialId == CREDENTIALS.POAPSVerification.id) {
-      if (!isConnected) {
-        warnAndConnect();
-        return;
-      }
-      try {
-        const provider = new ethers.JsonRpcProvider(
-          'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
-        );
-        //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
-        const contract = new ethers.Contract(
-          CREDENTIALS.POAPSVerification.contract,
-          contractABI,
-          provider
-        );
-        const events = await contract.getEventCountForCollection(account);
-
-        setPoapsNumber(events.toString());
-        console.log(events.toString(), 'events');
-      } catch (error) {
-        console.error('An error occurred:', error);
-      }
-
-      if (Number(poapsNumber) > 4) {
-        await handleCastVoteSigned(
-          optionId,
-          CREDENTIALS.ProtocolGuildMember.id
-        );
-      }
-      // Protocol Guild
-      else if (poll?.poap_events && poll?.poap_events.length) {
-        if (!isConnected) {
-          warnAndConnect();
-          return;
-        }
-        await handleCastVote(
-          optionId,
-          CREDENTIALS.ProtocolGuildMember.id,
-          'userUniqueId'
-        );
-      }
+    catch (error: any) {
+      console.error('Error casting vote:', error);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   };
-
   if (!poll || isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -592,11 +800,28 @@ const PollPage = () => {
                     key={option.id}
                     id={option.id}
                     optionName={option.option_description}
-                    onVote={(optionId) => handleVote(optionId as string)}
+                    onVote={() => handleVote(option.id, voteTable, option.optionindex)}
                     isChecked={selectedOption === option.id}
                     type="api"
                     optionAddress={undefined}
                   />
+                ))}
+              </div>
+              <div className="flex flex-col gap-2.5">
+                {credentialTable.map((credential) => (
+                  <div key={credential.id} className={styles.radios_flex_col}>
+                    <label className={styles.radio_flex}>
+                      <input
+                        type="checkbox"
+                        name="credentials"
+                        value={credential.id}
+                        checked={voteTable.includes(credential.id)}
+                        onChange={handleVotesRadioChange}
+                        className={styles.hidden_radio}
+                      />
+                      <span>{credential.credential}{votedOptions ? `(${votedOptions})` : ''}</span>
+                    </label>
+                  </div>
                 ))}
               </div>
             </>
@@ -670,7 +895,7 @@ const PollPage = () => {
                     borderRadius: 100,
                   }}
                 />
-                <span>{getRequirement()}</span>
+                <span>{'getRequirement()'}</span>
                 <div style={{ marginLeft: 10 }}>⚪️</div>
               </div>
             </div>
