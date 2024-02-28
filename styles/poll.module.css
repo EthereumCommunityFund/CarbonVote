@@ -1,0 +1,154 @@
+.voting_popup_bg {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #0000008a;
+    display: grid;
+    place-items: center;
+}
+
+.voting_popup {
+    padding: 30px;
+    background: #fff;
+    border-radius: 20px;
+}
+
+.voting_popup h4 {
+    font-size: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.header_p {
+    font-size: 16px;
+    text-align: center;
+    opacity: 0.6;
+    font-weight: 400;
+    margin-top: 15px;
+}
+
+.choice {
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 20px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.v_pop_content {
+    border-radius: 10px;
+    border: 1px solid #00000019;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 360px;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.choice_option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: #0000000a;
+    padding: 10px;
+    border-radius: 50px;
+}
+
+.choice_option div {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.choice_option div span {
+    font-weight: bold;
+    font-size: 14px;
+    opacity: 0.5;
+}
+
+.select_all {
+    float: right;
+    width: 100px;
+    font-weight: bold;
+    background: #F2F2F2;
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.vote_btn {
+    background: #ECECEC;
+    color: #4D4D4D;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    gap: 10px;
+    font-size: 18px;
+    border-radius: 50px;
+    margin-top: 70px;
+    width: 100%;
+}
+
+.v_pop_content p {
+    font-size: 15px;
+}
+
+.custom-checkbox-container {
+    display: flex;
+    align-items: center;
+}
+
+/* Hide the default checkbox */
+.custom-checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Style the custom checkbox */
+.custom-checkbox .checkmark {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #000;
+    background-color: #fff;
+    margin-right: 10px;
+}
+
+/* Show the custom checkbox as checked when the input is checked */
+.custom-checkbox input:checked+.checkmark {
+    background-color: #00ff51;
+    /* Change color when checked */
+}
+
+/* Style the checkmark inside the custom checkbox */
+.custom-checkbox .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+/* Show the checkmark inside the custom checkbox when the input is checked */
+.custom-checkbox input:checked+.checkmark:after {
+    display: block;
+}
+
+/* Style the checkmark (icon) */
+.custom-checkbox .checkmark:after {
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
