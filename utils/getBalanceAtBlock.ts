@@ -9,10 +9,9 @@ export const getBalanceAtBlock = async (address: string, blockNumber: number) =>
 
         // Query the balance at the specific block number
         const balance = await provider.getBalance(address, blockNumber);
-
         return balance;
     } catch (error) {
-        console.error(error);
+        console.error('Error getBalanceAtBlock', error);
         return error;
     }
 }
