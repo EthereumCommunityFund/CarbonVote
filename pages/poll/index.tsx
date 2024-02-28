@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowLeftIcon, EthIcon } from '@/components/icons';
 import { ClockIcon } from '@/components/icons/clock';
 import Button from '@/components/ui/buttons/Button';
@@ -32,7 +32,10 @@ import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock'
 import { generateMessage } from '@/utils/generateMessage'
 import VotingContract from '../../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
 import VotingOption from '../../carbonvote-contracts/deployment/contracts/VotingOption.sol/VotingOption.json';
-import styles from '@/styles/createPoll.module.css';
+import createPollstyles from '@/styles/createPoll.module.css';
+import styles from "@/styles/poll.module.css"
+import { HiArrowRight } from 'react-icons/hi';
+import ConfirmationPopup from '@/components/ConfirmationPopup';
 
 interface CredentialTable {
   credential: string;
@@ -86,6 +89,31 @@ const PollPage = () => {
   useEffect(() => {
     console.log(voteTable, 'vote Table in useEffect');
   }, [voteTable]);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const popupRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    // Function to close popup when clicked outside
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popupRef.current && event.target instanceof Node && !popupRef.current.contains(event.target)) {
+        setIsPopupOpen(false);
+      }
+    };
+
+    // Add event listener when popup is open
+    if (isPopupOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      // Remove event listener when popup is closed
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    // Cleanup function
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isPopupOpen]);
+
   console.log("🚀 ~ PollPage ~ data:", data)
   useEffect(() => {
     if (id !== undefined) {
@@ -829,6 +857,58 @@ const PollPage = () => {
             <Label className="text-2xl">Poll finished</Label>
           )}
         </div>
+        <button onClick={() => setIsPopupOpen(!isPopupOpen)}>Open Popup</button>
+        {isPopupOpen && (
+
+          // <div className={styles.voting_popup_bg}>
+          //   <div ref={popupRef} className={styles.voting_popup}>
+          //     <h4>Your Available Credentials</h4>
+          //     <p className={styles.header_p}>You are selecting</p>
+          //     <p className={styles.choice}>NO</p>
+          //     <div className={styles.v_pop_content}>
+          //       <p>Select the credentials you want to vote with</p>
+          //       <div className={styles.choice_option}>
+          //         <div>
+          //           <img src='/images/eth_logo.svg' />
+          //           <span>Ether Holding: on-Chain</span>
+          //         </div>
+          //         <input type='checkbox' />
+          //       </div>
+          //       <div className={styles.choice_option}>
+          //         <div>
+          //           <img src='/images/zupass.svg' />
+          //           <span>Zupass</span>
+          //         </div>
+          //         <input type='checkbox' />
+          //       </div>
+          //       <div className={styles.choice_option}>
+          //         <div>
+          //           <img src='/images/poaps.svg' />
+          //           <span>POAPs</span>
+          //         </div>
+          //         <input type='checkbox' />
+          //       </div>
+          //       <div className={styles.choice_option}>
+          //         <div>
+          //           <img src='/images/guild.png' />
+          //           <span>Protocol Guild</span>
+          //         </div>
+          //         <input type='checkbox' />
+          //       </div>
+          //       <div className={styles.choice_option}>
+          //         <div>
+          //           <img src='/images/gitcoin.svg' />
+          //           <span>Gitcoin Passport</span>
+          //         </div>
+          //         <input type='checkbox' />
+          //       </div>
+          //     </div>
+          //     <div className={styles.select_all}>Select All</div>
+          //     <button className={styles.vote_btn}><HiArrowRight /><span>Vote</span></button>
+          //   </div>
+          // </div>
+          <ConfirmationPopup />
+        )}
       </div>
       <div className="flex flex-col gap-8 w-96">
         <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
