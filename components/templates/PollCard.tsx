@@ -18,12 +18,11 @@ interface IPollCard {
   options: string[];
   polltype: any;
   pollMetadata: string;
-  votingMethod: string;
   poll: any;
   endTime: number;
 }
 
-export const PollCardTemplate = ({ id, title, topic, subTopic, description, options, votingMethod, polltype, pollMetadata, poll, startTime, endTime }: IPollCard) => {
+export const PollCardTemplate = ({ id, title, topic, subTopic, description, options, polltype, pollMetadata, poll, startTime, endTime }: IPollCard) => {
   console.log(endTime);
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
@@ -54,10 +53,10 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
     // Update path if the voting method is 'ethholding' for contract polls
     console.log(polltype, 'poll type');
     const biginteth = BigInt(1);
-    if (votingMethod === 'EthHolding' || (polltype && polltype.toString() == '1')) {
+    /*if (votingMethod === 'EthHolding' || (polltype && polltype.toString() == '1')) {
       path = '/contract-poll';
-    }
-    const pollId = votingMethod === 'headCount' ? poll.id : id;
+    }*/
+    const pollId = id;
     // Navigate to the appropriate path with the poll ID
     router.push({
       pathname: path,
@@ -84,8 +83,6 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
           </Label>
         </div>
       </div>
-
-      <span className="text-xs" style={{ color: votingMethod === 'EthHolding' ? "orange" : "blue" }}>{votingMethod === 'headCount' ? 'HEADCOUNTING' : votingMethod.toUpperCase()}</span>
 
       {/* <!-- Description --> */}
       <span dangerouslySetInnerHTML={{ __html: removeImageTags(shortDescription) }} />

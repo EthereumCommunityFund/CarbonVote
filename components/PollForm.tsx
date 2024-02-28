@@ -6,7 +6,6 @@ import ToggleSwitchButton from "./ui/buttons/ToggleSwitchButton"
 
 export const PollForm = () => {
   const [pollDescription, setPollDescription] = useState<string>('');
-  const [votingMethod, setVotingMethod] = useState<'EthHolding' | 'HeadCount'>('EthHolding');
   const [headCountVotingMethod, setHeadCountVotingMethod] = useState<'Ethereum event attendees only' | 'Gitcoin passport holders only' | 'Protocol Guild Member and Gitcoin and RPGF'>('Ethereum event attendees only');
   const [isZuPassRquired, setIsZuPassRequired] = useState<boolean>(false);
   const [isGitCoinPassRquired, setIsGitCoinPassRequired] = useState<boolean>(false);
@@ -14,10 +13,6 @@ export const PollForm = () => {
   const handlePollDescriptionChange = (value: string) => {
     setPollDescription(value);
   };
-
-  const handleVotingMethodSelect = (e: any) => {
-    setVotingMethod(e.target.value);
-  }
 
   const handleHeadCountVotingMethodSelect = (e: any) => {
     setHeadCountVotingMethod(e.target.value);
@@ -52,43 +47,25 @@ export const PollForm = () => {
         </div>
       </div>
       <div className="flex flex-col gap-3.5 px-5 text-white/80">
-        <Label className="text-xl">Voting Method</Label>
+        <Label className="text-xl">HeadCount Method</Label>
         <select
-          onChange={handleVotingMethodSelect}
-          value={votingMethod}
+          onChange={handleHeadCountVotingMethodSelect}
+          value={headCountVotingMethod}
           className="flex w-full text-white outline-none rounded-lg py-2.5 pr-3 pl-2.5 bg-inputField gap-2.5 items-center border border-white/10 border-opacity-10"
-          title="Voting"
+          title="HeadCountVoting"
         >
-          <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="EthHolding">
-            EthHolding
+          <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="Ethereum event attendees only">
+            {`Ethereum event attendees only`}
           </option>
-          <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="HeadCount">
-            HeadCount
+          <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="Gitcoin passport holders only">
+            {`Gitcoin passport holders only`}
+          </option>
+          <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="Protocol Guild Member and Gitcoin and RPGF">
+            {`Protocol Guild Member and Gitcoin and RPGF`}
           </option>
         </select>
-      </div>
-      {votingMethod === 'HeadCount' ?
-        <div className="flex flex-col gap-3.5 px-5 text-white/80">
-          <Label className="text-xl">HeadCount Method</Label>
-          <select
-            onChange={handleHeadCountVotingMethodSelect}
-            value={headCountVotingMethod}
-            className="flex w-full text-white outline-none rounded-lg py-2.5 pr-3 pl-2.5 bg-inputField gap-2.5 items-center border border-white/10 border-opacity-10"
-            title="HeadCountVoting"
-          >
-            <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="Ethereum event attendees only">
-              {`Ethereum event attendees only`}
-            </option>
-            <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="Gitcoin passport holders only">
-              {`Gitcoin passport holders only`}
-            </option>
-            <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="Protocol Guild Member and Gitcoin and RPGF">
-              {`Protocol Guild Member and Gitcoin and RPGF`}
-            </option>
-          </select>
-        </div> :
-        <></>
-      }
+      </div> :
+      <></>
       <div className="flex flex-col gap-3.5 px-5 text-white/80">
         <Label className="text-xl font-bold">Access Rules</Label>
         <div className="flex gap-8 items-center">

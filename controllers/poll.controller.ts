@@ -1,14 +1,5 @@
 import axiosInstance from '../src/axiosInstance';
-
-export type PollRequestData = {
-    title: string;
-    description: string;
-    time_limit: number;
-    votingMethod: string;
-    options: OptionData[];
-    credentials: string[];
-    poap_events: number[];
-};
+import { PollRequestData } from '@/types/index'
 
 export type VoteRequestData = {
     option_id: string;
@@ -21,10 +12,6 @@ export type CheckVoteData = {
     identifier: string | null;
 };
 
-
-export type OptionData = {
-    option_description: string;
-};
 
 export const fetchAllPolls = async () => {
     return await axiosInstance.get('/api/polls');

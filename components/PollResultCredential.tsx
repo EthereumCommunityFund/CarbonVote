@@ -8,7 +8,6 @@ import { TbChevronDown } from 'react-icons/tb';
 import PieChartComponent from './ui/PieChart';
 import { HeadCountCredential, PollOptionType, PollTypes } from '@/types';
 import { IconType } from 'react-icons';
-import { useState } from 'react';
 
 interface IPollResultCredentialComponent {
   pollType: PollTypes,

@@ -4,7 +4,8 @@
   font-family: 'Inter';
   font-style: normal;
   font-weight: 700;
-  line-height: 30px; /* 120% */
+  line-height: 30px;
+  /* 120% */
   opacity: 0.5;
   width: 100%;
   text-align: left;
@@ -38,6 +39,7 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 13px;
+  width: 800px;
 }
 
 .header_small {
@@ -55,7 +57,8 @@
   font-size: 18px;
   font-style: normal;
   font-weight: 700;
-  line-height: 18px; /* 100% */
+  line-height: 18px;
+  /* 100% */
 }
 
 .select_dropdown {
@@ -138,7 +141,7 @@
   background-color: #e7e7e7;
 }
 
-.radio_toolbar input[type='radio']:focus + label {
+.radio_toolbar input[type='radio']:focus+label {
   border: 2px dashed #444;
 }
 
@@ -176,6 +179,7 @@
 .toggle_btn {
   margin-top: 5px;
 }
+
 /* 
 .form-group input {
   padding: 0;
@@ -279,7 +283,8 @@
   font-size: 13px;
   font-style: normal;
   font-weight: 400;
-  line-height: 140%; /* 18.2px */
+  line-height: 140%;
+  /* 18.2px */
   letter-spacing: 0.13px;
   opacity: 0.5;
   margin: 20px 0;
@@ -327,6 +332,7 @@
   top: 50%;
   transform: translate(-50%, -50%);
 }
+
 .disabled_radio::before {
   content: '';
   position: absolute;
@@ -423,6 +429,18 @@
 
 .multiple_cred_info2 span {
   font-size: 14px;
+}
+
+.radio_visual {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #ccc;
+  margin-right: 8px;
+}
+
+.radio_flex input:checked+.radio_visual {
+  background-color: #030303;
 }
 
 /* .radio_toolbar input[type='radio']:checked + label {

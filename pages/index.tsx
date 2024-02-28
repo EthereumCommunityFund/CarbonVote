@@ -11,6 +11,7 @@ import { PlusCirceIcon } from '@/components/icons';
 import { Loader } from '@/components/ui/Loader';
 import { ethers } from 'ethers';
 import VotingContract from './../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
+import { getProviderUrl } from '@/utils/getProviderUrl';
 
 interface Poll {
   name: string;
@@ -20,10 +21,10 @@ interface Poll {
   endTime: number;
   pollType: string;
   pollMetadata: string;
-  votingMethod: string;
   time_limit: number;
   startTime: number;
   id: string;
+  contractpoll_index?: number[];
 }
 
 export default function Home() {
@@ -37,31 +38,21 @@ export default function Home() {
 
 
   const fetchPollsFromContract = async () => {
-    /*let provider;
-    console.log(process.env.PROVIDER as string, 'process env');
-    if (process.env.PROVIDER == "mainnet") { provider = ethers.getDefaultProvider("mainnet"); }
-    if (process.env.PROVIDER == "sepolia") { provider = ethers.getDefaultProvider("sepolia"); }
-    if (process.env.PROVIDER == "testnet") { console.log('testnet'); provider = ethers.getDefaultProvider("http://localhost:8545/"); }*/
-    //const signer = await provider.getSigner();
-    //let SEPOLIA_RPC_URL = process.env.SEPOLIA_API_URL;
-    //if (SEPOLIA_RPC_URL) { console.log(SEPOLIA_RPC_URL, 'sepolia url'); }
-    const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
-    //let provider = ethers.getDefaultProvider("sepolia");
+    const providerUrl = getProviderUrl();
+    const provider = new ethers.JsonRpcProvider(providerUrl);
     const contract = new ethers.Contract(contractAddress, contractAbi, provider);
     console.log(contract, provider, 'provider');
     const { names, descriptions, options, endTimes, pollTypes, pollMetadatas, startTimes } = await contract.getAllPolls();
     const polls = names.map((name: any, index: string | number) => {
       const pollType = pollTypes[index];
-      const votingMethod = pollType.toString() == '0' ? 'EthHolding' : 'HeadCounting';
       return {
         name,
-        id: index, //add id for ethholding polls so there will not have redirection problems
+        id: String(index), //add id for ethholding polls so there will not have redirection problems
         description: descriptions[index],
         options: options[index],
         endTime: Number(endTimes[index]) * 1000,
         pollType,
         pollMetadata: pollMetadatas[index],
-        votingMethod,
         startTime: Number(startTimes[index]) * 1000,
       };
     });
@@ -71,9 +62,13 @@ export default function Home() {
   const fetchPolls = async () => {
     const pollsFromContract = await fetchPollsFromContract();
     const { data: pollsFromAPI } = await fetchAllPollsFromAPI();
-    // TODO: Improve sorting to show most relevant Polls first
-    // Combine and sort the polls based on endTime
-    return [...pollsFromContract, ...pollsFromAPI].sort((a, b) => {
+    const indexesFromAPI = pollsFromAPI.flatMap((poll: Poll) => poll.contractpoll_index || []);
+    const indexesFromAPIAsString = indexesFromAPI.map((index: number) => index.toString());
+    const filteredPollsFromContract = pollsFromContract.filter(
+      (poll: Poll) => !indexesFromAPIAsString.includes(poll.id)
+    );
+
+    return [...filteredPollsFromContract, ...pollsFromAPI].sort((a: Poll, b: Poll) => {
       return b.startTime - a.startTime;
     });
   };
@@ -117,7 +112,6 @@ export default function Home() {
                 endTime={poll.endTime}
                 topic={''}
                 subTopic={''}
-                votingMethod={poll.votingMethod}
                 polltype={poll.pollType}
                 poll={poll}
               />

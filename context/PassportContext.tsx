@@ -118,7 +118,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
           await verifyProof(_pcd);
           const userId = _pcd.claim.nullifierHash; // Extract the unique identifier 'id'
           console.log(userId, _pcd);
-          console.log(pcdStr);
+          console.log('pcdStr', pcdStr);
           //const eventId = eventpcd.claim.partialTicket.eventId;
           //console.log(eventId, 'event Id');
           const generateSignature = async (account: string, message: string) => {
@@ -191,9 +191,8 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
     }
   }
 
-  function openZupassTicketPopup(popupUrl: string, proofUrl: string) {
-    const url = `${popupUrl}?proofUrl=${encodeURIComponent(proofUrl)}`;
-    const popup = window.open(url, "_blank", "width=450,height=600,top=100,popup");
+  function openZupassTicketPopup(proofUrl: string) {
+    const popup = window.open(proofUrl, "_blank", "width=450,height=600,top=100,popup");
     if (popup) {
       const checkPopupClosed = setInterval(() => {
         if (popup.closed) {
@@ -256,6 +255,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
       },
       validEventIds: {
         argumentType: ArgumentTypeName.StringArray,
+        // FIXME: instead of validEventIds we should use current requited credetials
         value: validEventIds.length != 0 ? validEventIds : undefined,
         userProvided: false
       },
@@ -286,7 +286,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
       description: "**Select a valid ticket to hop into the zuzaverse.**"
     });
 
-    openZupassTicketPopup(popupUrl, proofUrl);
+    openZupassTicketPopup(proofUrl);
   }
   function openGroupMembershipPopup(
     urlToZupassClient: string,

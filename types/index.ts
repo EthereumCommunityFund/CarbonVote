@@ -1,8 +1,6 @@
-import { ethers } from 'ethers';
-
 export type OptionType = {
   name: string;
-  isChecked: boolean;
+  color: string;
 }
 
 export interface PollStatusType {
@@ -26,10 +24,15 @@ export type CredentialType = {
 
 export type PollOptionType = {
   id: string;
-  option_description: string;
   pollId: string;
-  totalWeight: number;
-  votes: number;
+  totalWeight?: number;
+  votes?: number;
+  option_description: string;
+  votersCount?: number;
+  totalEth?: string;
+  votersData?: any;
+  address?: string;
+  optionindex?: number;
 }
 
 export type PollType = {
@@ -95,12 +98,14 @@ export interface Poll {
   options: string[];
   pollMetadata: string;
   poap_events: number[]
+  block_number: number;
 }
 
 export interface ProcessVoteInput {
   vote_hash: string;
   poll_id: string;
   option_id: string;
+  weight?: string;
 }
 
 interface PollData {
@@ -114,10 +119,9 @@ export interface CheckPOAPOwnershipInput {
 
 
 export interface VerifySignatureInput {
-  pollId: string;
+  poll_id: string;
   option_id: string;
   voter_identifier: string;
-  requiredCred: string;
   signature: string;
 }
 
@@ -137,3 +141,16 @@ export enum HeadCountCredential {
   PROTOCOL = 'Protocol Guild Member Results',
   GITCOIN = 'Gitcoin Passport Results',
 }
+
+export type OptionData = {
+  option_description: string;
+};
+
+export type PollRequestData = {
+  title: string;
+  description: string;
+  time_limit: number;
+  options: OptionData[];
+  credentials: string[];
+  poap_events: number[];
+};

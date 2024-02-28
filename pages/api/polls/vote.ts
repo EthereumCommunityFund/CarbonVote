@@ -6,6 +6,9 @@ import getPoapOwnership from 'utils/getPoapOwnership';
 import { supabase } from 'utils/supabaseClient';
 import { CREDENTIALS } from '@/src/constants';
 import { VerifySignatureInput, CheckPOAPOwnershipInput, ProcessVoteInput } from '@/types'
+import { storeVote, checkNullifier, generateNullifier } from '@/utils/ceramicHelpers'
+import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock'
+import { generateMessage } from '@/utils/generateMessage'
 
 const poapApiKey = process.env.POAP_API_KEY ?? "";
 
@@ -20,16 +23,19 @@ async function validateRequest(req: NextApiRequest) {
     }
 }
 
-async function verifySignature({ pollId, option_id, voter_identifier, requiredCred, signature }: VerifySignatureInput): Promise<void> {
-    if (requiredCred === CREDENTIALS.GitcoinPassport.id || requiredCred === CREDENTIALS.POAPapi.id || requiredCred === CREDENTIALS.ProtocolGuildMember.id) {
-        const message = `{ poll_id: ${pollId}, option_id: ${option_id}, voter_identifier: ${voter_identifier}, requiredCred: ${requiredCred}`;
-        const signerAddress = verifyMessage(message, signature);
+async function verifySignature({ poll_id, option_id, voter_identifier, signature }: VerifySignatureInput): Promise<string | undefined> {
+    let signerAddress;
+    const message = generateMessage(poll_id, option_id, voter_identifier);
+    console.log("🚀 ~ verifySignature ~ signature:", signature)
+    console.log("🚀 ~ verifySignature ~ message:", message)
+    signerAddress = verifyMessage(message, signature);
+    console.log("🚀 ~ verifySignature ~ signerAddress:", signerAddress)
 
-        if (signerAddress !== voter_identifier) {
-            throw new Error("Signature doesn't correspond with address.");
-        }
+    if (signerAddress !== voter_identifier) {
+        throw new Error("Signature doesn't correspond with address.");
     }
     // Additional verification logic for other credentials can be added here
+    return signerAddress;
 }
 
 async function checkPOAPOwnership({ pollData, voter_identifier }: CheckPOAPOwnershipInput): Promise<void> {
@@ -45,7 +51,7 @@ async function checkPOAPOwnership({ pollData, voter_identifier }: CheckPOAPOwner
     }
 }
 
-async function processVote({ vote_hash, poll_id, option_id }: ProcessVoteInput): Promise<void> {
+async function processVote({ vote_hash, poll_id, option_id, weight }: ProcessVoteInput): Promise<void> {
     const { data: existingVoteOnOption } = await supabase
         .from('votes')
         .select('*')
@@ -59,7 +65,7 @@ async function processVote({ vote_hash, poll_id, option_id }: ProcessVoteInput):
     }
 
     // Check if the voter has already voted in the poll and process accordingly
-    const { data, error } = await supabase
+    const { data: votesData, error } = await supabase
         .from('votes')
         .select('option_id')
         .eq('vote_hash', vote_hash)
@@ -67,7 +73,7 @@ async function processVote({ vote_hash, poll_id, option_id }: ProcessVoteInput):
 
     if (error) throw error;
 
-    let existingVote = data ? data[0] : null;
+    let existingVote = votesData ? votesData[0] : null;
     if (existingVote) {
         const { error: deleteError } = await supabase
             .from('votes')
@@ -84,7 +90,7 @@ async function processVote({ vote_hash, poll_id, option_id }: ProcessVoteInput):
         }
     }
 
-    // Insert the new vote
+    // // Insert the new vote
     const { error: insertError } = await supabase
         .from('votes')
         .insert([{
@@ -92,7 +98,8 @@ async function processVote({ vote_hash, poll_id, option_id }: ProcessVoteInput):
             option_id,
             vote_hash,
             poll_id,
-            cast_at: new Date()
+            cast_at: new Date(),
+            weight
         }]);
 
     if (insertError) throw insertError;
@@ -104,30 +111,90 @@ async function processVote({ vote_hash, poll_id, option_id }: ProcessVoteInput):
     if (incrementError) throw incrementError;
 }
 
+const containsSignatureCredential = (requiredCredentials: any[] | null) => {
+    if (requiredCredentials === null) return;
+    const signatureCredentials = [CREDENTIALS.GitcoinPassport.id, CREDENTIALS.POAPapi.id, CREDENTIALS.ProtocolGuildMember.id, CREDENTIALS.EthHoldingOffchain.id]
+
+    return requiredCredentials.some(credential =>
+        signatureCredentials.every(searchString => credential.id.includes(searchString))
+    );
+}
+
+const containsCredentialById = (requiredCredentials: any[] | null, credId: string) => {
+    if (requiredCredentials === null) return;
+    return requiredCredentials.some(credential =>
+        credential.id.includes(credId)
+    );
+}
+
 const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
+    let weight;
+    let signerAddress;
     try {
         await validateRequest(req);
-        const { pollId, option_id, voter_identifier, poll_id, requiredCred, signature } = req.body;
-
-        await verifySignature({ pollId, option_id, voter_identifier, requiredCred, signature });
+        const { poll_id, option_id, voter_identifier, signature } = req.body;
 
         const { data: pollData } = await supabase
-            .from('votes')
+            .from('polls')
+            .select('*')
+            .eq('id', poll_id)
+            .single();
+
+        // Get required credentials so user can't inject them from the frontend
+        const { data: requiredCredentials } = await supabase
+            .from('pollcredentials')
             .select('*')
             .eq('poll_id', poll_id)
-            .single();
+
+        const containsSingature = containsSignatureCredential(requiredCredentials)
+        if (containsSingature) {
+            signerAddress = await verifySignature({ poll_id, option_id, voter_identifier, signature });
+
+            if (signerAddress === undefined) {
+                res.status(401).json({ error: 'Signer not verified' });
+            }
+        }
 
         if (pollData?.poap_events && pollData?.poap_events.length) {
             await checkPOAPOwnership({ pollData, voter_identifier });
         }
 
+        // EthHolding count
+        const isEthHoldingPoll = containsCredentialById(requiredCredentials, CREDENTIALS.EthHoldingOffchain.id)
+        console.log("🚀 ~ createVote ~ isEthHoldingPoll:", isEthHoldingPoll)
+        if (isEthHoldingPoll) {
+            const blockNumber = pollData.block_number;
+            if (signerAddress) {
+                weight = await getBalanceAtBlock(signerAddress, blockNumber);
+                console.log("🚀 ~ createVote ~ ethCount:", weight)
+            }
+        }
+
+        console.log('voter_identifier', voter_identifier);
+
+        // // Generate a nullifier for the voterCredential
+        // // TODO: Make one nullifier per credentialId and credentials used (i.e: POAP used)
+        // const nullifier = generateNullifier(voter_identifier);
+
+        // TODO: Uncomment when ceramic is ready
+        // Check if the nullifier already exists (indicating vote reuse)
+        // const isNullifierUsed = await checkNullifier(nullifier);
+        // if (isNullifierUsed) {
+        //     throw new Error('Credential has already been used.');
+        // }
+
+        // // Store the vote with the nullifier as an identifier
+        // await storeVote(voteData, nullifier, weight);
+
+        console.log("🚀 ~ createVote ~ weight:", weight)
         const vote_hash = crypto.createHash('sha256').update(voter_identifier).digest('hex');
-        await processVote({ vote_hash, poll_id, option_id });
+        await processVote({ vote_hash, poll_id, option_id, weight });
 
         res.status(201).send('Vote recorded successfully');
     } catch (error: any) {
         res.status(500).json({ error: error.message || 'An unexpected error occurred' });
     }
+
 };
 
 export default createVote;
