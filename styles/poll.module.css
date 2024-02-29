@@ -152,3 +152,143 @@
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
 }
+
+.voting_container {
+    display: flex;
+    flex-direction: column;
+    background: #E9E9E9;
+    border: 1px solid #D1D1D1;
+    padding: 20px;
+}
+
+.container_header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.nested_poll_header {
+    margin-bottom: 20px;
+}
+
+.nested_poll_header h4 {
+    color: #464646;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.nested_poll_header p {
+    color: #747474;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 3px;
+}
+
+.eth_holding_container {
+    padding: 10px;
+    border-radius: 10px;
+    background: #DDDDDD;
+    margin-top: 24px;
+}
+
+.eth_holding_container div {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.eth_holding_container div img {
+    width: 24px;
+}
+
+.eth_holding_container h4 {
+    color: #6E6E6E;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.eth_holding_container h4 span {
+    color: #424242;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.eth_holding_container p {
+    color: #6E6E6E;
+    font-size: 14px;
+    margin: 6px 0 15px 0;
+    font-weight: 500;
+}
+
+.eth_holding_container span {
+    color: #000;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.user_voted {
+    width: 100%;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #000;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.user_voted span {
+    color: #fff;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.options_container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.gated_poll_disabled {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(236, 236, 236, 0.6);
+    backdrop-filter: blur(2px);
+    display: grid;
+    place-items: center;
+    z-index: 1;
+    border-radius: 10px;
+}
+
+.gated_content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gated_content div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.gated_content div img {
+    width: 25px;
+}
+
+.gated_content div span {
+    color: #4C4C4C;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.gated_content p {
+    color: #000;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 8px;
+}

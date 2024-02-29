@@ -1,0 +1,9 @@
+.option {
+    font-weight: bold;
+    color: #000;
+    font-size: 16px;
+    background: #fff;
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+}

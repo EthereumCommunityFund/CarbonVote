@@ -793,10 +793,19 @@ const PollPage = () => {
           </div>
         </div>
 
-        <div className="bg-white/40 p-2.5 flex flex-col gap-3.5">
+        <div className={styles.voting_container}>
           {pollIsLive ? (
             <>
-              <Label className="text-2xl">Vote on Poll</Label>
+
+              <div className={styles.user_voted}>
+                <img src='/images/checkmark_white.svg' />
+                <span>You Have Voted</span>
+              </div>
+              <Label className={styles.container_header}>Vote on Poll</Label>
+              <div className={styles.nested_poll_header}>
+                <h4>This is a nested poll. You can vote with multiple credentials.</h4>
+                <p>Votes will be segmented by credentials</p>
+              </div>
               {(!poll?.poap_events || poll?.poap_events.length === 0) &&
                 credentialId === CREDENTIALS.POAPSVerification.id ? (
                 <div>
@@ -822,7 +831,16 @@ const PollPage = () => {
                   be higher than 0 to vote)
                 </Label>
               )}
-              <div className="flex flex-col gap-2.5">
+              <div className={styles.options_container}>
+                <div className={styles.gated_poll_disabled}>
+                  <div className={styles.gated_content}>
+                    <div>
+                      <img src="/images/locked.svg" alt="" />
+                      <span>You Cannot Vote</span>
+                    </div>
+                    <p>You do not have the available credentials</p>
+                  </div>
+                </div>
                 {options?.map((option) => (
                   <OptionButton
                     key={option.id}
@@ -834,6 +852,14 @@ const PollPage = () => {
                     optionAddress={undefined}
                   />
                 ))}
+              </div>
+              <div className={styles.eth_holding_container}>
+                <div>
+                  <img src='/images/eth_logo.svg' />
+                  <h4>Ether Holding Credential <span>requires a <strong>zero-value transaction</strong> from your wallet.</span></h4>
+                </div>
+                <p>Optionally, you can manually send a zero-value transaction by pasting the address directly from your wallet.</p>
+                <span>Show Addresses</span>
               </div>
               <div className="flex flex-col gap-2.5">
                 {credentialTable.map((credential) => (
