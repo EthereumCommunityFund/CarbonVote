@@ -5,10 +5,10 @@ import styles from '@/styles/OptionButton.module.css';
 interface OptionButtonProps {
   optionName: string;
   onVote: (identifier: string | number) => void;
-  isChecked: boolean;
+  isChecked?: boolean;
   index?: number;
   id?: string;
-  type: 'api' | 'contract';
+  type?: 'api' | 'contract';
   optionAddress: string | undefined;
 }
 

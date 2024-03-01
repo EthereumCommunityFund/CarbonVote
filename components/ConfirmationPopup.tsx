@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from "@/styles/confirmationPopup.module.css"
 import { HiArrowRight, HiCheck, HiPlus } from 'react-icons/hi';
 
-const ConfirmationPopup: React.FC = () => {
+const ConfirmationPopup: React.FC = (votetable,votecount) => {
     const [stepsConfirmed, setStepsConfirmed] = useState<number>(0);
 
     useEffect(() => {

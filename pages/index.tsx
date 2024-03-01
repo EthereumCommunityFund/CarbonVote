@@ -45,10 +45,6 @@ export default function Home() {
     const { names, descriptions, options, endTimes, pollTypes, pollMetadatas, startTimes } = await contract.getAllPolls();
     const polls = names.map((name: any, index: string | number) => {
       const pollType = pollTypes[index];
-<<<<<<< HEAD
-      const votingMethod = 'EthHolding';
-=======
->>>>>>> 6e42a8b1c3191d06781e533ba97785c5be3f545b
       return {
         name,
         id: String(index), //add id for ethholding polls so there will not have redirection problems
