@@ -17,7 +17,7 @@ import {
 import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
 import { useAccount, useConnect, useSignMessage } from 'wagmi';
-import { Contract, ethers } from 'ethers';
+import { BigNumberish, Contract, ethers } from 'ethers';
 import contractABI from '@/carbonvote-contracts/deployment/contracts/poapsverification.json';
 import { calculateTimeRemaining } from '@/utils/index';
 import { v4 as uuidv4 } from 'uuid';
@@ -83,6 +83,7 @@ const PollPage = () => {
     string | null
   >(null);
   const [votedOptions, setVotedOptions] = useState({});
+  const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
   const [selectedOptionData, setSelectedOptionData] =
     useState<SelectedOptionData>();
   const handleVotesRadioChange = (
@@ -306,7 +307,7 @@ const PollPage = () => {
   const getEthHoldings = async () => {
     const blockNumber = poll?.block_number ?? 0;
     const userBalance = await getBalanceAtBlock(account as string, blockNumber);
-    const balanceInEth = ethers.formatEther(userBalance); // ethers.js returns balances in wei, convert it to ether
+    const balanceInEth = ethers.formatEther(userBalance as BigNumberish); // ethers.js returns balances in wei, convert it to ether
     console.log(`Balance at block ${blockNumber}: ${balanceInEth} ETH`);
 
     setUserEthHolding(parseFloat(balanceInEth).toFixed(4));
@@ -1080,7 +1081,7 @@ const PollPage = () => {
                   <button
                     className={styles.vote_btn}
                     onClick={() => {
-                      if (selectedOptionData) {
+                      setShowConfirmationPopup(true);if (selectedOptionData) {
                         handleVote(
                           selectedOptionData.optionId,
                           selectedOptionData.voteTable,
@@ -1095,7 +1096,7 @@ const PollPage = () => {
                 </div>
               </div>
             </div>
-            <ConfirmationPopup />
+            {showConfirmationPopup && <ConfirmationPopup />}
           </div>
         )}
       </div>
