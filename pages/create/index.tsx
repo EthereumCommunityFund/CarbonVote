@@ -32,6 +32,7 @@ import moment from 'moment-timezone';
 import styles from '@/styles/createPoll.module.css';
 import POAPEvents from '../../components/POAPEvents';
 import { createPoll } from '@/controllers/poll.controller';
+import { getProviderUrl } from '@/utils/getProviderUrl';
 
 interface ZupassOptionType {
   value: string;
@@ -47,6 +48,7 @@ const Options: ZupassOptionType[] = [
 const allZupassOptions = Options.map(cred => cred.value);
 
 const CreatePollPage = () => {
+  const providerUrl = getProviderUrl();
   const [pollContract, setPollContract] = useState<Contract | null>(null);
   const contractAbi = VotingContract.abi;
   const router = useRouter();
@@ -93,9 +95,7 @@ const CreatePollPage = () => {
   useEffect(() => {
     console.log(gitcoinScore, 'gitcoinscore');
     const doConnect = async () => {
-      const provider = new ethers.JsonRpcProvider(
-        'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
-      );
+      const provider = new ethers.JsonRpcProvider(providerUrl);
       const contract = new ethers.Contract(
         CONTRACT_ADDRESS,
         contractAbi,
@@ -247,7 +247,6 @@ const CreatePollPage = () => {
       title: motionTitle,
       description: motionDescription,
       time_limit: durationInSeconds,
-      votingMethod: 'headCount',
       options: options
         .map((option) => ({ option_description: option.name })),
       credentials: credentialsTable,
@@ -293,7 +292,7 @@ const CreatePollPage = () => {
         console.log(provider, signer, contract);
         const network = await provider.getNetwork();
 
-        console.log('Connected to Sepolia');
+        console.log(`Connected to ${network}`);
 
         const tx = await contract.createPoll(motionTitle, motionDescription, durationInSeconds, optionNames, pollType, pollMetadata);
         await tx.wait();

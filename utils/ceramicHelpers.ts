@@ -70,7 +70,7 @@ export const storeVote = async (voteData: any, nullifier: string, ethCount: numb
             ...voteData,
             nullifier,
             timestamp: new Date().toISOString(), // Optional: add a timestamp for when the vote was recorded
-            eth_count: ethCount
+            weight: ethCount
         };
 
         const cleanContent = cleanObject(content);

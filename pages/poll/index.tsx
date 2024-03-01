@@ -17,7 +17,7 @@ import {
 import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
 import { useAccount, useConnect, useSignMessage } from 'wagmi';
-import { BigNumberish, Contract, ethers } from 'ethers';
+import { Contract, ethers } from 'ethers';
 import contractABI from '@/carbonvote-contracts/deployment/contracts/poapsverification.json';
 import { calculateTimeRemaining } from '@/utils/index';
 import { v4 as uuidv4 } from 'uuid';
@@ -36,7 +36,7 @@ import createPollstyles from '@/styles/createPoll.module.css';
 import styles from '@/styles/poll.module.css';
 import { HiArrowRight } from 'react-icons/hi';
 import ConfirmationPopup from '@/components/ConfirmationPopup';
-
+import { getProviderUrl } from '@/utils/getProviderUrl';
 interface CredentialTable {
   credential: string;
   id: string;
@@ -61,6 +61,7 @@ const PollPage = () => {
   const { connect } = useConnect();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [options, setOptions] = useState<PollOptionType[]>([]);
+  // FIXME: For multiple votes this single CredentialId might break the logic. Implementing an agregated credential requirement 
   const [credentialId, setCredentialId] = useState('');
   const [userEthHolding, setUserEthHolding] = useState('0');
   const [score, setScore] = useState('0');
@@ -150,6 +151,8 @@ const PollPage = () => {
   }, [voteTable]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const popupRef = useRef<HTMLDivElement | null>(null);
+
+  const providerUrl = getProviderUrl();
 
   useEffect(() => {
     // Function to close popup when clicked outside
@@ -259,8 +262,9 @@ const PollPage = () => {
     setSelectedOption(null);
     if (isValidUuidV4(id as string)) {
       fetchPollFromApi(id);
-      if (credentialId == '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2') {
+      if (credentialId == CREDENTIALS.GitcoinPassport.id) {
         const fetchNewScore = async () => {
+          // FIXME: SHOULD THIS SCORE ID BE HARDCODED HERE?
           let fetchScoreData = { address: account as string, scorerId: '6347' };
           try {
             let scoreResponse = await fetchScore(fetchScoreData);
@@ -275,13 +279,8 @@ const PollPage = () => {
       } else if (credentialId == CREDENTIALS.POAPSVerification.id) {
         const fetchNewNumber = async () => {
           try {
-            // TODO: Replace ethers with wagmi.
-            // ref: https://wagmi.sh/core/api/actions/readContract
             // TODO: Replace hardcoded URL with dynamic.
-            const provider = new ethers.JsonRpcProvider(
-              'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
-            );
-            //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
+            const provider = new ethers.JsonRpcProvider(providerUrl);
             const contract = new ethers.Contract(
               CREDENTIALS.POAPSVerification.contract,
               contractABI,
@@ -300,17 +299,16 @@ const PollPage = () => {
   }, [account]);
 
   const isValidUuidV4 = (uuid: string): boolean => {
-    const uuidV4Pattern =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const uuidV4Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidV4Pattern.test(uuid);
   };
   const getEthHoldings = async () => {
     const blockNumber = poll?.block_number ?? 0;
     const userBalance = await getBalanceAtBlock(account as string, blockNumber);
-    const balanceInEth = ethers.formatEther(userBalance as BigNumberish); // ethers.js returns balances in wei, convert it to ether
+    const balanceInEth = ethers.formatEther(userBalance); // ethers.js returns balances in wei, convert it to ether
     console.log(`Balance at block ${blockNumber}: ${balanceInEth} ETH`);
 
-    setUserEthHolding(parseFloat(balanceInEth).toFixed(4));
+    setUserEthHolding(parseFloat(balanceInEth).toFixed(2));
   };
 
   const fetchPollFromApi = async (pollId: string | string[] | undefined) => {
@@ -558,19 +556,14 @@ const PollPage = () => {
   ) => {
     const pollId = poll?.id as string;
     try {
-      const newMessage = generateMessage(
-        pollId,
-        optionId,
-        account as string,
-        requiredCred
-      );
+      const newMessage = generateMessage(pollId, optionId, account as string);
       if (account === null) return;
       setMessage(newMessage);
       signMessage();
-      //
+      // 
       // TODO: We need to sign the message and submit. Wait until isSuccess === true and send the transaction
       // For this we need to save the data
-      //
+      // 
     } catch (error) {
       console.error('Error signing vote:', error);
       return;

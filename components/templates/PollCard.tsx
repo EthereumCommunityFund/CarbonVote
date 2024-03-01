@@ -18,12 +18,11 @@ interface IPollCard {
   options: string[];
   polltype: any;
   pollMetadata: string;
-  votingMethod: string;
   poll: any;
   endTime: number;
 }
 
-export const PollCardTemplate = ({ id, title, topic, subTopic, description, options, votingMethod, polltype, pollMetadata, poll, startTime, endTime }: IPollCard) => {
+export const PollCardTemplate = ({ id, title, topic, subTopic, description, options, polltype, pollMetadata, poll, startTime, endTime }: IPollCard) => {
   console.log(endTime);
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
