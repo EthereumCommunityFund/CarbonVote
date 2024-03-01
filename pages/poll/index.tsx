@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeftIcon, EthIcon } from '@/components/icons';
 import { ClockIcon } from '@/components/icons/clock';
@@ -28,12 +28,12 @@ import PieChartComponent from '@/components/ui/PieChart';
 import { PollOptionType, Poll, PollTypes } from '@/types';
 import { CREDENTIALS, CONTRACT_ADDRESS } from '@/src/constants';
 import { PollResultComponent } from '@/components/PollResult';
-import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock'
-import { generateMessage } from '@/utils/generateMessage'
+import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock';
+import { generateMessage } from '@/utils/generateMessage';
 import VotingContract from '../../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
 import VotingOption from '../../carbonvote-contracts/deployment/contracts/VotingOption.sol/VotingOption.json';
 import createPollstyles from '@/styles/createPoll.module.css';
-import styles from "@/styles/poll.module.css"
+import styles from '@/styles/poll.module.css';
 import { HiArrowRight } from 'react-icons/hi';
 import ConfirmationPopup from '@/components/ConfirmationPopup';
 
@@ -41,7 +41,12 @@ interface CredentialTable {
   credential: string;
   id: string;
 }
-
+interface SelectedOptionData {
+  optionId: string;
+  voteTable: string[];
+  optionIndex: number | undefined;
+  option_description: string;
+}
 const PollPage = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -67,35 +72,92 @@ const PollPage = () => {
   const contractAbi = VotingContract.abi;
   const [pollContract, setPollContract] = useState<Contract | null>(null);
   const [pollType, setPollType] = useState<string | number>();
-  const [credentialTable, setNestedCredentialTable] = useState<CredentialTable[]>([]);
+  const [credentialTable, setNestedCredentialTable] = useState<
+    CredentialTable[]
+  >([]);
   const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
     message,
   });
   const [voteTable, setVoteTable] = useState<string[]>([]);
-  const [selectedCredentialId, setSelectedCredentialId] = useState<string | null>(null);
+  const [selectedCredentialId, setSelectedCredentialId] = useState<
+    string | null
+  >(null);
   const [votedOptions, setVotedOptions] = useState({});
-  const handleVotesRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const [selectedOptionData, setSelectedOptionData] =
+    useState<SelectedOptionData>();
+  const handleVotesRadioChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const credentialId = event.target.value;
-    setVoteTable(prevVoteTable => {
-      const index = prevVoteTable.indexOf(credentialId);
-      if (index > -1) {
-        return prevVoteTable.filter(id => id !== credentialId);
+    setVoteTable((prevVoteTable) => {
+      const isCurrentlyChecked = prevVoteTable.includes(credentialId);
+      if (isCurrentlyChecked) {
+        return prevVoteTable.filter((id) => id !== credentialId);
       } else {
         return [...prevVoteTable, credentialId];
       }
     });
     console.log(voteTable, 'vote Table');
   };
+  const handleSelectAllClick = () => {
+    setVoteTable(credentialTable.map((cred) => cred.id));
+  };
+  function getImagePathByCredential(credential: string): string {
+    if (
+      credential.includes('ProtocolGuild on-chain') ||
+      credential.includes('Protocol Guild Member')
+    ) {
+      return '/images/guild.png';
+    }
+    if (
+      credential.includes('EthHolding on-chain') ||
+      credential.includes('Eth Holding (Offchain)')
+    ) {
+      return '/images/eth_logo.svg';
+    }
+    if (
+      credential.includes('ZuConnect Resident') ||
+      credential.includes('DevConnect') ||
+      credential.includes('Zuzalu Resident')
+    ) {
+      return '/images/zupass.svg';
+    }
+    if (credential.includes('Gitcoin Passport')) {
+      return '/images/gitcoin.svg';
+    }
+    if (credential.includes('POAP API')) {
+      return '/images/poaps.svg';
+    }
+    return '';
+  }
+  const handleOptionSelect = (
+    optionId: string,
+    voteTable: string[],
+    optionIndex: number | undefined,
+    option_description: string
+  ) => {
+    setSelectedOptionData({
+      optionId,
+      voteTable,
+      optionIndex,
+      option_description,
+    });
+    setIsPopupOpen(true);
+  };
   useEffect(() => {
     console.log(voteTable, 'vote Table in useEffect');
   }, [voteTable]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const popupRef = useRef<HTMLButtonElement | null>(null);
+  const popupRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     // Function to close popup when clicked outside
     const handleClickOutside = (event: MouseEvent) => {
-      if (popupRef.current && event.target instanceof Node && !popupRef.current.contains(event.target)) {
+      if (
+        popupRef.current &&
+        event.target instanceof Node &&
+        !popupRef.current.contains(event.target)
+      ) {
         setIsPopupOpen(false);
       }
     };
@@ -114,15 +176,14 @@ const PollPage = () => {
     };
   }, [isPopupOpen]);
 
-  console.log("🚀 ~ PollPage ~ data:", data)
+  console.log('🚀 ~ PollPage ~ data:', data);
   useEffect(() => {
     if (id !== undefined) {
       if (isValidUuidV4(id as string)) {
         fetchPollFromApi(id);
         getEthHoldings();
-      }
-      else {
-        fetchPollFromContract(id as string)
+      } else {
+        fetchPollFromContract(id as string);
       }
     }
   }, [id]);
@@ -132,9 +193,22 @@ const PollPage = () => {
       for (const credential of credentialTable) {
         let identifier;
 
-        if ([CREDENTIALS.ZuConnectResident.id, CREDENTIALS.DevConnect.id, CREDENTIALS.ZuzaluResident.id].includes(credential.id)) {
+        if (
+          [
+            CREDENTIALS.ZuConnectResident.id,
+            CREDENTIALS.DevConnect.id,
+            CREDENTIALS.ZuzaluResident.id,
+          ].includes(credential.id)
+        ) {
           identifier = localStorage.getItem('userId');
-        } else if ([CREDENTIALS.GitcoinPassport.id, CREDENTIALS.POAPapi.id, CREDENTIALS.ProtocolGuildMember.id, CREDENTIALS.EthHoldingOffchain.id].includes(credential.id)) {
+        } else if (
+          [
+            CREDENTIALS.GitcoinPassport.id,
+            CREDENTIALS.POAPapi.id,
+            CREDENTIALS.ProtocolGuildMember.id,
+            CREDENTIALS.EthHoldingOffchain.id,
+          ].includes(credential.id)
+        ) {
           identifier = localStorage.getItem('account');
         } else {
           if (!localStorage.getItem('userUniqueId')) {
@@ -203,7 +277,9 @@ const PollPage = () => {
             // TODO: Replace ethers with wagmi.
             // ref: https://wagmi.sh/core/api/actions/readContract
             // TODO: Replace hardcoded URL with dynamic.
-            const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
+            const provider = new ethers.JsonRpcProvider(
+              'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
+            );
             //const provider=new ethers.providers.JsonRpcProvider(sepoliaRPC);
             const contract = new ethers.Contract(
               CREDENTIALS.POAPSVerification.contract,
@@ -223,7 +299,8 @@ const PollPage = () => {
   }, [account]);
 
   const isValidUuidV4 = (uuid: string): boolean => {
-    const uuidV4Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const uuidV4Pattern =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidV4Pattern.test(uuid);
   };
   const getEthHoldings = async () => {
@@ -248,21 +325,33 @@ const PollPage = () => {
         await fetchPollFromContract(data.contractpoll_index[0]);
         console.log(pollType?.toString(), 'pollType');
         if (pollType?.toString() == '0') {
-          nestedCredentialTable.push({ credential: 'EthHolding on-chain', id: data.contractpoll_index[0] });
+          nestedCredentialTable.push({
+            credential: 'EthHolding on-chain',
+            id: data.contractpoll_index[0],
+          });
         } else {
-          nestedCredentialTable.push({ credential: 'ProtocolGuild on-chain', id: data.contractpoll_index[1] });
+          nestedCredentialTable.push({
+            credential: 'ProtocolGuild on-chain',
+            id: data.contractpoll_index[1],
+          });
         }
       }
       //If nested poll with Ethholding on-chain and Protocol guild on-chain
       if (data.contractpoll_index?.length == 2) {
         await fetchPollFromContract(data.contractpoll_index[0]);
-        nestedCredentialTable.push({ credential: 'EthHolding on-chain', id: data.contractpoll_index[0].toString() });
+        nestedCredentialTable.push({
+          credential: 'EthHolding on-chain',
+          id: data.contractpoll_index[0].toString(),
+        });
         await fetchPollFromContract(data.contractpoll_index[1]);
-        nestedCredentialTable.push({ credential: 'ProtocolGuild on-chain', id: data.contractpoll_index[1].toString() });
+        nestedCredentialTable.push({
+          credential: 'ProtocolGuild on-chain',
+          id: data.contractpoll_index[1].toString(),
+        });
       }
       console.log(nestedCredentialTable, 'nestedTable');
       data.credentials.forEach((cred: any) => {
-        Object.values(CREDENTIALS).forEach(credential => {
+        Object.values(CREDENTIALS).forEach((credential) => {
           if (cred.id === credential.id) {
             nestedCredentialTable.push({
               credential: credential.name,
@@ -328,7 +417,7 @@ const PollPage = () => {
       //let provider = new ethers.BrowserProvider(window.ethereum as any);
       //let signer = await provider.getSigner();
       //const contract = new ethers.Contract(contractAddress, contractAbi, signer);
-      console.log('fetching', id)
+      console.log('fetching', id);
       try {
         const provider = new ethers.JsonRpcProvider(
           'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
@@ -347,21 +436,33 @@ const PollPage = () => {
           setPoll(pollData);
           setPollType(pollData.pollType);
           //pollType = pollData.pollType;
-          if (pollType) { console.log(pollType.toString(), 'poll_type123'); } else { console.log('no poll type'); }
+          if (pollType) {
+            console.log(pollType.toString(), 'poll_type123');
+          } else {
+            console.log('no poll type');
+          }
           let startdate = new Date(Number(pollData.startTime) * 1000);
           console.log(startdate, 'start time', pollData.endTime, 'end time');
-          const timeleft = calculateTimeRemaining(Number(pollData.endTime) * 1000);
-          if (!timeleft) { }
-          else {
+          const timeleft = calculateTimeRemaining(
+            Number(pollData.endTime) * 1000
+          );
+          if (!timeleft) {
+          } else {
             settimeRemaining(timeleft);
             console.log(timeleft, 'time left');
           }
-          const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243');
+          const provider = new ethers.JsonRpcProvider(
+            'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
+          );
           const newOptions: PollOptionType[] = [];
           console.log(pollData.options, 'poll.options');
           const optionContractAbi = VotingOption.abi;
           for (const address of pollData.options) {
-            const contract = new ethers.Contract(address, optionContractAbi, provider);
+            const contract = new ethers.Contract(
+              address,
+              optionContractAbi,
+              provider
+            );
             // console.log(contract, 'contract');
 
             try {
@@ -377,15 +478,17 @@ const PollPage = () => {
                 votersCount: 0,
                 totalEth: '0',
                 votersData: [],
-                optionindex: Number(index)
+                optionindex: Number(index),
               });
               newOptions.sort((a, b) => {
-                if (typeof a.optionindex === 'number' && typeof b.optionindex === 'number') {
+                if (
+                  typeof a.optionindex === 'number' &&
+                  typeof b.optionindex === 'number'
+                ) {
                   return a.optionindex - b.optionindex;
                 }
                 return 0;
               });
-
             } catch (error) {
               console.error('Error fetching options:', error);
             }
@@ -454,21 +557,30 @@ const PollPage = () => {
   ) => {
     const pollId = poll?.id as string;
     try {
-      const newMessage = generateMessage(pollId, optionId, account as string, requiredCred);
+      const newMessage = generateMessage(
+        pollId,
+        optionId,
+        account as string,
+        requiredCred
+      );
       if (account === null) return;
       setMessage(newMessage);
       signMessage();
-      // 
+      //
       // TODO: We need to sign the message and submit. Wait until isSuccess === true and send the transaction
       // For this we need to save the data
-      // 
+      //
     } catch (error) {
       console.error('Error signing vote:', error);
       return;
     }
   };
 
-  const handleVote = async (optionId: string, credentialIds: string[], optionIndex: number | undefined) => {
+  const handleVote = async (
+    optionId: string,
+    credentialIds: string[],
+    optionIndex: number | undefined
+  ) => {
     if (!localStorage.getItem('userUniqueId')) {
       const uniqueId = uuidv4();
       localStorage.setItem('userUniqueId', uniqueId);
@@ -513,7 +625,11 @@ const PollPage = () => {
               try {
                 await devconnectVerify();
                 if (localStorage.getItem('devconnectNullifier')) {
-                  await handleCastVote(optionId, CREDENTIALS.DevConnect.id, 'userId');
+                  await handleCastVote(
+                    optionId,
+                    CREDENTIALS.DevConnect.id,
+                    'userId'
+                  );
                 }
               } catch (error) {
                 console.error('Error in verifying ticket:', error);
@@ -527,13 +643,19 @@ const PollPage = () => {
                 return;
               }
               if (account !== null) {
-                let fetchScoreData = { address: account as string, scorerId: '6347' };
+                let fetchScoreData = {
+                  address: account as string,
+                  scorerId: '6347',
+                };
                 let scoreResponse = await fetchScore(fetchScoreData);
                 let scoreData = scoreResponse.data;
                 console.log(scoreData.score.toString(), 'score');
                 setScore(scoreData.score.toString());
                 if (scoreData.score.toString() != '0') {
-                  await handleCastVoteSigned(optionId, CREDENTIALS.GitcoinPassport.id);
+                  await handleCastVoteSigned(
+                    optionId,
+                    CREDENTIALS.GitcoinPassport.id
+                  );
                 }
               }
               break;
@@ -573,7 +695,10 @@ const PollPage = () => {
 
               // TODO: Check if address has Ether?
 
-              await handleCastVoteSigned(optionId, CREDENTIALS.EthHoldingOffchain.id);
+              await handleCastVoteSigned(
+                optionId,
+                CREDENTIALS.EthHoldingOffchain.id
+              );
               break;
             // POAPS ONCHAIN
             /*else if (credentialId == CREDENTIALS.POAPSVerification.id) {
@@ -621,17 +746,21 @@ const PollPage = () => {
         } else {
           console.log(credentialId, 'credentialId');
           console.log(optionIndex as number, 'option index');
-          await handleContractVote(credentialId, optionIndex as number)
+          await handleContractVote(credentialId, optionIndex as number);
         }
         await fetchPollFromApi(id);
       }
     } else {
-      await handleContractVote(id as string, optionIndex as number)
+      await handleContractVote(id as string, optionIndex as number);
     }
-  }
+  };
   function canOpenPopup() {
     let windowReference = window.open('', '_blank');
-    if (!windowReference || windowReference.closed || typeof windowReference.closed == 'undefined') {
+    if (
+      !windowReference ||
+      windowReference.closed ||
+      typeof windowReference.closed == 'undefined'
+    ) {
       // Pop-up was blocked
       return false;
     }
@@ -696,7 +825,11 @@ const PollPage = () => {
       let provider = new ethers.BrowserProvider(window.ethereum as any);
       let signer = await provider.getSigner();
       //let provider = ethers.getDefaultProvider("http://localhost:8545/");
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, signer);
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        contractAbi,
+        signer
+      );
       const pollIndex = Number(pollId);
       const newOptionIndex = Number(optionIndex);
       // console.log(pollIndex, 'pollIndex');
@@ -707,14 +840,20 @@ const PollPage = () => {
       if (!canOpenPopup()) {
         toast({
           title: 'Error',
-          description: 'Please enable pop-ups in your browser settings to proceed with the transaction.',
+          description:
+            'Please enable pop-ups in your browser settings to proceed with the transaction.',
           variant: 'destructive',
         });
         return;
       }
       if (Number(network.chainId) === 11155111) {
         console.log('Connected to Sepolia');
-        const transactionResponse = await contract.vote(pollIndex, newOptionIndex, signature, message);
+        const transactionResponse = await contract.vote(
+          pollIndex,
+          newOptionIndex,
+          signature,
+          message
+        );
         await transactionResponse.wait(); // Wait for the transaction to be mined
         console.log('Vote cast successfully');
         toast({
@@ -729,8 +868,7 @@ const PollPage = () => {
           variant: 'destructive',
         });
       }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       console.error('Error casting vote:', error);
       toast({
         title: 'Error',
@@ -762,8 +900,9 @@ const PollPage = () => {
         <div className="bg-white flex flex-col gap-1.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
             <div
-              className={`${pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
-                } px-2.5 rounded-lg items-center`}
+              className={`${
+                pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
+              } px-2.5 rounded-lg items-center`}
             >
               {pollIsLive ? (
                 <Label className="text-[#44b678]">Live</Label>
@@ -796,18 +935,19 @@ const PollPage = () => {
         <div className={styles.voting_container}>
           {pollIsLive ? (
             <>
-
-              <div className={styles.user_voted}>
+              {/*<div className={styles.user_voted}>
                 <img src='/images/checkmark_white.svg' />
                 <span>You Have Voted</span>
-              </div>
+          </div>*/}
               <Label className={styles.container_header}>Vote on Poll</Label>
               <div className={styles.nested_poll_header}>
-                <h4>This is a nested poll. You can vote with multiple credentials.</h4>
+                <h4>
+                  This is a nested poll. You can vote with multiple credentials.
+                </h4>
                 <p>Votes will be segmented by credentials</p>
               </div>
               {(!poll?.poap_events || poll?.poap_events.length === 0) &&
-                credentialId === CREDENTIALS.POAPSVerification.id ? (
+              credentialId === CREDENTIALS.POAPSVerification.id ? (
                 <div>
                   <div>
                     <Label className="text-sm">
@@ -832,7 +972,7 @@ const PollPage = () => {
                 </Label>
               )}
               <div className={styles.options_container}>
-                <div className={styles.gated_poll_disabled}>
+                {/* <div className={styles.gated_poll_disabled}>
                   <div className={styles.gated_content}>
                     <div>
                       <img src="/images/locked.svg" alt="" />
@@ -840,43 +980,42 @@ const PollPage = () => {
                     </div>
                     <p>You do not have the available credentials</p>
                   </div>
-                </div>
+                  </div>*/}
                 {options?.map((option) => (
                   <OptionButton
                     key={option.id}
                     id={option.id}
                     optionName={option.option_description}
-                    onVote={() => handleVote(option.id, voteTable, option.optionindex)}
-                    isChecked={selectedOption === option.id}
-                    type="api"
+                    onVote={() =>
+                      handleOptionSelect(
+                        option.id,
+                        voteTable,
+                        option.optionindex,
+                        option.option_description
+                      )
+                    }
+                    //isChecked={selectedOption === option.id}
+                    //type="api"
                     optionAddress={undefined}
                   />
                 ))}
               </div>
               <div className={styles.eth_holding_container}>
                 <div>
-                  <img src='/images/eth_logo.svg' />
-                  <h4>Ether Holding Credential <span>requires a <strong>zero-value transaction</strong> from your wallet.</span></h4>
+                  <img src="/images/eth_logo.svg" />
+                  <h4>
+                    Ether Holding Credential{' '}
+                    <span>
+                      requires a <strong>zero-value transaction</strong> from
+                      your wallet.
+                    </span>
+                  </h4>
                 </div>
-                <p>Optionally, you can manually send a zero-value transaction by pasting the address directly from your wallet.</p>
+                <p>
+                  Optionally, you can manually send a zero-value transaction by
+                  pasting the address directly from your wallet.
+                </p>
                 <span>Show Addresses</span>
-              </div>
-              <div className="flex flex-col gap-2.5">
-                {credentialTable.map((credential) => (
-                  <div key={credential.id} className={styles.radios_flex_col}>
-                    <label className={styles.radio_flex}>
-                      <input
-                        type="checkbox"
-                        name="credentials"
-                        value={credential.id}
-                        checked={voteTable.includes(credential.id)}
-                        onChange={handleVotesRadioChange}
-                        className={styles.hidden_radio}
-                      />
-                      <span>{credential.credential}{votedOptions ? `(${votedOptions})` : ''}</span>
-                    </label>
-                  </div>
-                ))}
               </div>
             </>
           ) : (
@@ -885,55 +1024,79 @@ const PollPage = () => {
         </div>
         <button onClick={() => setIsPopupOpen(!isPopupOpen)}>Open Popup</button>
         {isPopupOpen && (
-
-          // <div className={styles.voting_popup_bg}>
-          //   <div ref={popupRef} className={styles.voting_popup}>
-          //     <h4>Your Available Credentials</h4>
-          //     <p className={styles.header_p}>You are selecting</p>
-          //     <p className={styles.choice}>NO</p>
-          //     <div className={styles.v_pop_content}>
-          //       <p>Select the credentials you want to vote with</p>
-          //       <div className={styles.choice_option}>
-          //         <div>
-          //           <img src='/images/eth_logo.svg' />
-          //           <span>Ether Holding: on-Chain</span>
-          //         </div>
-          //         <input type='checkbox' />
-          //       </div>
-          //       <div className={styles.choice_option}>
-          //         <div>
-          //           <img src='/images/zupass.svg' />
-          //           <span>Zupass</span>
-          //         </div>
-          //         <input type='checkbox' />
-          //       </div>
-          //       <div className={styles.choice_option}>
-          //         <div>
-          //           <img src='/images/poaps.svg' />
-          //           <span>POAPs</span>
-          //         </div>
-          //         <input type='checkbox' />
-          //       </div>
-          //       <div className={styles.choice_option}>
-          //         <div>
-          //           <img src='/images/guild.png' />
-          //           <span>Protocol Guild</span>
-          //         </div>
-          //         <input type='checkbox' />
-          //       </div>
-          //       <div className={styles.choice_option}>
-          //         <div>
-          //           <img src='/images/gitcoin.svg' />
-          //           <span>Gitcoin Passport</span>
-          //         </div>
-          //         <input type='checkbox' />
-          //       </div>
-          //     </div>
-          //     <div className={styles.select_all}>Select All</div>
-          //     <button className={styles.vote_btn}><HiArrowRight /><span>Vote</span></button>
-          //   </div>
-          // </div>
-          <ConfirmationPopup />
+          <div>
+            <div className={styles.voting_popup_bg}>
+              <div ref={popupRef} className={styles.voting_popup}>
+                <h4>Your Available Credentials</h4>
+                <p className={styles.header_p}>You are selecting</p>
+                <p className={styles.choice}>
+                  {selectedOptionData
+                    ? selectedOptionData.option_description
+                    : ''}
+                </p>
+                <div className={styles.v_pop_content}>
+                  <p>Select the credentials you want to vote with</p>
+                  <div className="flex flex-col gap-2.5">
+                    {credentialTable.map((credential) => {
+                      const imagePath = getImagePathByCredential(
+                        credential.credential
+                      );
+                      return (
+                        <div
+                          key={credential.id}
+                          className={styles.radios_flex_col}
+                        >
+                          <label className={styles.choice_option}>
+                            <input
+                              type="checkbox"
+                              name="credentials"
+                              value={credential.id}
+                              checked={voteTable.includes(credential.id)}
+                              onChange={handleVotesRadioChange}
+                              className={styles.hidden_radio}
+                            />
+                            {imagePath && (
+                              <img
+                                src={imagePath}
+                                alt="Credential"
+                                className="image-class-name"
+                              />
+                            )}
+                            <span>
+                              {credential.credential}
+                              {votedOptions ? ` (${votedOptions})` : ''}
+                            </span>
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div
+                    className={styles.select_all}
+                    onClick={handleSelectAllClick}
+                  >
+                    Select All
+                  </div>
+                  <button
+                    className={styles.vote_btn}
+                    onClick={() => {
+                      if (selectedOptionData) {
+                        handleVote(
+                          selectedOptionData.optionId,
+                          selectedOptionData.voteTable,
+                          selectedOptionData.optionIndex
+                        );
+                      }
+                    }}
+                  >
+                    <HiArrowRight />
+                    <span>Vote</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <ConfirmationPopup />
+          </div>
         )}
       </div>
       <div className="flex flex-col gap-8 w-96">
@@ -976,7 +1139,9 @@ const PollPage = () => {
                   }}
                 />
                 <span>{userEthHolding} ETH</span>
-                <div style={{ marginLeft: 10 }}><EthIcon /></div>
+                <div style={{ marginLeft: 10 }}>
+                  <EthIcon />
+                </div>
               </div>
             )}
 
@@ -1015,7 +1180,10 @@ const PollPage = () => {
             )}
           </div>
         </div>
-        <PollResultComponent pollType={PollTypes.HEAD_COUNT} optionsData={options} />
+        <PollResultComponent
+          pollType={PollTypes.HEAD_COUNT}
+          optionsData={options}
+        />
       </div>
     </div>
   );
