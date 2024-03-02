@@ -17,8 +17,8 @@ async function validateRequest(req: NextApiRequest) {
         throw new Error('Method Not Allowed');
     }
 
-    const { option_id, voter_identifier, poll_id } = req.body;
-    if (!option_id || !voter_identifier || !poll_id) {
+    const { option_id, voter_identifier, poll_id,vote_credential } = req.body;
+    if (!option_id || !voter_identifier || !poll_id|| !vote_credential) {
         throw new Error('Option ID, Poll ID, and Voter Identifier are required');
     }
 }
@@ -51,13 +51,14 @@ async function checkPOAPOwnership({ pollData, voter_identifier }: CheckPOAPOwner
     }
 }
 
-async function processVote({ vote_hash, poll_id, option_id, weight }: ProcessVoteInput): Promise<void> {
+async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credential}: ProcessVoteInput): Promise<void> {
     const { data: existingVoteOnOption } = await supabase
         .from('votes')
         .select('*')
         .eq('vote_hash', vote_hash)
         .eq('poll_id', poll_id)
         .eq('option_id', option_id)
+        .eq('vote_credential',vote_credential)
         .single();
 
     if (existingVoteOnOption) {
@@ -69,6 +70,7 @@ async function processVote({ vote_hash, poll_id, option_id, weight }: ProcessVot
         .from('votes')
         .select('option_id')
         .eq('vote_hash', vote_hash)
+        .eq('vote_credential',vote_credential)
         .eq('poll_id', poll_id);
 
     if (error) throw error;
@@ -132,7 +134,7 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
     let signerAddress;
     try {
         await validateRequest(req);
-        const { poll_id, option_id, voter_identifier, signature } = req.body;
+        const { poll_id, option_id, voter_identifier, signature,vote_credential } = req.body;
 
         const { data: pollData } = await supabase
             .from('polls')
@@ -186,7 +188,7 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
 
         console.log("🚀 ~ createVote ~ weight:", weight)
         const vote_hash = crypto.createHash('sha256').update(voter_identifier).digest('hex');
-        await processVote({ vote_hash, poll_id, option_id, weight });
+        await processVote({ vote_hash, poll_id, option_id, weight,vote_credential });
 
         res.status(201).send('Vote recorded successfully');
     } catch (error: any) {

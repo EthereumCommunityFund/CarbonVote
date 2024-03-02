@@ -22,16 +22,14 @@ const OptionButton: React.FC<OptionButtonProps> = ({
   optionAddress,
 }) => {
   const handleVote = () => {
-    if (type === 'api') {
+
       onVote(id as string);
-    } else {
-      onVote(index as number);
-    }
+
   };
 
   return (
     <label className="flex flex-col items-start space-y-1 relative cursor-pointer w-full">
-      {/* 修改了这里 */}
+      {/**/}
       <div className="flex items-center w-full">
         <span
           className={`text-lg font-bold ${isChecked ? 'text-blue-500' : 'text-gray-700'}`}

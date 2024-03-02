@@ -33,7 +33,6 @@ export const generateNullifier = (credential: string) => {
 export const checkNullifier = async (nullifier: any) => {
     const idx = new IDX({ ceramic });
 
-
     try {
         // Example: Checking if the nullifier exists in a specific stream
         const stream = await ceramic.loadStream(streamId);

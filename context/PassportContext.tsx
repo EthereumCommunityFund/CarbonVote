@@ -24,6 +24,7 @@ type UserPassportContextData = {
   verifyticket: () => void;
   pcd: string | null;
   devconnectVerify: () => void;
+  zuzaluVerify: () => void;
 };
 type InputParams = {
   sso: string;
@@ -68,6 +69,7 @@ export const UserPassportContext = createContext<UserPassportContextData>({
   signOut: () => { },
   verifyticket: () => { },
   devconnectVerify: () => { },
+  zuzaluVerify: () => { },
   pcd: null,
 });
 const PCD_STORAGE_KEY = 'userPCD';
@@ -82,7 +84,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
   const [pcd, setPcd] = useState<string | null>(null);
   //const [eventpcd, setEventPcd] = useState<string | null>(null);
   //const [mode, setMode] = useState<'ticket|sign-in'>('sign-in');
-  const [mode, setMode] = useState<'ticket' | 'sign-in' | 'devconnect'>('sign-in');
+  const [mode, setMode] = useState<'ticket' | 'sign-in' | 'devconnect'|'zuzalu'>('sign-in');
   const processPcd = (pcdStr: string) => {
     console.log(pcdStr);
     const pcd = JSON.parse(pcdStr);
@@ -110,6 +112,15 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
         }
         catch (error) {
           console.error('Error processing devconnect PCD string:', error);
+        }
+      }else if (pcdStr && mode === 'zuzalu') {
+        try {
+          let _pcd = processPcd(pcdStr);
+          console.log(_pcd, 'zuzalu event pcd');
+          localStorage.setItem('zuzaluNullifier', _pcd.claim.nullifierHash);
+        }
+        catch (error) {
+          console.error('Error processing zuzalu PCD string:', error);
         }
       }
       else if (pcdStr && mode === 'sign-in') {
@@ -228,7 +239,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
     const encReq = encodeURIComponent(JSON.stringify(req));
     return `${zupassClientUrl}#/prove?request=${encReq}`;
   }
-
+  const zuconnecteventids =['91312aa1-5f74-4264-bdeb-f4a3ddb8670c','54863995-10c4-46e4-9342-75e48b68d307','797de414-2aec-4ef8-8655-09df7e2b6cc6','a6109324-7ca0-4198-9583-77962d1b9d53']
   function openZKEdDSAEventTicketPopup(
     fieldsToReveal: EdDSATicketFieldsToReveal,
     watermark: bigint,
@@ -256,7 +267,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
       validEventIds: {
         argumentType: ArgumentTypeName.StringArray,
         // FIXME: instead of validEventIds we should use current requited credetials
-        value: validEventIds.length != 0 ? validEventIds : undefined,
+        value: validEventIds.length != 0 ? validEventIds : zuconnecteventids,
         userProvided: false
       },
       fieldsToReveal: {
@@ -422,6 +433,26 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
       };
       window.addEventListener('popupClosed', onPopupClosed);
     });
+  };
+  const zuzaluVerify = () => {
+    setMode('zuzalu');
+    console.log('Zuzalu verify start');
+    return new Promise<void>((resolve, reject) => {
+      openGroupMembershipPopup(
+        'https://zupass.org/',
+        window.location.origin + '/popup',
+        'https://api.zupass.org/semaphore/2',
+        'carbonvote',
+        undefined,
+        undefined
+      );
+      const onPopupClosed = () => {
+        console.log('PopupClosed event triggered');
+        window.removeEventListener('popupClosed', onPopupClosed);
+        resolve();
+      };
+      window.addEventListener('popupClosed', onPopupClosed);
+    });
 
   };
   const signOut = () => {
@@ -440,6 +471,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
         signOut,
         verifyticket,
         devconnectVerify,
+        zuzaluVerify,
         pcd,
         isPassportConnected: isAuthenticated,
       }}

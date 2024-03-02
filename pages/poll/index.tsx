@@ -43,7 +43,6 @@ interface CredentialTable {
 }
 interface SelectedOptionData {
   optionId: string;
-  voteTable: string[];
   optionIndex: number | undefined;
   option_description: string;
 }
@@ -55,7 +54,7 @@ const PollPage = () => {
     router.push('/');
   };
   const [poll, setPoll] = useState<Poll>();
-  const { signIn, isPassportConnected, verifyticket, devconnectVerify } =
+  const { signIn, isPassportConnected, verifyticket, devconnectVerify,zuzaluVerify } =
     useUserPassportContext(); // zupass
   const { address: account, isConnected } = useAccount();
   const { connect } = useConnect();
@@ -134,13 +133,12 @@ const PollPage = () => {
   }
   const handleOptionSelect = (
     optionId: string,
-    voteTable: string[],
     optionIndex: number | undefined,
     option_description: string
   ) => {
+    console.log(optionId,voteTable,optionIndex,option_description,'handle option select');
     setSelectedOptionData({
       optionId,
-      voteTable,
       optionIndex,
       option_description,
     });
@@ -469,6 +467,22 @@ const PollPage = () => {
               const index = await contract.option_index();
               console.log(index, 'index');
               //optionNames.push(optionName);
+              const existingOptionIndex = options.findIndex(option => option.option_description === optionName);
+              if (existingOptionIndex !== -1) {
+                const updatedOptions = options.map((option, idx) =>
+                  idx === existingOptionIndex
+                    ? {
+                        ...option,
+                        address: address,
+                        votersCount: 0,
+                        totalEth: '0',
+                        votersData: [],
+                        optionindex: Number(index),
+                      }
+                    : option
+                );
+                setOptions(updatedOptions); 
+              } else {
               newOptions.push({
                 id: index,
                 pollId: id as string,
@@ -488,12 +502,13 @@ const PollPage = () => {
                 }
                 return 0;
               });
+              setOptions(newOptions);}
             } catch (error) {
               console.error('Error fetching options:', error);
             }
           }
-          setOptions(newOptions);
-        } else {
+        }
+        else {
           console.log('Poll contract not existe');
         }
       } catch (error) {
@@ -575,11 +590,13 @@ const PollPage = () => {
     credentialIds: string[],
     optionIndex: number | undefined
   ) => {
+    console.log('handle vote',optionId,credentialIds,optionIndex);
     if (!localStorage.getItem('userUniqueId')) {
       const uniqueId = uuidv4();
       localStorage.setItem('userUniqueId', uniqueId);
     }
     if (voteTable.length > 0) {
+      console.log(credentialIds,'vote tqble');
       for (let credentialId of credentialIds) {
         if (isValidUuidV4(credentialId)) {
           switch (credentialId) {
@@ -622,6 +639,26 @@ const PollPage = () => {
                   await handleCastVote(
                     optionId,
                     CREDENTIALS.DevConnect.id,
+                    'userId'
+                  );
+                }
+              } catch (error) {
+                console.error('Error in verifying ticket:', error);
+                return;
+              }
+              break;
+              //Zuzalu Resident
+              case CREDENTIALS.ZuzaluResident.id:
+              if (!isPassportConnected) {
+                await signIn();
+                return;
+              }
+              try {
+                await zuzaluVerify();
+                if (localStorage.getItem('zuzaluNullifier')) {
+                  await handleCastVote(
+                    optionId,
+                    CREDENTIALS.ZuzaluResident.id,
                     'userId'
                   );
                 }
@@ -983,7 +1020,6 @@ const PollPage = () => {
                     onVote={() =>
                       handleOptionSelect(
                         option.id,
-                        voteTable,
                         option.optionindex,
                         option.option_description
                       )
@@ -1074,10 +1110,10 @@ const PollPage = () => {
                   <button
                     className={styles.vote_btn}
                     onClick={() => {
-                      setShowConfirmationPopup(true);if (selectedOptionData) {
+                      setShowConfirmationPopup(false);if (selectedOptionData) {
                         handleVote(
                           selectedOptionData.optionId,
-                          selectedOptionData.voteTable,
+                          voteTable,
                           selectedOptionData.optionIndex
                         );
                       }

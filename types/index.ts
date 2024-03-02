@@ -106,6 +106,7 @@ export interface ProcessVoteInput {
   poll_id: string;
   option_id: string;
   weight?: string;
+  vote_credential: string;
 }
 
 interface PollData {
