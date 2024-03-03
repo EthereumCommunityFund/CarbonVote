@@ -1270,9 +1270,13 @@ const PollPage = () => {
                 </p>
                 <span>Show Addresses</span>
               </div>
+
             </>
           ) : (
-            <Label className="text-2xl">Poll finished</Label>
+            <div className={styles.poll_finished}>
+              <h3>Poll finished</h3>
+              <div></div>
+            </div>
           )}
         </div>
         {isPopupOpen && (
