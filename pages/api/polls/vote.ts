@@ -9,6 +9,7 @@ import { VerifySignatureInput, CheckPOAPOwnershipInput, ProcessVoteInput } from 
 import { storeVote, checkNullifier, generateNullifier } from '@/utils/ceramicHelpers'
 import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock'
 import { generateMessage } from '@/utils/generateMessage'
+import { ProtocolGuildMembershipList } from '@/src/protocolguildmember';
 
 const poapApiKey = process.env.POAP_API_KEY ?? "";
 
@@ -80,7 +81,7 @@ async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credent
         const { error: deleteError } = await supabase
             .from('votes')
             .delete()
-            .match({ vote_hash, poll_id });
+            .match({ vote_hash, poll_id , vote_credential});
 
         if (deleteError) throw deleteError;
 
@@ -101,7 +102,8 @@ async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credent
             vote_hash,
             poll_id,
             cast_at: new Date(),
-            weight
+            weight,
+            vote_credential
         }]);
 
     // if (insertError) throw insertError;
@@ -135,6 +137,7 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
         await validateRequest(req);
         const { poll_id, option_id, voter_identifier, signature,vote_credential } = req.body;
+        console.log(poll_id, option_id, voter_identifier, signature,vote_credential,'all info');
 
         const { data: pollData } = await supabase
             .from('polls')
@@ -156,17 +159,25 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
                 res.status(401).json({ error: 'Signer not verified' });
             }
         }
-
+        // POAP verification
+        if (vote_credential === CREDENTIALS.POAPapi.id) {
         if (pollData?.poap_events && pollData?.poap_events.length) {
             await checkPOAPOwnership({ pollData, voter_identifier });
         }
+        }
 
         // EthHolding count
-        const isEthHoldingPoll = containsCredentialById(requiredCredentials, CREDENTIALS.EthHoldingOffchain.id)
-        if (isEthHoldingPoll) {
+        if ( vote_credential === CREDENTIALS.EthHoldingOffchain.id) {
             const blockNumber = pollData.block_number;
             if (signerAddress !== undefined) {
                 weight = await getBalanceAtBlock(signerAddress, blockNumber);
+            }
+        }
+
+        // Protocol Guild
+        if ( vote_credential === CREDENTIALS.ProtocolGuildMember.id) {
+            if (!ProtocolGuildMembershipList.includes(voter_identifier)) {
+                res.status(403).json({ error: "You don't qualify to vote for this poll." });
             }
         }
 

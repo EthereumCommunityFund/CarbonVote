@@ -9,7 +9,8 @@ export const getBalanceAtBlock = async (address: string, blockNumber: number) =>
 
         // Query the balance at the specific block number
         const balance = await provider.getBalance(address, blockNumber);
-        return balance;
+        const balanceInEther = ethers.utils.formatEther(balance);
+        return balanceInEther;
     } catch (error) {
         console.error('Error getBalanceAtBlock', error);
         return error;

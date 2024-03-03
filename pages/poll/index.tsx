@@ -17,7 +17,7 @@ import {
 import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
 import { useAccount, useConnect, useSignMessage } from 'wagmi';
-import { Contract, ethers } from 'ethers';
+import { Contract, ethers, BigNumberish } from 'ethers';
 import contractABI from '@/carbonvote-contracts/deployment/contracts/poapsverification.json';
 import { calculateTimeRemaining } from '@/utils/index';
 import { v4 as uuidv4 } from 'uuid';
@@ -75,7 +75,7 @@ const PollPage = () => {
   const [credentialTable, setNestedCredentialTable] = useState<
     CredentialTable[]
   >([]);
-  const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
+  const { data, isError, isLoading, isSuccess, signMessage, reset} = useSignMessage({
     message,
   });
   const [voteTable, setVoteTable] = useState<string[]>([]);
@@ -83,6 +83,7 @@ const PollPage = () => {
     string | null
   >(null);
   const [votedOptions, setVotedOptions] = useState({});
+  const [signingCredential, setSigningCredential] = useState<string>('');
   const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
   const [selectedOptionData, setSelectedOptionData] =
     useState<SelectedOptionData>();
@@ -194,7 +195,6 @@ const PollPage = () => {
     async function checkAndSetVotes() {
       for (const credential of credentialTable) {
         let identifier;
-
         if (
           [
             CREDENTIALS.ZuConnectResident.id,
@@ -234,27 +234,76 @@ const PollPage = () => {
     }
     checkAndSetVotes();
   }, [credentialTable]);
-  /*useEffect(() => {
-    async () => {
-      if (isSuccess && data !== undefined) {
+
+  useEffect(() => {
+    if (poll?.block_number) {
+      getEthHoldings();
+    }
+  }, [id, poll?.block_number]);
+
+  useEffect(() => {
+    const invokeCastVote = async (vote_credential:string) => {
+      console.log(isSuccess,data,selectedOptionData?.optionId,poll?.id,account,vote_credential,'all information');
+      if (isSuccess && data !== undefined && selectedOptionData?.optionId && poll?.id && account && vote_credential) {
         const voteData = {
-          poll_id: poll?.id,
-          option_id: optionId, // FIXME: Add optionId
+          poll_id: poll.id,
+          option_id: selectedOptionData.optionId, 
           voter_identifier: account,
-          requiredCred,// FIXME: Add requiredCre
           signature: data,
+          vote_credential: vote_credential
         };
         console.log(voteData, 'voteData');
-        const response = await castVote(voteData as VoteRequestData);
-        console.log(response, 'response');
-        toast({
-          title: 'Vote cast successfully',
-        });
-        await fetchPollFromApi(id);
+        try {
+          const response = await castVote(voteData as VoteRequestData);
+          console.log(response, 'response');
+          toast({
+            title: 'Vote cast successfully',
+          });
+          //await fetchPollFromApi(id);
+        } catch (error) {
+          console.error('Error casting vote:', error);
+          if (typeof error === "object" && error !== null && "status" in error) {
+            const err = error as { status: number, message?: string };
+            if (err.status === 403) {
+              console.error("You don't have permission to cast this vote.");
+              toast({
+                title: 'Error',
+                description:
+                  "You are not a member of Protol Guild",
+                variant: 'destructive',
+              });
+            } else {
+              console.error("An unexpected error occurred.");
+              toast({
+                title: 'Error',
+                description:
+                  "An unexpected error occurred.",
+                variant: 'destructive',
+              });
+            }
+          } else {
+            console.error("An unexpected error occurred.");
+            toast({
+              title: 'Error',
+              description:
+                "An unexpected error occurred.",
+              variant: 'destructive',
+            });
+          }
+        }
       }
-    }
-  }, [isSuccess, data]);*/
+    };
+    invokeCastVote(signingCredential);
+    setMessage('');
+  }, [isSuccess, data]);
 
+  useEffect(() => {
+    if (message) {
+      console.log(message, 'message to be signed');
+      signMessage();
+    }
+  }, [message, signMessage]);
+  
   useEffect(() => {
     console.log('account changed');
     setSelectedOption(null);
@@ -301,12 +350,12 @@ const PollPage = () => {
     return uuidV4Pattern.test(uuid);
   };
   const getEthHoldings = async () => {
+    if(account){
     const blockNumber = poll?.block_number ?? 0;
     const userBalance = await getBalanceAtBlock(account as string, blockNumber);
-    const balanceInEth = ethers.formatEther(userBalance); // ethers.js returns balances in wei, convert it to ether
-    console.log(`Balance at block ${blockNumber}: ${balanceInEth} ETH`);
+    console.log(`Balance at block ${blockNumber}: ${userBalance} ETH`);
 
-    setUserEthHolding(parseFloat(balanceInEth).toFixed(2));
+    setUserEthHolding(parseFloat(userBalance).toFixed(2));}
   };
 
   const fetchPollFromApi = async (pollId: string | string[] | undefined) => {
@@ -571,10 +620,10 @@ const PollPage = () => {
   ) => {
     const pollId = poll?.id as string;
     try {
-      const newMessage = generateMessage(pollId, optionId, account as string);
+      setSigningCredential(requiredCred);
+      const newMessage =  await generateMessage(pollId, optionId, account as string);
       if (account === null) return;
       setMessage(newMessage);
-      signMessage();
       // 
       // TODO: We need to sign the message and submit. Wait until isSuccess === true and send the transaction
       // For this we need to save the data
@@ -596,7 +645,7 @@ const PollPage = () => {
       localStorage.setItem('userUniqueId', uniqueId);
     }
     if (voteTable.length > 0) {
-      console.log(credentialIds,'vote tqble');
+      console.log(credentialIds,'vote table');
       for (let credentialId of credentialIds) {
         if (isValidUuidV4(credentialId)) {
           switch (credentialId) {
@@ -724,8 +773,15 @@ const PollPage = () => {
                 return;
               }
 
-              // TODO: Check if address has Ether?
-
+              // TODO: Check if address has Ether? Done 
+              if (parseFloat(userEthHolding) === 0) {
+                toast({
+                  title: 'Error',
+                  description: 'You need to own some ETH to vote',
+                  variant: 'destructive',
+                });
+                return;
+              }
               await handleCastVoteSigned(
                 optionId,
                 CREDENTIALS.EthHoldingOffchain.id
@@ -767,10 +823,9 @@ const PollPage = () => {
                 warnAndConnect();
                 return;
               }
-              await handleCastVote(
+              await handleCastVoteSigned(
                 optionId,
-                CREDENTIALS.ProtocolGuildMember.id,
-                'userUniqueId'
+                CREDENTIALS.ProtocolGuildMember.id
               );
               break;
           }
