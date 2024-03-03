@@ -38,9 +38,16 @@ import { HiArrowRight } from 'react-icons/hi';
 import ConfirmationPopup from '@/components/ConfirmationPopup';
 import { getProviderUrl } from '@/utils/getProviderUrl';
 import { getImagePathByCredential } from '@/utils/index';
+import getPoapOwnership from 'utils/getPoapOwnership';
+import { ProtocolGuildMembershipList } from '@/src/protocolguildmember';
 interface CredentialTable {
-  credential: string;
+  credential?: string;
   id: string;
+  identifier?: string;
+  votedOption?: string;
+  gitscore?: number;
+  poap_events?: string[];
+  poap_number?: string;
 }
 interface SelectedOptionData {
   optionId: string;
@@ -54,8 +61,9 @@ const PollPage = () => {
   const handleBack = () => {
     router.push('/');
   };
+  const poapApiKey = process.env.POAP_API_KEY ?? "";  
   const [poll, setPoll] = useState<Poll>();
-  const { signIn, isPassportConnected, verifyticket, devconnectVerify,zuzaluVerify } =
+  const { signIn, isPassportConnected, verifyZuconnectticket, devconnectVerify,zuzaluVerify } =
     useUserPassportContext(); // zupass
   const { address: account, isConnected } = useAccount();
   const { connect } = useConnect();
@@ -76,6 +84,9 @@ const PollPage = () => {
   const [credentialTable, setNestedCredentialTable] = useState<
     CredentialTable[]
   >([]);
+  const [useravailablecredentialTable, setAvailableCredentialTable] = useState<
+  CredentialTable[]
+>([]);
   const { data, isError, isLoading, isSuccess, signMessage, reset} = useSignMessage({
     message,
   });
@@ -165,48 +176,230 @@ const PollPage = () => {
   }, [id]);
 
   useEffect(() => {
-    async function checkAndSetVotes() {
-      for (const credential of credentialTable) {
-        let identifier;
-        if (
-          [
-            CREDENTIALS.ZuConnectResident.id,
-            CREDENTIALS.DevConnect.id,
-            CREDENTIALS.ZuzaluResident.id,
-          ].includes(credential.id)
-        ) {
-          identifier = localStorage.getItem('userId');
-        } else if (
-          [
-            CREDENTIALS.GitcoinPassport.id,
-            CREDENTIALS.POAPapi.id,
-            CREDENTIALS.ProtocolGuildMember.id,
-            CREDENTIALS.EthHoldingOffchain.id,
-          ].includes(credential.id)
-        ) {
-          identifier = localStorage.getItem('account');
-        } else {
-          if (!localStorage.getItem('userUniqueId')) {
-            const uniqueId = uuidv4();
-            localStorage.setItem('userUniqueId', uniqueId);
+    async function checkAndSetCredentialsAndVotes() {
+      const availableCredentialTable: CredentialTable[] = [];
+      if (credentialTable.length > 0) {
+        for (let credential of credentialTable) {
+          if (isValidUuidV4(credential.id)) {
+            switch (credential.id) {
+              case CREDENTIALS.ZuConnectResident.id:
+                if (localStorage.getItem('zuconnectNullifier')) {
+                  availableCredentialTable.push({
+                    id: CREDENTIALS.ZuConnectResident.id,
+                    identifier: localStorage.getItem('zuconnectNullifier') as string,
+                    credential: CREDENTIALS.ZuConnectResident.name
+                  });
+                  const checkdata = {
+                    id: id as string,
+                    identifier: localStorage.getItem('zuconnectNullifier'),
+                    credential: CREDENTIALS.ZuConnectResident.id
+                  };
+                  const responsevote = await fetchVote(checkdata);
+                  if (responsevote.data.option_id !== '') {
+                    const lastElementIndex = availableCredentialTable.length - 1;
+                    availableCredentialTable[lastElementIndex] = {
+                      ...availableCredentialTable[lastElementIndex],
+                      votedOption: responsevote.data.option_id,
+                    };
+                 }
+              }
+                break;
+              case CREDENTIALS.DevConnect.id:
+                if (localStorage.getItem('devconnectNullifier')) {
+                  availableCredentialTable.push({
+                    id: CREDENTIALS.DevConnect.id,
+                    identifier: localStorage.getItem('devconnectNullifier') as string,
+                    credential: CREDENTIALS.DevConnect.name
+                  });
+                  const checkdata = {
+                    id: id as string,
+                    identifier: localStorage.getItem('devconnectNullifier'),
+                    credential: CREDENTIALS.DevConnect.id
+                  };
+                  const responsevote = await fetchVote(checkdata);
+                  if (responsevote.data.option_id !== '') {
+                    const lastElementIndex = availableCredentialTable.length - 1;
+                    availableCredentialTable[lastElementIndex] = {
+                      ...availableCredentialTable[lastElementIndex],
+                      votedOption: responsevote.data.option_id,
+                    };
+                  }
+              }
+                  break;
+              case CREDENTIALS.ZuzaluResident.id:
+                if (localStorage.getItem('zuzaluNullifier')) {
+                  availableCredentialTable.push({
+                    id: CREDENTIALS.ZuzaluResident.id,
+                    identifier: localStorage.getItem('zuzaluNullifier') as string,
+                    credential: CREDENTIALS.ZuzaluResident.name
+                  });
+                  const checkdata = {
+                    id: id as string,
+                    identifier: localStorage.getItem('zuzaluNullifier'),
+                    credential: CREDENTIALS.ZuzaluResident.id
+                  };
+                  const responsevote = await fetchVote(checkdata);
+                  if (responsevote.data.option_id !== '') {
+                    const lastElementIndex = availableCredentialTable.length - 1;
+                    availableCredentialTable[lastElementIndex] = {
+                      ...availableCredentialTable[lastElementIndex],
+                      votedOption: responsevote.data.option_id,
+                    };
+                  }
+              }
+                  break;
+              case CREDENTIALS.EthHoldingOffchain.id:
+                if (account) {
+                  await getEthHoldings();
+                  if(parseFloat(userEthHolding) != 0){
+                  availableCredentialTable.push({
+                    id: CREDENTIALS.EthHoldingOffchain.id,
+                    identifier: account,
+                    credential: CREDENTIALS.EthHoldingOffchain.name
+                  });
+                  const checkdata = {
+                    id: id as string,
+                    identifier: account,
+                    credential: CREDENTIALS.EthHoldingOffchain.id
+                  };
+                  const responsevote = await fetchVote(checkdata);
+                  if (responsevote.data.option_id !== '') {
+                    const lastElementIndex = availableCredentialTable.length - 1;
+                    availableCredentialTable[lastElementIndex] = {
+                      ...availableCredentialTable[lastElementIndex],
+                      votedOption: responsevote.data.option_id,
+                    };
+                  }
+                }
+              }
+                  break;
+                case CREDENTIALS.GitcoinPassport.id:
+                  if (account) {
+                    const fetchNewScore = async () => {
+                      let fetchScoreData = { address: account as string, scorerId: '6347' };
+                      try {
+                        let scoreResponse = await fetchScore(fetchScoreData);
+                        let scoreData = scoreResponse.data;
+                        console.log(scoreData.score.toString(), 'score');
+                        setScore(scoreData.score);
+                        return scoreData.score;
+                      } catch (error) {
+                        console.error('Error fetching score:', error);
+                      }
+                    };
+                    let gitscore = await fetchNewScore();
+                    if (poll && poll.gitcoin_score !== undefined && gitscore >= poll.gitcoin_score) {
+                      availableCredentialTable.push({
+                        id: CREDENTIALS.GitcoinPassport.id,
+                        identifier: account,
+                        credential: CREDENTIALS.GitcoinPassport.name,
+                        gitscore: gitscore,
+                      });
+                      const checkdata = {
+                        id: id as string,
+                        identifier: account,
+                        credential: CREDENTIALS.GitcoinPassport.id
+                      };
+                      const responsevote = await fetchVote(checkdata);
+                      if (responsevote.data.option_id !== '') {
+                        const lastElementIndex = availableCredentialTable.length - 1;
+                        availableCredentialTable[lastElementIndex] = {
+                          ...availableCredentialTable[lastElementIndex],
+                          votedOption: responsevote.data.option_id,
+                        };
+                      }
+                  }else{
+                    console.log(gitscore,'not enough score');
+                  }
+                }
+                    break;
+                case CREDENTIALS.POAPapi.id:
+                  if (account) {
+                    for (const eventId of credential.poap_events as string[]) {
+                      let userPoapIds=[];
+                      try {
+                        const hasOwnership = await getPoapOwnership(poapApiKey, account, eventId);
+                        if (hasOwnership) {
+                           userPoapIds.push(eventId);
+                        }
+                      } catch (error) {
+                        console.error(`Error checking POAP ownership for event ID ${eventId}:`, error);
+                      }
+                    if (poll && poll.poap_number!== undefined && userPoapIds.length >= Number(poll?.poap_number)) {
+                      availableCredentialTable.push({
+                        id: CREDENTIALS.POAPapi.id,
+                        identifier: account,
+                        credential: CREDENTIALS.POAPapi.name,
+                        poap_events: userPoapIds,
+                      });
+                      const checkdata = {
+                        id: id as string,
+                        identifier: account,
+                        credential: CREDENTIALS.POAPapi.id
+                      };
+                      const responsevote = await fetchVote(checkdata);
+                      if (responsevote.data.option_id !== '') {
+                        const lastElementIndex = availableCredentialTable.length - 1;
+                        availableCredentialTable[lastElementIndex] = {
+                          ...availableCredentialTable[lastElementIndex],
+                          votedOption: responsevote.data.option_id,
+                        };
+                      }
+                  }else{
+                    console.log(userPoapIds,'Poaps you have');
+                  }
+                }
+              }
+                    break;
+              case CREDENTIALS.ProtocolGuildMember.id:
+                if (account) {
+                  if (ProtocolGuildMembershipList.includes(account)) {
+                  availableCredentialTable.push({
+                    id: CREDENTIALS.ProtocolGuildMember.id,
+                    credential: CREDENTIALS.ProtocolGuildMember.name,
+                    identifier: account,
+                  });
+                  const checkdata = {
+                    id: id as string,
+                    identifier: account,
+                    credential: CREDENTIALS.ProtocolGuildMember.id
+                  };
+                  const responsevote = await fetchVote(checkdata);
+                  if (responsevote.data.option_id !== '') {
+                    const lastElementIndex = availableCredentialTable.length - 1;
+                    availableCredentialTable[lastElementIndex] = {
+                      ...availableCredentialTable[lastElementIndex],
+                      votedOption: responsevote.data.option_id,
+                    };
+                  }
+                }
+              }
+                  break;
+            }
+          }else if (credential.credential === 'EthHolding on-chain' || credential.credential === 'ProtocolGuild on-chain') {
+            availableCredentialTable.push(credential);
           }
-          identifier = localStorage.getItem('userUniqueId');
         }
-
-        const checkdata = {
-          id: credential.id,
-          identifier: identifier,
-        };
-
-        const responsevote = await fetchVote(checkdata);
-
-        if (responsevote.data.option_id !== '') {
-          setVotedOptions(responsevote.data.option_id);
-        }
+        setAvailableCredentialTable(availableCredentialTable);
       }
+      else{
+        if (pollType?.toString()== '0'){
+          availableCredentialTable.push({
+            id: id as string,
+            identifier: account,
+            credential: 'EthHolding on-chain'
+          });
+        }else{          
+          availableCredentialTable.push({
+          id: id as string,
+          identifier: account,
+          credential: 'ProtocolGuild on-chain'
+        });}
+      }
+      console.log(availableCredentialTable,'available credential table');
     }
-    checkAndSetVotes();
-  }, [credentialTable]);
+    checkAndSetCredentialsAndVotes();
+  }, [credentialTable,account,isPassportConnected,verifyZuconnectticket,devconnectVerify,zuzaluVerify]);
 
   useEffect(() => {
     if (poll?.block_number) {
@@ -224,7 +417,7 @@ const PollPage = () => {
           voter_identifier: account,
           signature: data,
           vote_credential: vote_credential,
-          ...(vote_credential === CREDENTIALS.GitcoinPassport.id && { gitsscore: score }), 
+          ...(vote_credential === CREDENTIALS.GitcoinPassport.id && { gitscore: score }), 
         };
         console.log(voteData, 'voteData');
         try {
@@ -373,46 +566,22 @@ const PollPage = () => {
       data.credentials.forEach((cred: any) => {
         Object.values(CREDENTIALS).forEach((credential) => {
           if (cred.id === credential.id) {
-            nestedCredentialTable.push({
+            let pushObject: CredentialTable = {
               credential: credential.name,
               id: cred.id,
-            });
+            };
+            if (cred.id === CREDENTIALS.POAPapi.id) {
+              pushObject = { ...pushObject, poap_events: data.poap_events, poap_number: data.poap_number };
+            }
+            else if (cred.id === CREDENTIALS.GitcoinPassport.id) {
+              pushObject = { ...pushObject, gitscore: data.gitcoin_score };
+            }
+      
+            nestedCredentialTable.push(pushObject);
           }
         });
       });
       console.log(nestedCredentialTable, 'nestedcredentialtable');
-      /*const newCredentialId = data.credentials?.[0]?.id || '';
-      let identifier: string | null = null;
-      if (newCredentialId) {
-        switch (newCredentialId) {
-          case CREDENTIALS.ZuConnectResident.id: //Zuconnect
-          case CREDENTIALS.DevConnect.id: //Devconnect
-            if (localStorage.getItem('userId')) {
-              identifier = localStorage.getItem('userId');
-            }
-            break;
-          case CREDENTIALS.GitcoinPassport.id: //Gitcoin passport
-          case CREDENTIALS.POAPSVerification.id: //POAPS verification
-            if (localStorage.getItem('account')) {
-              identifier = localStorage.getItem('account');
-            }
-            break;
-        }
-      } else {
-        if (!localStorage.getItem('userUniqueId')) {
-          const uniqueId = uuidv4();
-          localStorage.setItem('userUniqueId', uniqueId);
-        }
-        identifier = localStorage.getItem('userUniqueId');
-      }
-      const checkdata = {
-        id: pollId as string,
-        identifier: identifier as string,
-      };
-      const responsevote = await fetchVote(checkdata);
-      if (responsevote.data.option_id !== '') {
-        setSelectedOption(responsevote.data.option_id);
-      }*/
       const timeleft = calculateTimeRemaining(data.endTime);
       console.log(data.endTime);
       console.log(data.startTime);
@@ -504,6 +673,15 @@ const PollPage = () => {
                       }
                     : option
                 );
+                updatedOptions.sort((a, b) => {
+                  if (
+                    typeof a.optionindex === 'number' &&
+                    typeof b.optionindex === 'number'
+                  ) {
+                    return a.optionindex - b.optionindex;
+                  }
+                  return 0;
+                });
                 setOptions(updatedOptions); 
               } else {
               newOptions.push({
@@ -573,7 +751,7 @@ const PollPage = () => {
         poll_id: pollId,
         option_id: optionId,
         voter_identifier: voter_identifier,
-        requiredCred,
+        vote_credential:requiredCred,
         signature: null,
       };
       console.log(voteData, 'voteData');
@@ -630,20 +808,14 @@ const PollPage = () => {
               }
               try {
                 // TODO: Verify again on backend
-                await verifyticket();
-                let usereventId = localStorage.getItem('event Id');
-                console.log(usereventId);
-                if (
-                  usereventId == '91312aa1-5f74-4264-bdeb-f4a3ddb8670c' ||
-                  usereventId == '54863995-10c4-46e4-9342-75e48b68d307' ||
-                  usereventId == '797de414-2aec-4ef8-8655-09df7e2b6cc6' ||
-                  usereventId == 'a6109324-7ca0-4198-9583-77962d1b9d53'
-                ) {
-                  await handleCastVote(
-                    optionId,
-                    CREDENTIALS.ZuConnectResident.id,
-                    'userId'
-                  );
+                if (localStorage.getItem('devconnectNullifier')) {
+                await handleCastVote(
+                  optionId,
+                  CREDENTIALS.ZuConnectResident.id,
+                  'zuconnectNullifier'
+                );}
+                else{
+                  await verifyZuconnectticket();
                 }
               } catch (error) {
                 console.error('Error in verifying ticket:', error);
@@ -657,13 +829,15 @@ const PollPage = () => {
                 return;
               }
               try {
-                await devconnectVerify();
                 if (localStorage.getItem('devconnectNullifier')) {
                   await handleCastVote(
                     optionId,
                     CREDENTIALS.DevConnect.id,
-                    'userId'
+                    'devconnectNullifier'
                   );
+                }
+                else{
+                  await devconnectVerify();
                 }
               } catch (error) {
                 console.error('Error in verifying ticket:', error);
@@ -677,13 +851,15 @@ const PollPage = () => {
                 return;
               }
               try {
-                await zuzaluVerify();
                 if (localStorage.getItem('zuzaluNullifier')) {
                   await handleCastVote(
                     optionId,
                     CREDENTIALS.ZuzaluResident.id,
-                    'userId'
+                    'zuzaluNullifier'
                   );
+                }
+                else{
+                  await zuzaluVerify();
                 }
               } catch (error) {
                 console.error('Error in verifying ticket:', error);
@@ -919,7 +1095,12 @@ const PollPage = () => {
         toast({
           title: 'Vote cast successfully',
         });
-        await fetchPollFromContract(pollId as string);
+        if (isValidUuidV4(id as string)) {
+          fetchPollFromApi(id);
+          getEthHoldings();
+        } else {
+          fetchPollFromContract(id as string);
+        }
       } else {
         console.error('You should connect to Sepolia, please try again');
         toast({
@@ -1098,7 +1279,7 @@ const PollPage = () => {
                   <div className="flex flex-col gap-2.5">
                     {credentialTable.map((credential) => {
                       const imagePath = getImagePathByCredential(
-                        credential.credential
+                        credential.credential as string
                       );
                       return (
                         <div
@@ -1123,7 +1304,7 @@ const PollPage = () => {
                             )}
                             <span>
                               {credential.credential}
-                              {votedOptions ? ` (${votedOptions})` : ''}
+                              {/*votedOptions ? ` (${votedOptions})` : ''*/}
                             </span>
                           </label>
                         </div>

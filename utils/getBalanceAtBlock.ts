@@ -1,4 +1,4 @@
-const ethers = require('ethers');
+const { ethers } = require('ethers');
 import { getProviderUrl } from '@/utils/getProviderUrl';
 
 export const getBalanceAtBlock = async (address: string, blockNumber: number) => {
@@ -9,7 +9,7 @@ export const getBalanceAtBlock = async (address: string, blockNumber: number) =>
 
         // Query the balance at the specific block number
         const balance = await provider.getBalance(address, blockNumber);
-        const balanceInEther = ethers.utils.formatEther(balance);
+        const balanceInEther = ethers.formatEther(balance);
         return balanceInEther;
     } catch (error) {
         console.error('Error getBalanceAtBlock', error);

@@ -99,6 +99,9 @@ export interface Poll {
   pollMetadata: string;
   poap_events: number[]
   block_number: number;
+  contractpoll_index: number[];
+  gitcoin_score: number;
+  poap_number: string;
 }
 
 export interface ProcessVoteInput {

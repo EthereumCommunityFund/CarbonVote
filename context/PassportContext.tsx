@@ -21,7 +21,7 @@ type UserPassportContextData = {
   isAuthenticated: boolean;
   isPassportConnected: boolean;
   signOut: () => void;
-  verifyticket: () => void;
+  verifyZuconnectticket: () => void;
   pcd: string | null;
   devconnectVerify: () => void;
   zuzaluVerify: () => void;
@@ -67,7 +67,7 @@ export const UserPassportContext = createContext<UserPassportContextData>({
   isAuthenticated: false,
   isPassportConnected: false,
   signOut: () => { },
-  verifyticket: () => { },
+  verifyZuconnectticket: () => { },
   devconnectVerify: () => { },
   zuzaluVerify: () => { },
   pcd: null,
@@ -84,7 +84,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
   const [pcd, setPcd] = useState<string | null>(null);
   //const [eventpcd, setEventPcd] = useState<string | null>(null);
   //const [mode, setMode] = useState<'ticket|sign-in'>('sign-in');
-  const [mode, setMode] = useState<'ticket' | 'sign-in' | 'devconnect'|'zuzalu'>('sign-in');
+  const [mode, setMode] = useState<'zuconnect' | 'sign-in' | 'devconnect'|'zuzalu'>('sign-in');
   const processPcd = (pcdStr: string) => {
     console.log(pcdStr);
     const pcd = JSON.parse(pcdStr);
@@ -94,11 +94,19 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
   useEffect(() => {
     const func = async () => {
       if (!pcdStr) return;
-      if (pcdStr && mode === 'ticket') {
+      if (pcdStr && mode === 'zuconnect') {
         try {
           let _pcd = processPcd(pcdStr);
           console.log(_pcd, 'event pcd');
-          localStorage.setItem('event Id', _pcd.claim.partialTicket.eventId);
+          const zuconnectEventIds = [
+            '91312aa1-5f74-4264-bdeb-f4a3ddb8670c',
+            '54863995-10c4-46e4-9342-75e48b68d307',
+            '797de414-2aec-4ef8-8655-09df7e2b6cc6',
+            'a6109324-7ca0-4198-9583-77962d1b9d53'
+          ];
+          if (zuconnectEventIds.includes(_pcd.claim.partialTicket.eventId)) {
+            localStorage.setItem('zuconnectNullifier', _pcd.claim.externalNullifier);
+          }
         }
         catch (error) {
           console.error('Error processing PCD string:', error);
@@ -387,10 +395,10 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
     });
 
   };
-  const verifyticket = () => {
+  const verifyZuconnectticket = () => {
     console.log('verify start');
     return new Promise((resolve, reject) => {
-      setMode('ticket');
+      setMode('zuconnect');
       const bigIntNonce = '0x' + generateTimestamp().toString();
       openZKEdDSAEventTicketPopup(
         {
@@ -404,7 +412,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
         []
       );
       window.addEventListener('ticketpopupClosed', () => {
-        if (localStorage.getItem('event Id')) {
+        if (localStorage.getItem('zuconnectNullifier')) {
           resolve('success');
         } else {
           reject(new Error("Verification failed"));
@@ -469,7 +477,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
         signIn: signIn,
         isAuthenticated,
         signOut,
-        verifyticket,
+        verifyZuconnectticket,
         devconnectVerify,
         zuzaluVerify,
         pcd,
