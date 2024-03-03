@@ -52,7 +52,7 @@ async function checkPOAPOwnership({ pollData, voter_identifier }: CheckPOAPOwner
     }
 }
 
-async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credential}: ProcessVoteInput): Promise<void> {
+async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credential }: ProcessVoteInput): Promise<void> {
     const { data: existingVoteOnOption } = await supabase
         .from('votes')
         .select('*')
@@ -115,13 +115,15 @@ async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credent
     if (incrementError) throw incrementError;
 }
 
-const containsSignatureCredential = (requiredCredentials: any[] | null) => {
-    if (requiredCredentials === null) return;
-    const signatureCredentials = [CREDENTIALS.GitcoinPassport.id, CREDENTIALS.POAPapi.id, CREDENTIALS.ProtocolGuildMember.id, CREDENTIALS.EthHoldingOffchain.id]
+const isSignatureCredential = (credential: string) => {
+    const signatureCredentials = [
+        CREDENTIALS.GitcoinPassport.id, 
+        CREDENTIALS.POAPapi.id, 
+        CREDENTIALS.ProtocolGuildMember.id, 
+        CREDENTIALS.EthHoldingOffchain.id
+    ];
 
-    return requiredCredentials.some(credential =>
-        signatureCredentials.some(searchString => credential.credential_id.includes(searchString))
-    );
+    return signatureCredentials.includes(credential);
 }
 
 const containsCredentialById = (requiredCredentials: any[] | null, credId: string) => {
@@ -136,7 +138,7 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
     let signerAddress;
     try {
         await validateRequest(req);
-        const { poll_id, option_id, voter_identifier, signature,vote_credential } = req.body;
+        const { poll_id, option_id, voter_identifier, signature,vote_credential , gitscore} = req.body;
         console.log(poll_id, option_id, voter_identifier, signature,vote_credential,'all info');
 
         const { data: pollData } = await supabase
@@ -145,20 +147,15 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
             .eq('id', poll_id)
             .single();
 
-        // Get required credentials so user can't inject them from the frontend
-        const { data: requiredCredentials, error: credentialsError } = await supabase
-            .from('pollcredentials')
-            .select('*')
-            .eq('poll_id', poll_id)
 
-        const containsSingature = containsSignatureCredential(requiredCredentials)
+        const containsSingature = isSignatureCredential(vote_credential)
         if (containsSingature) {
             signerAddress = await verifySignature({ poll_id, option_id, voter_identifier, signature });
 
             if (signerAddress === undefined) {
                 res.status(401).json({ error: 'Signer not verified' });
             }
-        }
+       
         // POAP verification
         if (vote_credential === CREDENTIALS.POAPapi.id) {
         if (pollData?.poap_events && pollData?.poap_events.length) {
@@ -181,6 +178,11 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
             }
         }
 
+        if ( vote_credential === CREDENTIALS.GitcoinPassport.id) {
+            if(gitscore < pollData.gitcoin_score)
+                res.status(403).json({ error: "You don't have enough score to vote for this poll." });
+        }
+    }
         console.log('voter_identifier', voter_identifier);
 
         // // Generate a nullifier for the voterCredential

@@ -252,7 +252,7 @@ const CreatePollPage = () => {
       credentials: credentialsTable,
       poap_events: selectedPOAPEvents.map((event) => event.id),
       poap_number: POAPNumber,
-      gitcoin_score: gitcoinScore,
+      gitcoin_score: Number(gitcoinScore),
       contractpoll_index: indexTable,
     };
 

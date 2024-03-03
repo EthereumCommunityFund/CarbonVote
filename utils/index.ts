@@ -106,6 +106,36 @@ export const convertToHoursAndMinutesToSeconds = (timeLimitString: string): numb
   return seconds;
 };
 
+export function getImagePathByCredential(credential: string): string {
+  if (
+    credential.includes('ProtocolGuild on-chain') ||
+    credential.includes('Protocol Guild Member')
+  ) {
+    return '/images/guild.png';
+  }
+  if (
+    credential.includes('EthHolding on-chain') ||
+    credential.includes('Eth Holding (Offchain)')
+  ) {
+    return '/images/eth_logo.svg';
+  }
+  if (
+    credential.includes('ZuConnect Resident') ||
+    credential.includes('DevConnect') ||
+    credential.includes('Zuzalu Resident')
+  ) {
+    return '/images/zupass.svg';
+  }
+  if (credential.includes('Gitcoin Passport')) {
+    return '/images/gitcoin.svg';
+  }
+  if (credential.includes('POAP API')) {
+    return '/images/poaps.svg';
+  }
+  return '';
+}
+
+
 /*export const convertOptionsToPollOptions = (options: Option[]): PollOptionType[] => {
   return options.map((option, index) => {
     // You may need to generate unique IDs based on your requirements

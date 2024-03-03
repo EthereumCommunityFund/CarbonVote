@@ -37,6 +37,7 @@ import styles from '@/styles/poll.module.css';
 import { HiArrowRight } from 'react-icons/hi';
 import ConfirmationPopup from '@/components/ConfirmationPopup';
 import { getProviderUrl } from '@/utils/getProviderUrl';
+import { getImagePathByCredential } from '@/utils/index';
 interface CredentialTable {
   credential: string;
   id: string;
@@ -63,7 +64,7 @@ const PollPage = () => {
   // FIXME: For multiple votes this single CredentialId might break the logic. Implementing an agregated credential requirement 
   const [credentialId, setCredentialId] = useState('');
   const [userEthHolding, setUserEthHolding] = useState('0');
-  const [score, setScore] = useState('0');
+  const [score, setScore] = useState<number>();
   const [remainingTime, settimeRemaining] = useState('');
   const [startDate, setstartDate] = useState<Date>();
   const [poapsNumber, setPoapsNumber] = useState('0');
@@ -104,34 +105,6 @@ const PollPage = () => {
   const handleSelectAllClick = () => {
     setVoteTable(credentialTable.map((cred) => cred.id));
   };
-  function getImagePathByCredential(credential: string): string {
-    if (
-      credential.includes('ProtocolGuild on-chain') ||
-      credential.includes('Protocol Guild Member')
-    ) {
-      return '/images/guild.png';
-    }
-    if (
-      credential.includes('EthHolding on-chain') ||
-      credential.includes('Eth Holding (Offchain)')
-    ) {
-      return '/images/eth_logo.svg';
-    }
-    if (
-      credential.includes('ZuConnect Resident') ||
-      credential.includes('DevConnect') ||
-      credential.includes('Zuzalu Resident')
-    ) {
-      return '/images/zupass.svg';
-    }
-    if (credential.includes('Gitcoin Passport')) {
-      return '/images/gitcoin.svg';
-    }
-    if (credential.includes('POAP API')) {
-      return '/images/poaps.svg';
-    }
-    return '';
-  }
   const handleOptionSelect = (
     optionId: string,
     optionIndex: number | undefined,
@@ -250,7 +223,8 @@ const PollPage = () => {
           option_id: selectedOptionData.optionId, 
           voter_identifier: account,
           signature: data,
-          vote_credential: vote_credential
+          vote_credential: vote_credential,
+          ...(vote_credential === CREDENTIALS.GitcoinPassport.id && { gitsscore: score }), 
         };
         console.log(voteData, 'voteData');
         try {
@@ -317,7 +291,7 @@ const PollPage = () => {
             let scoreResponse = await fetchScore(fetchScoreData);
             let scoreData = scoreResponse.data;
             console.log(scoreData.score.toString(), 'score');
-            setScore(scoreData.score.toString());
+            setScore(scoreData.score);
           } catch (error) {
             console.error('Error fetching score:', error);
           }
@@ -730,7 +704,7 @@ const PollPage = () => {
                 let scoreResponse = await fetchScore(fetchScoreData);
                 let scoreData = scoreResponse.data;
                 console.log(scoreData.score.toString(), 'score');
-                setScore(scoreData.score.toString());
+                setScore(scoreData.score);
                 if (scoreData.score.toString() != '0') {
                   await handleCastVoteSigned(
                     optionId,
