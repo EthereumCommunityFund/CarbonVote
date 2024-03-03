@@ -51,12 +51,16 @@
     margin-top: 20px;
 }
 
+.radios_flex_col {
+    width: 330px;
+}
+
 .choice_option {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    background: #0000000a;
+    background: #00000010;
     padding: 10px;
     border-radius: 50px;
 }
@@ -73,14 +77,22 @@
     opacity: 0.5;
 }
 
+.v_pop_list {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
 .select_all {
-    float: right;
+    /* float: right; */
     width: 100px;
     font-weight: bold;
     background: #F2F2F2;
     border-radius: 10px;
     padding: 10px;
     margin-top: 10px;
+    cursor: pointer;
 }
 
 .vote_btn {
@@ -94,7 +106,7 @@
     gap: 10px;
     font-size: 18px;
     border-radius: 50px;
-    margin-top: 70px;
+    margin-top: 20px;
     width: 100%;
 }
 

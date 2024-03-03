@@ -3,7 +3,7 @@ import { Label } from './ui/Label';
 import Button from './ui/buttons/Button';
 
 import { TbChevronDown } from 'react-icons/tb';
-import { EthIcon, GitCoinIcon, HeadCountIcon, PoapIcon, ProtocolGuildIcon, ZupassHolderIcon } from './icons';
+import { EthIcon, GitCoinIcon, HeadCountIcon, PoapIcon, ProtocolGuildIcon, ZupassHolderIcon, } from './icons';
 import PollResultCredentialComponent from './PollResultCredential';
 import { useState } from 'react';
 
@@ -43,7 +43,7 @@ export const PollResultComponent = ({ pollType, optionsData }: PollResultCompone
   return (
     <div className='bg-white pt-5 px-3 rounded-md'>
       <div className="flex justify-between mb-6">
-        <Label className="text-2xl">Poll Results</Label>
+        <Label className="text-2xl">Final Poll Results</Label>
         <Button variant="primary" className="rounded-md" onClick={toggleExpandAllResults}>
           {areAllExpanded ? 'Collapse' : 'Expand'} All Results
         </Button>

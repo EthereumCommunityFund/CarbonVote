@@ -67,9 +67,9 @@ const PollPage = () => {
   const handleBack = () => {
     router.push('/');
   };
-  const poapApiKey = process.env.POAP_API_KEY ?? "";  
+  const poapApiKey = process.env.POAP_API_KEY ?? "";
   const [poll, setPoll] = useState<Poll>();
-  const { signIn, isPassportConnected, verifyZuconnectticket, devconnectVerify,zuzaluVerify } =
+  const { signIn, isPassportConnected, verifyZuconnectticket, devconnectVerify, zuzaluVerify } =
     useUserPassportContext(); // zupass
   const { address: account, isConnected } = useAccount();
   const { connect } = useConnect();
@@ -91,9 +91,9 @@ const PollPage = () => {
     CredentialTable[]
   >([]);
   const [useravailablecredentialTable, setAvailableCredentialTable] = useState<
-  CredentialTable[]
->([]);
-  const { data, isError, isLoading, isSuccess, signMessage, reset} = useSignMessage({
+    CredentialTable[]
+  >([]);
+  const { data, isError, isLoading, isSuccess, signMessage, reset } = useSignMessage({
     message,
   });
   const [voteTable, setVoteTable] = useState<string[]>([]);
@@ -127,7 +127,7 @@ const PollPage = () => {
     optionIndex: number | undefined,
     option_description: string
   ) => {
-    console.log(optionId,voteTable,optionIndex,option_description,'handle option select');
+    console.log(optionId, voteTable, optionIndex, option_description, 'handle option select');
     setSelectedOptionData({
       optionId,
       optionIndex,
@@ -207,8 +207,8 @@ const PollPage = () => {
                       ...availableCredentialTable[lastElementIndex],
                       votedOption: responsevote.data.option_id,
                     };
-                 }
-              }
+                  }
+                }
                 break;
               case CREDENTIALS.DevConnect.id:
                 if (localStorage.getItem('devconnectNullifier')) {
@@ -230,8 +230,8 @@ const PollPage = () => {
                       votedOption: responsevote.data.option_id,
                     };
                   }
-              }
-                  break;
+                }
+                break;
               case CREDENTIALS.ZuzaluResident.id:
                 if (localStorage.getItem('zuzaluNullifier')) {
                   availableCredentialTable.push({
@@ -252,86 +252,86 @@ const PollPage = () => {
                       votedOption: responsevote.data.option_id,
                     };
                   }
-              }
-                  break;
+                }
+                break;
               case CREDENTIALS.EthHoldingOffchain.id:
                 if (account) {
                   let userEth = await getEthHoldings();
-                  if(userEth != 0){
-                  availableCredentialTable.push({
-                    id: CREDENTIALS.EthHoldingOffchain.id,
-                    identifier: account,
-                    credential: CREDENTIALS.EthHoldingOffchain.name
-                  });
-                  const checkdata = {
-                    id: id as string,
-                    identifier: account,
-                    credential: CREDENTIALS.EthHoldingOffchain.id
-                  };
-                  const responsevote = await fetchVote(checkdata);
-                  if (responsevote.data.option_id !== '') {
-                    const lastElementIndex = availableCredentialTable.length - 1;
-                    availableCredentialTable[lastElementIndex] = {
-                      ...availableCredentialTable[lastElementIndex],
-                      votedOption: responsevote.data.option_id,
+                  if (userEth != 0) {
+                    availableCredentialTable.push({
+                      id: CREDENTIALS.EthHoldingOffchain.id,
+                      identifier: account,
+                      credential: CREDENTIALS.EthHoldingOffchain.name
+                    });
+                    const checkdata = {
+                      id: id as string,
+                      identifier: account,
+                      credential: CREDENTIALS.EthHoldingOffchain.id
                     };
-                  }
-                }
-              }
-                  break;
-                case CREDENTIALS.GitcoinPassport.id:
-                  if (account) {
-                    const fetchNewScore = async () => {
-                      let fetchScoreData = { address: account as string, scorerId: '6347' };
-                      try {
-                        let scoreResponse = await fetchScore(fetchScoreData);
-                        let scoreData = scoreResponse.data;
-                        console.log(scoreData.score.toString(), 'score');
-                        setScore(scoreData.score);
-                        return scoreData.score;
-                      } catch (error) {
-                        console.error('Error fetching score:', error);
-                      }
-                    };
-                    let gitscore = await fetchNewScore();
-                    if (poll && poll.gitcoin_score !== undefined && gitscore >= poll.gitcoin_score) {
-                      availableCredentialTable.push({
-                        id: CREDENTIALS.GitcoinPassport.id,
-                        identifier: account,
-                        credential: CREDENTIALS.GitcoinPassport.name,
-                        gitscore: gitscore,
-                      });
-                      const checkdata = {
-                        id: id as string,
-                        identifier: account,
-                        credential: CREDENTIALS.GitcoinPassport.id
+                    const responsevote = await fetchVote(checkdata);
+                    if (responsevote.data.option_id !== '') {
+                      const lastElementIndex = availableCredentialTable.length - 1;
+                      availableCredentialTable[lastElementIndex] = {
+                        ...availableCredentialTable[lastElementIndex],
+                        votedOption: responsevote.data.option_id,
                       };
-                      const responsevote = await fetchVote(checkdata);
-                      if (responsevote.data.option_id !== '') {
-                        const lastElementIndex = availableCredentialTable.length - 1;
-                        availableCredentialTable[lastElementIndex] = {
-                          ...availableCredentialTable[lastElementIndex],
-                          votedOption: responsevote.data.option_id,
-                        };
-                      }
-                  }else{
-                    console.log(gitscore,'not enough score');
+                    }
                   }
                 }
-                    break;
-                case CREDENTIALS.POAPapi.id:
-                  if (account) {
-                    for (const eventId of credential.poap_events as string[]) {
-                      let userPoapIds=[];
-                      try {
-                        const hasOwnership = await getPoapOwnership(poapApiKey, account, eventId);
-                        if (hasOwnership) {
-                           userPoapIds.push(eventId);
-                        }
-                      } catch (error) {
-                        console.error(`Error checking POAP ownership for event ID ${eventId}:`, error);
+                break;
+              case CREDENTIALS.GitcoinPassport.id:
+                if (account) {
+                  const fetchNewScore = async () => {
+                    let fetchScoreData = { address: account as string, scorerId: '6347' };
+                    try {
+                      let scoreResponse = await fetchScore(fetchScoreData);
+                      let scoreData = scoreResponse.data;
+                      console.log(scoreData.score.toString(), 'score');
+                      setScore(scoreData.score);
+                      return scoreData.score;
+                    } catch (error) {
+                      console.error('Error fetching score:', error);
+                    }
+                  };
+                  let gitscore = await fetchNewScore();
+                  if (poll && poll.gitcoin_score !== undefined && gitscore >= poll.gitcoin_score) {
+                    availableCredentialTable.push({
+                      id: CREDENTIALS.GitcoinPassport.id,
+                      identifier: account,
+                      credential: CREDENTIALS.GitcoinPassport.name,
+                      gitscore: gitscore,
+                    });
+                    const checkdata = {
+                      id: id as string,
+                      identifier: account,
+                      credential: CREDENTIALS.GitcoinPassport.id
+                    };
+                    const responsevote = await fetchVote(checkdata);
+                    if (responsevote.data.option_id !== '') {
+                      const lastElementIndex = availableCredentialTable.length - 1;
+                      availableCredentialTable[lastElementIndex] = {
+                        ...availableCredentialTable[lastElementIndex],
+                        votedOption: responsevote.data.option_id,
+                      };
+                    }
+                  } else {
+                    console.log(gitscore, 'not enough score');
+                  }
+                }
+                break;
+              case CREDENTIALS.POAPapi.id:
+                if (account) {
+                  for (const eventId of credential.poap_events as string[]) {
+                    let userPoapIds = [];
+                    try {
+                      const hasOwnership = await getPoapOwnership(poapApiKey, account, eventId);
+                      if (hasOwnership) {
+                        userPoapIds.push(eventId);
                       }
-                    if (poll && poll.poap_number!== undefined && userPoapIds.length >= Number(poll?.poap_number)) {
+                    } catch (error) {
+                      console.error(`Error checking POAP ownership for event ID ${eventId}:`, error);
+                    }
+                    if (poll && poll.poap_number !== undefined && userPoapIds.length >= Number(poll?.poap_number)) {
                       availableCredentialTable.push({
                         id: CREDENTIALS.POAPapi.id,
                         identifier: account,
@@ -351,61 +351,62 @@ const PollPage = () => {
                           votedOption: responsevote.data.option_id,
                         };
                       }
-                  }else{
-                    console.log(userPoapIds,'Poaps you have');
+                    } else {
+                      console.log(userPoapIds, 'Poaps you have');
+                    }
                   }
                 }
-              }
-                    break;
+                break;
               case CREDENTIALS.ProtocolGuildMember.id:
                 if (account) {
                   if (ProtocolGuildMembershipList.includes(account)) {
-                  availableCredentialTable.push({
-                    id: CREDENTIALS.ProtocolGuildMember.id,
-                    credential: CREDENTIALS.ProtocolGuildMember.name,
-                    identifier: account,
-                  });
-                  const checkdata = {
-                    id: id as string,
-                    identifier: account,
-                    credential: CREDENTIALS.ProtocolGuildMember.id
-                  };
-                  const responsevote = await fetchVote(checkdata);
-                  if (responsevote.data.option_id !== '') {
-                    const lastElementIndex = availableCredentialTable.length - 1;
-                    availableCredentialTable[lastElementIndex] = {
-                      ...availableCredentialTable[lastElementIndex],
-                      votedOption: responsevote.data.option_id,
+                    availableCredentialTable.push({
+                      id: CREDENTIALS.ProtocolGuildMember.id,
+                      credential: CREDENTIALS.ProtocolGuildMember.name,
+                      identifier: account,
+                    });
+                    const checkdata = {
+                      id: id as string,
+                      identifier: account,
+                      credential: CREDENTIALS.ProtocolGuildMember.id
                     };
+                    const responsevote = await fetchVote(checkdata);
+                    if (responsevote.data.option_id !== '') {
+                      const lastElementIndex = availableCredentialTable.length - 1;
+                      availableCredentialTable[lastElementIndex] = {
+                        ...availableCredentialTable[lastElementIndex],
+                        votedOption: responsevote.data.option_id,
+                      };
+                    }
                   }
                 }
-              }
-                  break;
+                break;
             }
-          }else if (credential.credential === 'EthHolding on-chain' || credential.credential === 'ProtocolGuild on-chain') {
+          } else if (credential.credential === 'EthHolding on-chain' || credential.credential === 'ProtocolGuild on-chain') {
             availableCredentialTable.push(credential);
           }
         }
         setAvailableCredentialTable(availableCredentialTable);
       }
-      else{
-        if (pollType?.toString()== '0'){
+      else {
+        if (pollType?.toString() == '0') {
           availableCredentialTable.push({
             id: id as string,
             identifier: account,
             credential: 'EthHolding on-chain'
           });
-        }else{          
+        } else {
           availableCredentialTable.push({
-          id: id as string,
-          identifier: account,
-          credential: 'ProtocolGuild on-chain'
-        });}
+            id: id as string,
+            identifier: account,
+            credential: 'ProtocolGuild on-chain'
+          });
+        }
       }
-      console.log(availableCredentialTable,'available credential table');
+      console.log(availableCredentialTable, 'available credential table');
     }
     checkAndSetCredentialsAndVotes();
-  }, [credentialTable,account,isPassportConnected,verifyZuconnectticket,devconnectVerify,zuzaluVerify]);
+  }, [credentialTable, account, isPassportConnected, verifyZuconnectticket, devconnectVerify, zuzaluVerify]);
 
   useEffect(() => {
     if (poll?.block_number) {
@@ -414,16 +415,16 @@ const PollPage = () => {
   }, [id, poll?.block_number]);
 
   useEffect(() => {
-    const invokeCastVote = async (vote_credential:string) => {
-      console.log(isSuccess,data,selectedOptionData?.optionId,poll?.id,account,vote_credential,'all information');
+    const invokeCastVote = async (vote_credential: string) => {
+      console.log(isSuccess, data, selectedOptionData?.optionId, poll?.id, account, vote_credential, 'all information');
       if (isSuccess && data !== undefined && selectedOptionData?.optionId && poll?.id && account && vote_credential) {
         const voteData = {
           poll_id: poll.id,
-          option_id: selectedOptionData.optionId, 
+          option_id: selectedOptionData.optionId,
           voter_identifier: account,
           signature: data,
           vote_credential: vote_credential,
-          ...(vote_credential === CREDENTIALS.GitcoinPassport.id && { gitscore: score }), 
+          ...(vote_credential === CREDENTIALS.GitcoinPassport.id && { gitscore: score }),
         };
         console.log(voteData, 'voteData');
         try {
@@ -476,7 +477,7 @@ const PollPage = () => {
       signMessage();
     }
   }, [message, signMessage]);
-  
+
   useEffect(() => {
     console.log('account changed');
     setSelectedOption(null);
@@ -524,12 +525,13 @@ const PollPage = () => {
     return uuidV4Pattern.test(uuid);
   };
   const getEthHoldings = async () => {
-    if(account){
-    const blockNumber = poll?.block_number ?? 0;
-    const userBalance = await getBalanceAtBlock(account as string, blockNumber);
-    console.log(`Balance at block ${blockNumber}: ${userBalance} ETH`);
-    setUserEthHolding(parseFloat(userBalance).toFixed(2));
-    return parseFloat(userBalance);}
+    if (account) {
+      const blockNumber = poll?.block_number ?? 0;
+      const userBalance = await getBalanceAtBlock(account as string, blockNumber);
+      console.log(`Balance at block ${blockNumber}: ${userBalance} ETH`);
+      setUserEthHolding(parseFloat(userBalance).toFixed(2));
+      return parseFloat(userBalance);
+    }
   };
 
   const fetchPollFromApi = async (pollId: string | string[] | undefined) => {
@@ -583,7 +585,7 @@ const PollPage = () => {
             else if (cred.id === CREDENTIALS.GitcoinPassport.id) {
               pushObject = { ...pushObject, gitscore: data.gitcoin_score };
             }
-      
+
             nestedCredentialTable.push(pushObject);
           }
         });
@@ -671,13 +673,13 @@ const PollPage = () => {
                 const updatedOptions = options.map((option, idx) =>
                   idx === existingOptionIndex
                     ? {
-                        ...option,
-                        address: address,
-                        votersCount: 0,
-                        totalEth: '0',
-                        votersData: [],
-                        optionindex: Number(index),
-                      }
+                      ...option,
+                      address: address,
+                      votersCount: 0,
+                      totalEth: '0',
+                      votersData: [],
+                      optionindex: Number(index),
+                    }
                     : option
                 );
                 updatedOptions.sort((a, b) => {
@@ -689,28 +691,29 @@ const PollPage = () => {
                   }
                   return 0;
                 });
-                setOptions(updatedOptions); 
+                setOptions(updatedOptions);
               } else {
-              newOptions.push({
-                id: index,
-                pollId: id as string,
-                option_description: optionName,
-                address: address,
-                votersCount: 0,
-                totalEth: '0',
-                votersData: [],
-                optionindex: Number(index),
-              });
-              newOptions.sort((a, b) => {
-                if (
-                  typeof a.optionindex === 'number' &&
-                  typeof b.optionindex === 'number'
-                ) {
-                  return a.optionindex - b.optionindex;
-                }
-                return 0;
-              });
-              setOptions(newOptions);}
+                newOptions.push({
+                  id: index,
+                  pollId: id as string,
+                  option_description: optionName,
+                  address: address,
+                  votersCount: 0,
+                  totalEth: '0',
+                  votersData: [],
+                  optionindex: Number(index),
+                });
+                newOptions.sort((a, b) => {
+                  if (
+                    typeof a.optionindex === 'number' &&
+                    typeof b.optionindex === 'number'
+                  ) {
+                    return a.optionindex - b.optionindex;
+                  }
+                  return 0;
+                });
+                setOptions(newOptions);
+              }
             } catch (error) {
               console.error('Error fetching options:', error);
             }
@@ -761,7 +764,7 @@ const PollPage = () => {
         poll_id: pollId,
         option_id: optionId,
         voter_identifier: voter_identifier,
-        vote_credential:requiredCred,
+        vote_credential: requiredCred,
         signature: null,
       };
       console.log(voteData, 'voteData');
@@ -783,7 +786,7 @@ const PollPage = () => {
     const pollId = poll?.id as string;
     try {
       setSigningCredential(requiredCred);
-      const newMessage =  await generateMessage(pollId, optionId, account as string);
+      const newMessage = await generateMessage(pollId, optionId, account as string);
       if (account === null) return;
       setMessage(newMessage);
       // 
@@ -801,13 +804,13 @@ const PollPage = () => {
     credentialIds: string[],
     optionIndex: number | undefined
   ) => {
-    console.log('handle vote',optionId,credentialIds,optionIndex);
+    console.log('handle vote', optionId, credentialIds, optionIndex);
     if (!localStorage.getItem('userUniqueId')) {
       const uniqueId = uuidv4();
       localStorage.setItem('userUniqueId', uniqueId);
     }
     if (voteTable.length > 0) {
-      console.log(credentialIds,'vote table');
+      console.log(credentialIds, 'vote table');
       for (let credentialId of credentialIds) {
         if (isValidUuidV4(credentialId)) {
           switch (credentialId) {
@@ -819,12 +822,13 @@ const PollPage = () => {
               try {
                 // TODO: Verify again on backend
                 if (localStorage.getItem('devconnectNullifier')) {
-                await handleCastVote(
-                  optionId,
-                  CREDENTIALS.ZuConnectResident.id,
-                  'zuconnectNullifier'
-                );}
-                else{
+                  await handleCastVote(
+                    optionId,
+                    CREDENTIALS.ZuConnectResident.id,
+                    'zuconnectNullifier'
+                  );
+                }
+                else {
                   await verifyZuconnectticket();
                 }
               } catch (error) {
@@ -846,7 +850,7 @@ const PollPage = () => {
                     'devconnectNullifier'
                   );
                 }
-                else{
+                else {
                   await devconnectVerify();
                 }
               } catch (error) {
@@ -854,8 +858,8 @@ const PollPage = () => {
                 return;
               }
               break;
-              //Zuzalu Resident
-              case CREDENTIALS.ZuzaluResident.id:
+            //Zuzalu Resident
+            case CREDENTIALS.ZuzaluResident.id:
               if (!isPassportConnected) {
                 await signIn();
                 return;
@@ -868,7 +872,7 @@ const PollPage = () => {
                     'zuzaluNullifier'
                   );
                 }
-                else{
+                else {
                   await zuzaluVerify();
                 }
               } catch (error) {
@@ -1158,8 +1162,8 @@ const PollPage = () => {
                 </div>
               ) : (
                 <div className="px-2.5 py-0.5 opacity-60 bg-black bg-opacity-5 rounded-lg">
-                <Label className="text-black text-md font-bold">Closed</Label>
-              </div>
+                  <Label className="text-black text-md font-bold">Closed</Label>
+                </div>
               )}
 
               <div className="flex gap-1 opacity-60">
@@ -1197,7 +1201,7 @@ const PollPage = () => {
                 <p>Votes will be segmented by credentials</p>
               </div>
               {(!poll?.poap_events || poll?.poap_events.length === 0) &&
-              credentialId === CREDENTIALS.POAPSVerification.id ? (
+                credentialId === CREDENTIALS.POAPSVerification.id ? (
                 <div>
                   <div>
                     <Label className="text-sm">
@@ -1284,7 +1288,7 @@ const PollPage = () => {
                 </p>
                 <div className={styles.v_pop_content}>
                   <p>Select the credentials you want to vote with</p>
-                  <div className="flex flex-col gap-2.5">
+                  <div className={styles.v_pop_list}>
                     {credentialTable.map((credential) => {
                       const imagePath = getImagePathByCredential(
                         credential.credential as string
@@ -1295,6 +1299,19 @@ const PollPage = () => {
                           className={styles.radios_flex_col}
                         >
                           <label className={styles.choice_option}>
+                            <div>
+                              {imagePath && (
+                                <img
+                                  src={imagePath}
+                                  alt="Credential"
+                                  className="image-class-name"
+                                />
+                              )}
+                              <span>
+                                {credential.credential}
+                                {/*votedOptions ? ` (${votedOptions})` : ''*/}
+                              </span>
+                            </div>
                             <input
                               type="checkbox"
                               name="credentials"
@@ -1303,50 +1320,39 @@ const PollPage = () => {
                               onChange={handleVotesRadioChange}
                               className={styles.hidden_radio}
                             />
-                            {imagePath && (
-                              <img
-                                src={imagePath}
-                                alt="Credential"
-                                className="image-class-name"
-                              />
-                            )}
-                            <span>
-                              {credential.credential}
-                              {/*votedOptions ? ` (${votedOptions})` : ''*/}
-                            </span>
                           </label>
                         </div>
                       );
                     })}
+                    <div
+                      className={styles.select_all}
+                      onClick={handleSelectAllClick}
+                    >
+                      Select All
+                    </div>
                   </div>
-                  <div
-                    className={styles.select_all}
-                    onClick={handleSelectAllClick}
-                  >
-                    Select All
-                  </div>
-                  <button
-                    className={styles.vote_btn}
-                    onClick={() => {
-                      setShowConfirmationPopup(false);if (selectedOptionData) {
-                        handleVote(
-                          selectedOptionData.optionId,
-                          voteTable,
-                          selectedOptionData.optionIndex
-                        );
-                      }
-                    }}
-                  >
-                    <HiArrowRight />
-                    <span>Vote</span>
-                  </button>
                 </div>
+                <button
+                  className={styles.vote_btn}
+                  onClick={() => {
+                    setShowConfirmationPopup(false); if (selectedOptionData) {
+                      handleVote(
+                        selectedOptionData.optionId,
+                        voteTable,
+                        selectedOptionData.optionIndex
+                      );
+                    }
+                  }}
+                >
+                  <HiArrowRight />
+                  <span>Vote</span>
+                </button>
               </div>
             </div>
             {showConfirmationPopup && <ConfirmationPopup />}
           </div>
         )}
-         <PollResultComponent
+        <PollResultComponent
           pollType={PollTypes.HEAD_COUNT}
           optionsData={options}
         />
