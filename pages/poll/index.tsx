@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import { useEffect, useState } from 'react';
 import { ArrowLeftIcon, EthIcon } from '@/components/icons';
 import { ClockIcon } from '@/components/icons/clock';
@@ -28,8 +28,8 @@ import PieChartComponent from '@/components/ui/PieChart';
 import { PollOptionType, Poll, PollTypes } from '@/types';
 import { CREDENTIALS, CONTRACT_ADDRESS } from '@/src/constants';
 import { PollResultComponent } from '@/components/PollResult';
-import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock'
-import { generateMessage } from '@/utils/generateMessage'
+import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock';
+import { generateMessage } from '@/utils/generateMessage';
 import VotingContract from '../../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
 import VotingOption from '../../carbonvote-contracts/deployment/contracts/VotingOption.sol/VotingOption.json';
 import { getProviderUrl } from '@/utils/getProviderUrl';
@@ -48,7 +48,7 @@ const PollPage = () => {
   const { connect } = useConnect();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [options, setOptions] = useState<PollOptionType[]>([]);
-  // FIXME: For multiple votes this single CredentialId might break the logic. Implementing an agregated credential requirement 
+  // FIXME: For multiple votes this single CredentialId might break the logic. Implementing an agregated credential requirement
   const [credentialId, setCredentialId] = useState('');
   const [requiredCred, setRequiredCred] = useState([]);
   const [userEthHolding, setUserEthHolding] = useState('0');
@@ -70,9 +70,8 @@ const PollPage = () => {
     if (id !== undefined) {
       if (isValidUuidV4(id as string)) {
         fetchPollFromApi(id);
-      }
-      else {
-        fetchPollFromContract()
+      } else {
+        fetchPollFromContract();
       }
     }
   }, [id]);
@@ -85,7 +84,13 @@ const PollPage = () => {
 
   useEffect(() => {
     const invokeCastVote = async () => {
-      if (isSuccess && data !== undefined && selectedOption && poll?.id && account) {
+      if (
+        isSuccess &&
+        data !== undefined &&
+        selectedOption &&
+        poll?.id &&
+        account
+      ) {
         const voteData = {
           poll_id: poll.id,
           option_id: selectedOption, // Assuming `selectedOption` is correctly set when an option is selected
@@ -150,7 +155,8 @@ const PollPage = () => {
   }, [account]);
 
   const isValidUuidV4 = (uuid: string): boolean => {
-    const uuidV4Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const uuidV4Pattern =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidV4Pattern.test(uuid);
   };
   const getEthHoldings = async () => {
@@ -220,7 +226,7 @@ const PollPage = () => {
   };
   const fetchPollFromContract = async () => {
     if (id) {
-      console.log('fetching', id)
+      console.log('fetching', id);
       try {
         const provider = new ethers.JsonRpcProvider(providerUrl);
         const contract = new ethers.Contract(
@@ -235,12 +241,18 @@ const PollPage = () => {
 
           setPoll(pollData);
           const pollType = pollData.pollType;
-          if (pollType) { console.log(pollType.toString(), 'poll_type123'); } else { console.log('no poll type'); }
+          if (pollType) {
+            console.log(pollType.toString(), 'poll_type123');
+          } else {
+            console.log('no poll type');
+          }
           let startdate = new Date(Number(pollData.startTime) * 1000);
           console.log(startdate, 'start time', pollData.endTime, 'end time');
-          const timeleft = calculateTimeRemaining(Number(pollData.endTime) * 1000);
-          if (!timeleft) { }
-          else {
+          const timeleft = calculateTimeRemaining(
+            Number(pollData.endTime) * 1000
+          );
+          if (!timeleft) {
+          } else {
             settimeRemaining(timeleft);
             console.log(timeleft, 'time left');
           }
@@ -249,7 +261,11 @@ const PollPage = () => {
           console.log(pollData.options, 'poll.options');
           const optionContractAbi = VotingOption.abi;
           for (const address of pollData.options) {
-            const contract = new ethers.Contract(address, optionContractAbi, provider);
+            const contract = new ethers.Contract(
+              address,
+              optionContractAbi,
+              provider
+            );
             // console.log(contract, 'contract');
 
             try {
@@ -265,15 +281,17 @@ const PollPage = () => {
                 votersCount: 0,
                 totalEth: '0',
                 votersData: [],
-                optionindex: Number(index)
+                optionindex: Number(index),
               });
               newOptions.sort((a, b) => {
-                if (typeof a.optionindex === 'number' && typeof b.optionindex === 'number') {
+                if (
+                  typeof a.optionindex === 'number' &&
+                  typeof b.optionindex === 'number'
+                ) {
                   return a.optionindex - b.optionindex;
                 }
                 return 0;
               });
-
             } catch (error) {
               console.error('Error fetching options:', error);
             }
@@ -347,10 +365,10 @@ const PollPage = () => {
       if (account === null) return;
       setMessage(newMessage);
       signMessage();
-      // 
+      //
       // TODO: We need to sign the message and submit. Wait until isSuccess === true and send the transaction
       // For this we need to save the data
-      // 
+      //
     } catch (error) {
       console.error('Error signing vote:', error);
       return;
@@ -532,8 +550,9 @@ const PollPage = () => {
         <div className="bg-white flex flex-col gap-1.5 rounded-2xl p-5 ">
           <div className="flex gap-3.5 pb-3">
             <div
-              className={`${pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
-                } px-2.5 rounded-lg items-center`}
+              className={`${
+                pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
+              } px-2.5 rounded-lg items-center`}
             >
               {pollIsLive ? (
                 <Label className="text-[#44b678]">Live</Label>
@@ -568,7 +587,7 @@ const PollPage = () => {
             <>
               <Label className="text-2xl">Vote on Poll</Label>
               {(!poll?.poap_events || poll?.poap_events.length === 0) &&
-                credentialId === CREDENTIALS.POAPSVerification.id ? (
+              credentialId === CREDENTIALS.POAPSVerification.id ? (
                 <div>
                   <div>
                     <Label className="text-sm">
@@ -651,7 +670,9 @@ const PollPage = () => {
                   }}
                 />
                 <span>Hold ETH (Voting power: {userEthHolding} ETH)</span>
-                <div style={{ marginLeft: 10 }}><EthIcon /></div>
+                <div style={{ marginLeft: 10 }}>
+                  <EthIcon />
+                </div>
               </div>
             )}
 
@@ -690,7 +711,10 @@ const PollPage = () => {
             )}
           </div>
         </div>
-        <PollResultComponent pollType={PollTypes.HEAD_COUNT} optionsData={options} />
+        <PollResultComponent
+          pollType={PollTypes.HEAD_COUNT}
+          optionsData={options}
+        />
       </div>
     </div>
   );
