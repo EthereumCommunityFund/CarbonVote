@@ -33,6 +33,9 @@ import { generateMessage } from '@/utils/generateMessage';
 import VotingContract from '../../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
 import VotingOption from '../../carbonvote-contracts/deployment/contracts/VotingOption.sol/VotingOption.json';
 import { getProviderUrl } from '@/utils/getProviderUrl';
+import { MultiplePeopleIcon } from '@/components/icons/multiplepeople';
+import { DownArrowIcon } from '@/components/icons/downarrow';
+import moment from 'moment-timezone';
 
 const PollPage = () => {
   const router = useRouter();
@@ -326,6 +329,9 @@ const PollPage = () => {
   };
 
   const pollIsLive = remainingTime !== null && remainingTime !== 'Time is up!';
+
+  const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timeZoneAbbr = moment().tz(timeZone).format('zz');
 
   const handleCastVote = async (
     optionId: string,
@@ -629,87 +635,59 @@ const PollPage = () => {
           )}
         </div>
       </div>
-      <div className="flex flex-col gap-8 w-96">
-        <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
-          <Label className="text-2xl">Details</Label>
-          <hr></hr>
-          <div className="flex flex-col gap-4 pt-3 text-base">
-            <Label>Voting Method: HeadCounting</Label>
-            <Label>
-              {(() => {
-                return `Start Date: ${new Date(Number(poll.startTime))}`;
-              })()}
-            </Label>
-            <Label>
-              {(() => {
-                return `End Date: ${new Date(Number(poll.endTime))}`;
-              })()}
-            </Label>
-            <Label className="text-1xl">Requirements:</Label>
 
-            {poll?.block_number !== undefined && (
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  border: '1px solid #ccc',
-                  borderRadius: '9999px',
-                  padding: '4px 8px',
-                  margin: '4px',
-                }}
-              >
-                <img
-                  src={'/images/carbonvote.png'}
-                  alt="Requirement image"
-                  style={{
-                    width: '30px',
-                    height: '30px',
-                    marginRight: '8px',
-                    borderRadius: 100,
-                  }}
-                />
-                <span>Hold ETH (Voting power: {userEthHolding} ETH)</span>
-                <div style={{ marginLeft: 10 }}>
-                  <EthIcon />
+      <div className="flex flex-col pb-4 gap-5 w-96">
+        <div className="bg-white rounded-lg border border-black border-opacity-10">
+          <div className="w-full px-5 py-2.5">
+            <Label className="text-lg font-semibold">Details</Label>
+          </div>
+
+          <div className="border-b border-black border-opacity-10" />
+
+          <div className="w-full flex flex-col p-3.5 gap-3.5">
+            <div className="flex flex-col gap-2.5">
+              <Label className="text-base opacity-80">Method:</Label>
+
+              <div className="flex flex-wrap items-center gap-1">
+                <div className="flex px-2.5 py-1 gap-1 bg-black bg-opacity-5 rounded-xl">
+                  <MultiplePeopleIcon className="w-5 h-5" />
+                  <Label className="text-black text-opacity-50 font-bold text-sm">
+                    HeadCount
+                  </Label>
                 </div>
               </div>
-            )}
-
-            <div>
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  border: '1px solid #ccc',
-                  borderRadius: '9999px',
-                  padding: '4px 8px',
-                  margin: '4px',
-                }}
-              >
-                <img
-                  src={'/images/carbonvote.png'}
-                  alt="Requirement image"
-                  style={{
-                    width: '30px',
-                    height: '30px',
-                    marginRight: '8px',
-                    borderRadius: 100,
-                  }}
-                />
-                <span>{getRequirement()}</span>
-                <div style={{ marginLeft: 10 }}>⚪️</div>
-              </div>
             </div>
-            {poll?.poap_events?.length > 0 && (
-              <PoapDetails
-                poapEvents={poll?.poap_events}
-                account={account as string}
-                eventDetails={eventDetails}
-                setEventDetails={setEventDetails}
-              />
+
+            <div className="flex flex-col gap-2.5 py-2.5 border-t border-black border-opacity-10">
+              <Label className="text-black opacity-80 text-base font-semibold">
+                End Date:
+              </Label>
+              <Label className="text-lg font-bold">
+                {new Intl.DateTimeFormat('en', {
+                  hour12: false,
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                }).format(new Date(Number(poll?.endTime)))}
+              </Label>
+              <Label className=" text-black opacity-40 text-sm font-medium">
+                {timeZoneAbbr}
+              </Label>
+            </div>
+
+            {!pollIsLive && (
+              <button className="flex px-5 py-1 gap-2.5 bg-black bg-opacity-5 rounded-lg border border-black border-opacity-10 justify-center items-center">
+                <Label className="text-base font-bold">View Results</Label>
+                <DownArrowIcon className="w-5 h-5 text-black opacity-60" />
+              </button>
             )}
           </div>
         </div>
+
         <PollResultComponent
           pollType={PollTypes.HEAD_COUNT}
           optionsData={options}
