@@ -36,6 +36,9 @@ import { getProviderUrl } from '@/utils/getProviderUrl';
 import { MultiplePeopleIcon } from '@/components/icons/multiplepeople';
 import { DownArrowIcon } from '@/components/icons/downarrow';
 import moment from 'moment-timezone';
+import { ChevronDownIcon } from 'lucide-react';
+import { LockIcon } from '@/components/icons/lock';
+import { CheckCircleIcon } from '@/components/icons/checkcircle';
 
 const PollPage = () => {
   const router = useRouter();
@@ -687,6 +690,93 @@ const PollPage = () => {
             )}
           </div>
         </div>
+
+        {pollIsLive && (
+          <div className="flex flex-col bg-white rounded-lg border border-black border-opacity-10">
+            <div className="px-5 py-2.5 border-b border-black border-opacity-10">
+              <Label className="text-lg">Your Available Credentials</Label>
+            </div>
+
+            <div className="flex flex-col p-3.5 gap-2.5">
+              <div className="flex gap-2.5 text-black opacity-60">
+                <CheckCircleIcon className="w-6 h-6" />
+                <Label className="text-sm">
+                  You can vote with any of the credentials below
+                </Label>
+              </div>
+
+              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                <div className="flex justify-between">
+                  <Label className="text-sm text-black font-bold opacity-50">
+                    Ether Holding
+                  </Label>
+                  <CheckCircleIcon className="w-7 h-7" />
+                </div>
+
+                <button className="flex gap-1.5 text-sm text-black opacity-60 font-medium">
+                  Show Details
+                  <ChevronDownIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                <div className="flex justify-between">
+                  <Label className="text-sm text-black font-bold opacity-50">
+                    Gitcoin Passport
+                  </Label>
+                  <CheckCircleIcon className="w-7 h-7" />
+                </div>
+
+                <button className="flex gap-1.5 text-sm text-black opacity-60 font-medium">
+                  Show Details
+                  <ChevronDownIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                <div className="flex justify-between">
+                  <Label className="text-sm text-black font-bold opacity-50">
+                    Zupass Credentials
+                  </Label>
+                  <LockIcon className="w-7 h-7 text-black opacity-25" />
+                </div>
+
+                <button className="flex gap-1.5 text-sm text-black opacity-60 font-medium">
+                  Show Details
+                  <ChevronDownIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                <div className="flex justify-between">
+                  <Label className="text-sm text-black font-bold opacity-50">
+                    Protocol Guild
+                  </Label>
+                  <LockIcon className="w-7 h-7 text-black opacity-25" />
+                </div>
+
+                <button className="flex gap-1.5 text-sm text-black opacity-60 font-medium">
+                  Show Details
+                  <ChevronDownIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                <div className="flex justify-between">
+                  <Label className="text-sm text-black font-bold opacity-50">
+                    POAPs
+                  </Label>
+                  <LockIcon className="w-7 h-7 text-black opacity-25" />
+                </div>
+
+                <button className="flex gap-1.5 text-sm text-black opacity-60 font-medium">
+                  Show Details
+                  <ChevronDownIcon className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <PollResultComponent
           pollType={PollTypes.HEAD_COUNT}
