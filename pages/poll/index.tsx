@@ -547,36 +547,35 @@ const PollPage = () => {
             Back
           </Button>
         </div>
-        <div className="bg-white flex flex-col gap-1.5 rounded-2xl p-5 ">
-          <div className="flex gap-3.5 pb-3">
-            <div
-              className={`${
-                pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
-              } px-2.5 rounded-lg items-center`}
-            >
+
+        <div className="bg-white flex flex-col gap-7.5 rounded-xl border border-black border-opacity-10">
+          <div className="flex flex-col p-5 gap-5 border-b border-black border-opacity-10">
+            <div className="flex gap-3.5">
               {pollIsLive ? (
-                <Label className="text-[#44b678]">Live</Label>
+                <div className="px-2.5 py-0.5 bg-red-500 bg-opacity-20 rounded-lg">
+                  <Label className="text-red-500 text-md font-bold">Live</Label>
+                </div>
               ) : (
-                <Label className="text-[#656565]">Closed</Label>
+                <div className="px-2.5 py-0.5 opacity-60 bg-black bg-opacity-5 rounded-lg">
+                  <Label className="text-black text-md font-bold">Closed</Label>
+                </div>
               )}
-            </div>
-            {pollIsLive ? (
-              <div className="flex gap-2">
+
+              <div className="flex gap-1 opacity-60">
                 <ClockIcon />
                 <CountdownTimer endTime={poll.endTime} />
               </div>
-            ) : null}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label className="text-black opacity-50 text-base">Motion:</Label>
+              <Label className="text-2xl">{poll?.title || poll?.name}</Label>
+            </div>
           </div>
-          <div className="flex flex-col gap-1">
-            <Label className="text-black/60 text-base">Motion: </Label>
-            <Label className="text-2xl">{poll?.title || poll?.name}</Label>
-          </div>
-          <div className="flex justify-end pb-5 border-b border-black/30">
-            {/* <Label>by: {mockPoll.creator}</Label> */}
-          </div>
-          <div className="flex flex-col gap-2.5">
-            <Label className="text-black/60 text-lg font-bold">
-              Description:{' '}
+
+          <div className="flex flex-col p-5 gap-2.5">
+            <Label className="text-sm uppercase text-black opacity-50 font-extrabold">
+              Description:
             </Label>
             <span dangerouslySetInnerHTML={{ __html: poll?.description }} />
           </div>
