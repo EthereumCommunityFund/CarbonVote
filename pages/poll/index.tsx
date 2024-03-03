@@ -53,7 +53,13 @@ interface SelectedOptionData {
   optionId: string;
   optionIndex: number | undefined;
   option_description: string;
-}
+}import { MultiplePeopleIcon } from '@/components/icons/multiplepeople';
+import { DownArrowIcon } from '@/components/icons/downarrow';
+import moment from 'moment-timezone';
+import { ChevronDownIcon } from 'lucide-react';
+import { LockIcon } from '@/components/icons/lock';
+import { CheckCircleIcon } from '@/components/icons/checkcircle';
+
 const PollPage = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -69,7 +75,7 @@ const PollPage = () => {
   const { connect } = useConnect();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [options, setOptions] = useState<PollOptionType[]>([]);
-  // FIXME: For multiple votes this single CredentialId might break the logic. Implementing an agregated credential requirement 
+  // FIXME: For multiple votes this single CredentialId might break the logic. Implementing an agregated credential requirement
   const [credentialId, setCredentialId] = useState('');
   const [userEthHolding, setUserEthHolding] = useState('0');
   const [score, setScore] = useState<number>();
@@ -250,8 +256,8 @@ const PollPage = () => {
                   break;
               case CREDENTIALS.EthHoldingOffchain.id:
                 if (account) {
-                  await getEthHoldings();
-                  if(parseFloat(userEthHolding) != 0){
+                  let userEth = await getEthHoldings();
+                  if(userEth != 0){
                   availableCredentialTable.push({
                     id: CREDENTIALS.EthHoldingOffchain.id,
                     identifier: account,
@@ -513,7 +519,8 @@ const PollPage = () => {
   }, [account]);
 
   const isValidUuidV4 = (uuid: string): boolean => {
-    const uuidV4Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const uuidV4Pattern =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidV4Pattern.test(uuid);
   };
   const getEthHoldings = async () => {
@@ -521,8 +528,8 @@ const PollPage = () => {
     const blockNumber = poll?.block_number ?? 0;
     const userBalance = await getBalanceAtBlock(account as string, blockNumber);
     console.log(`Balance at block ${blockNumber}: ${userBalance} ETH`);
-
-    setUserEthHolding(parseFloat(userBalance).toFixed(2));}
+    setUserEthHolding(parseFloat(userBalance).toFixed(2));
+    return parseFloat(userBalance);}
   };
 
   const fetchPollFromApi = async (pollId: string | string[] | undefined) => {
@@ -739,6 +746,9 @@ const PollPage = () => {
 
   const pollIsLive = remainingTime !== null && remainingTime !== 'Time is up!';
 
+  const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timeZoneAbbr = moment().tz(timeZone).format('zz');
+
   const handleCastVote = async (
     optionId: string,
     requiredCred: string,
@@ -779,7 +789,7 @@ const PollPage = () => {
       // 
       // TODO: We need to sign the message and submit. Wait until isSuccess === true and send the transaction
       // For this we need to save the data
-      // 
+      //
     } catch (error) {
       console.error('Error signing vote:', error);
       return;
@@ -1138,36 +1148,35 @@ const PollPage = () => {
             Back
           </Button>
         </div>
-        <div className="bg-white flex flex-col gap-1.5 rounded-2xl p-5 ">
-          <div className="flex gap-3.5 pb-3">
-            <div
-              className={`${
-                pollIsLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'
-              } px-2.5 rounded-lg items-center`}
-            >
+
+        <div className="bg-white flex flex-col gap-7.5 rounded-xl border border-black border-opacity-10">
+          <div className="flex flex-col p-5 gap-5 border-b border-black border-opacity-10">
+            <div className="flex gap-3.5">
               {pollIsLive ? (
-                <Label className="text-[#44b678]">Live</Label>
+                <div className="px-2.5 py-0.5 bg-red-500 bg-opacity-20 rounded-lg">
+                  <Label className="text-red-500 text-md font-bold">Live</Label>
+                </div>
               ) : (
-                <Label className="text-[#656565]">Closed</Label>
+                <div className="px-2.5 py-0.5 opacity-60 bg-black bg-opacity-5 rounded-lg">
+                <Label className="text-black text-md font-bold">Closed</Label>
+              </div>
               )}
-            </div>
-            {pollIsLive ? (
-              <div className="flex gap-2">
+
+              <div className="flex gap-1 opacity-60">
                 <ClockIcon />
                 <CountdownTimer endTime={poll.endTime} />
               </div>
-            ) : null}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label className="text-black opacity-50 text-base">Motion:</Label>
+              <Label className="text-2xl">{poll?.title || poll?.name}</Label>
+            </div>
           </div>
-          <div className="flex flex-col gap-1">
-            <Label className="text-black/60 text-base">Motion: </Label>
-            <Label className="text-2xl">{poll?.title || poll?.name}</Label>
-          </div>
-          <div className="flex justify-end pb-5 border-b border-black/30">
-            {/* <Label>by: {mockPoll.creator}</Label> */}
-          </div>
-          <div className="flex flex-col gap-2.5">
-            <Label className="text-black/60 text-lg font-bold">
-              Description:{' '}
+
+          <div className="flex flex-col p-5 gap-2.5">
+            <Label className="text-sm uppercase text-black opacity-50 font-extrabold">
+              Description:
             </Label>
             <span dangerouslySetInnerHTML={{ __html: poll?.description }} />
           </div>
@@ -1262,7 +1271,6 @@ const PollPage = () => {
             <Label className="text-2xl">Poll finished</Label>
           )}
         </div>
-        <button onClick={() => setIsPopupOpen(!isPopupOpen)}>Open Popup</button>
         {isPopupOpen && (
           <div>
             <div className={styles.voting_popup_bg}>
@@ -1338,92 +1346,150 @@ const PollPage = () => {
             {showConfirmationPopup && <ConfirmationPopup />}
           </div>
         )}
-      </div>
-      <div className="flex flex-col gap-8 w-96">
-        <div className="px-2.5 py-5 pb-2 rounded-2xl bg-white">
-          <Label className="text-2xl">Details</Label>
-          <hr></hr>
-          <div className="flex flex-col gap-4 pt-3 text-base">
-            <Label>Voting Method: HeadCounting</Label>
-            <Label>
-              {(() => {
-                return `Start Date: ${new Date(Number(poll.startTime))}`;
-              })()}
-            </Label>
-            <Label>
-              {(() => {
-                return `End Date: ${new Date(Number(poll.endTime))}`;
-              })()}
-            </Label>
-            <Label className="text-1xl">Requirements:</Label>
-
-            {poll?.block_number !== undefined && (
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  border: '1px solid #ccc',
-                  borderRadius: '9999px',
-                  padding: '4px 8px',
-                  margin: '4px',
-                }}
-              >
-                <img
-                  src={'/images/carbonvote.png'}
-                  alt="Requirement image"
-                  style={{
-                    width: '30px',
-                    height: '30px',
-                    marginRight: '8px',
-                    borderRadius: 100,
-                  }}
-                />
-                <span>{userEthHolding} ETH</span>
-                <div style={{ marginLeft: 10 }}>
-                  <EthIcon />
-                </div>
-              </div>
-            )}
-
-            <div>
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  border: '1px solid #ccc',
-                  borderRadius: '9999px',
-                  padding: '4px 8px',
-                  margin: '4px',
-                }}
-              >
-                <img
-                  src={'/images/carbonvote.png'}
-                  alt="Requirement image"
-                  style={{
-                    width: '30px',
-                    height: '30px',
-                    marginRight: '8px',
-                    borderRadius: 100,
-                  }}
-                />
-                <span>{'getRequirement()'}</span>
-                <div style={{ marginLeft: 10 }}>⚪️</div>
-              </div>
-            </div>
-            {poll?.poap_events?.length > 0 && (
-              <PoapDetails
-                poapEvents={poll?.poap_events}
-                account={account as string}
-                eventDetails={eventDetails}
-                setEventDetails={setEventDetails}
-              />
-            )}
-          </div>
-        </div>
-        <PollResultComponent
+         <PollResultComponent
           pollType={PollTypes.HEAD_COUNT}
           optionsData={options}
         />
+      </div>
+
+      <div className="flex flex-col pb-4 gap-5 w-96">
+        <div className="bg-white rounded-lg border border-black border-opacity-10">
+          <div className="w-full px-5 py-2.5">
+            <Label className="text-lg font-semibold">Details</Label>
+          </div>
+
+          <div className="border-b border-black border-opacity-10" />
+
+          <div className="w-full flex flex-col p-3.5 gap-3.5">
+            <div className="flex flex-col gap-2.5">
+              <Label className="text-base opacity-80">Method:</Label>
+
+              <div className="flex flex-wrap items-center gap-1">
+                <div className="flex px-2.5 py-1 gap-1 bg-black bg-opacity-5 rounded-xl">
+                  <MultiplePeopleIcon className="w-5 h-5" />
+                  <Label className="text-black text-opacity-50 font-bold text-sm">
+                    HeadCount
+                  </Label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2.5 py-2.5 border-t border-black border-opacity-10">
+              <Label className="text-black opacity-80 text-base font-semibold">
+                End Date:
+              </Label>
+              <Label className="text-lg font-bold">
+                {new Intl.DateTimeFormat('en', {
+                  hour12: false,
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                }).format(new Date(Number(poll?.endTime)))}
+              </Label>
+              <Label className=" text-black opacity-40 text-sm font-medium">
+                {timeZoneAbbr}
+              </Label>
+            </div>
+
+            {!pollIsLive && (
+              <button className="flex px-5 py-1 gap-2.5 bg-black bg-opacity-5 rounded-lg border border-black border-opacity-10 justify-center items-center">
+                <Label className="text-base font-bold">View Results</Label>
+                <DownArrowIcon className="w-5 h-5 text-black opacity-60" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {pollIsLive && (
+          <div className="flex flex-col bg-white rounded-lg border border-black border-opacity-10">
+            <div className="px-5 py-2.5 border-b border-black border-opacity-10">
+              <Label className="text-lg">Your Available Credentials</Label>
+            </div>
+
+            <div className="flex flex-col p-3.5 gap-2.5">
+              <div className="flex gap-2.5 text-black opacity-60">
+                <CheckCircleIcon className="w-6 h-6" />
+                <Label className="text-sm">
+                  You can vote with any of the credentials below
+                </Label>
+              </div>
+
+              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                <div className="flex justify-between">
+                  <Label className="text-sm text-black font-bold opacity-50">
+                    Ether Holding
+                  </Label>
+                  <CheckCircleIcon className="w-7 h-7" />
+                </div>
+
+                <button className="flex gap-1.5 text-sm text-black opacity-60 font-medium">
+                  Show Details
+                  <ChevronDownIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                <div className="flex justify-between">
+                  <Label className="text-sm text-black font-bold opacity-50">
+                    Gitcoin Passport
+                  </Label>
+                  <CheckCircleIcon className="w-7 h-7" />
+                </div>
+
+                <button className="flex gap-1.5 text-sm text-black opacity-60 font-medium">
+                  Show Details
+                  <ChevronDownIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                <div className="flex justify-between">
+                  <Label className="text-sm text-black font-bold opacity-50">
+                    Zupass Credentials
+                  </Label>
+                  <LockIcon className="w-7 h-7 text-black opacity-25" />
+                </div>
+
+                <button className="flex gap-1.5 text-sm text-black opacity-60 font-medium">
+                  Show Details
+                  <ChevronDownIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                <div className="flex justify-between">
+                  <Label className="text-sm text-black font-bold opacity-50">
+                    Protocol Guild
+                  </Label>
+                  <LockIcon className="w-7 h-7 text-black opacity-25" />
+                </div>
+
+                <button className="flex gap-1.5 text-sm text-black opacity-60 font-medium">
+                  Show Details
+                  <ChevronDownIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                <div className="flex justify-between">
+                  <Label className="text-sm text-black font-bold opacity-50">
+                    POAPs
+                  </Label>
+                  <LockIcon className="w-7 h-7 text-black opacity-25" />
+                </div>
+
+                <button className="flex gap-1.5 text-sm text-black opacity-60 font-medium">
+                  Show Details
+                  <ChevronDownIcon className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
