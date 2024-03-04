@@ -47,3 +47,21 @@
     font-weight: 500;
     margin: 5px 0 10px 0;
 }
+
+.votes_count {
+    font-weight: bold;
+    font-size: 24px;
+    margin-top: 10px;
+}
+
+.votes_count_sec {
+    color: #4F4F4F;
+    font-size: 16px;
+    margin-top: 8px;
+}
+
+.pie {
+    width: 300px;
+    height: 300px;
+    margin: auto;
+}
