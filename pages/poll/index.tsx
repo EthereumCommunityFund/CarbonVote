@@ -1674,6 +1674,7 @@ const PollPage = () => {
                             </div>
                           ))
                       ) :         <Button className="outline-none h-10 items-center rounded-full" leftIcon={BoltIcon} onClick={signIn}>
+                        {isPassportConnected ? 'Zupass Connected' : 'Connect Passport'}
                     </Button>)}
                     {(() => {
                             const Zupass = [
