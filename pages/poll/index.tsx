@@ -40,6 +40,8 @@ import { getProviderUrl } from '@/utils/getProviderUrl';
 import { getImagePathByCredential } from '@/utils/index';
 import getPoapOwnership from 'utils/getPoapOwnership';
 import { ProtocolGuildMembershipList } from '@/src/protocolguildmember';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { BoltIcon } from '../../components/icons';
 interface CredentialTable {
   credential?: string;
   id: string;
@@ -53,7 +55,8 @@ interface SelectedOptionData {
   optionId: string;
   optionIndex: number | undefined;
   option_description: string;
-}import { MultiplePeopleIcon } from '@/components/icons/multiplepeople';
+}
+import { MultiplePeopleIcon } from '@/components/icons/multiplepeople';
 import { DownArrowIcon } from '@/components/icons/downarrow';
 import moment from 'moment-timezone';
 import { ChevronDownIcon } from 'lucide-react';
@@ -67,10 +70,15 @@ const PollPage = () => {
   const handleBack = () => {
     router.push('/');
   };
-  const poapApiKey = process.env.POAP_API_KEY ?? "";  
+  const poapApiKey = process.env.POAP_API_KEY ?? '';
   const [poll, setPoll] = useState<Poll>();
-  const { signIn, isPassportConnected, verifyZuconnectticket, devconnectVerify,zuzaluVerify } =
-    useUserPassportContext(); // zupass
+  const {
+    signIn,
+    isPassportConnected,
+    verifyZuconnectticket,
+    devconnectVerify,
+    zuzaluVerify,
+  } = useUserPassportContext(); // zupass
   const { address: account, isConnected } = useAccount();
   const { connect } = useConnect();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -90,12 +98,14 @@ const PollPage = () => {
   const [credentialTable, setNestedCredentialTable] = useState<
     CredentialTable[]
   >([]);
-  const [useravailablecredentialTable, setAvailableCredentialTable] = useState<
-  CredentialTable[]
->([]);
-  const { data, isError, isLoading, isSuccess, signMessage, reset} = useSignMessage({
-    message,
-  });
+  const [userAvailableCredentialTable, setAvailableCredentialTable] = useState<
+    CredentialTable[]
+  >([]);
+  const [expandedIds, setExpandedIds] = useState<string[]>([]);
+  const { data, isError, isLoading, isSuccess, signMessage, reset } =
+    useSignMessage({
+      message,
+    });
   const [voteTable, setVoteTable] = useState<string[]>([]);
   const [selectedCredentialId, setSelectedCredentialId] = useState<
     string | null
@@ -103,6 +113,7 @@ const PollPage = () => {
   const [votedOptions, setVotedOptions] = useState({});
   const [signingCredential, setSigningCredential] = useState<string>('');
   const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
+  const [zupasspoll, setZupassPoll] =useState(false);
   const [selectedOptionData, setSelectedOptionData] =
     useState<SelectedOptionData>();
   const handleVotesRadioChange = (
@@ -127,7 +138,13 @@ const PollPage = () => {
     optionIndex: number | undefined,
     option_description: string
   ) => {
-    console.log(optionId,voteTable,optionIndex,option_description,'handle option select');
+    console.log(
+      optionId,
+      voteTable,
+      optionIndex,
+      option_description,
+      'handle option select'
+    );
     setSelectedOptionData({
       optionId,
       optionIndex,
@@ -192,146 +209,175 @@ const PollPage = () => {
                 if (localStorage.getItem('zuconnectNullifier')) {
                   availableCredentialTable.push({
                     id: CREDENTIALS.ZuConnectResident.id,
-                    identifier: localStorage.getItem('zuconnectNullifier') as string,
-                    credential: CREDENTIALS.ZuConnectResident.name
+                    identifier: localStorage.getItem(
+                      'zuconnectNullifier'
+                    ) as string,
+                    credential: CREDENTIALS.ZuConnectResident.name,
                   });
                   const checkdata = {
                     id: id as string,
                     identifier: localStorage.getItem('zuconnectNullifier'),
-                    credential: CREDENTIALS.ZuConnectResident.id
+                    credential: CREDENTIALS.ZuConnectResident.id,
                   };
                   const responsevote = await fetchVote(checkdata);
                   if (responsevote.data.option_id !== '') {
-                    const lastElementIndex = availableCredentialTable.length - 1;
+                    const lastElementIndex =
+                      availableCredentialTable.length - 1;
                     availableCredentialTable[lastElementIndex] = {
                       ...availableCredentialTable[lastElementIndex],
                       votedOption: responsevote.data.option_id,
                     };
-                 }
-              }
+                  }
+                }
                 break;
               case CREDENTIALS.DevConnect.id:
                 if (localStorage.getItem('devconnectNullifier')) {
                   availableCredentialTable.push({
                     id: CREDENTIALS.DevConnect.id,
-                    identifier: localStorage.getItem('devconnectNullifier') as string,
-                    credential: CREDENTIALS.DevConnect.name
+                    identifier: localStorage.getItem(
+                      'devconnectNullifier'
+                    ) as string,
+                    credential: CREDENTIALS.DevConnect.name,
                   });
                   const checkdata = {
                     id: id as string,
                     identifier: localStorage.getItem('devconnectNullifier'),
-                    credential: CREDENTIALS.DevConnect.id
+                    credential: CREDENTIALS.DevConnect.id,
                   };
                   const responsevote = await fetchVote(checkdata);
                   if (responsevote.data.option_id !== '') {
-                    const lastElementIndex = availableCredentialTable.length - 1;
+                    const lastElementIndex =
+                      availableCredentialTable.length - 1;
                     availableCredentialTable[lastElementIndex] = {
                       ...availableCredentialTable[lastElementIndex],
                       votedOption: responsevote.data.option_id,
                     };
                   }
-              }
-                  break;
+                }
+                break;
               case CREDENTIALS.ZuzaluResident.id:
                 if (localStorage.getItem('zuzaluNullifier')) {
                   availableCredentialTable.push({
                     id: CREDENTIALS.ZuzaluResident.id,
-                    identifier: localStorage.getItem('zuzaluNullifier') as string,
-                    credential: CREDENTIALS.ZuzaluResident.name
+                    identifier: localStorage.getItem(
+                      'zuzaluNullifier'
+                    ) as string,
+                    credential: CREDENTIALS.ZuzaluResident.name,
                   });
                   const checkdata = {
                     id: id as string,
                     identifier: localStorage.getItem('zuzaluNullifier'),
-                    credential: CREDENTIALS.ZuzaluResident.id
+                    credential: CREDENTIALS.ZuzaluResident.id,
                   };
                   const responsevote = await fetchVote(checkdata);
                   if (responsevote.data.option_id !== '') {
-                    const lastElementIndex = availableCredentialTable.length - 1;
+                    const lastElementIndex =
+                      availableCredentialTable.length - 1;
                     availableCredentialTable[lastElementIndex] = {
                       ...availableCredentialTable[lastElementIndex],
                       votedOption: responsevote.data.option_id,
                     };
                   }
-              }
-                  break;
+                }
+                break;
               case CREDENTIALS.EthHoldingOffchain.id:
                 if (account) {
                   let userEth = await getEthHoldings();
-                  if(userEth != 0){
-                  availableCredentialTable.push({
-                    id: CREDENTIALS.EthHoldingOffchain.id,
-                    identifier: account,
-                    credential: CREDENTIALS.EthHoldingOffchain.name
-                  });
-                  const checkdata = {
-                    id: id as string,
-                    identifier: account,
-                    credential: CREDENTIALS.EthHoldingOffchain.id
-                  };
-                  const responsevote = await fetchVote(checkdata);
-                  if (responsevote.data.option_id !== '') {
-                    const lastElementIndex = availableCredentialTable.length - 1;
-                    availableCredentialTable[lastElementIndex] = {
-                      ...availableCredentialTable[lastElementIndex],
-                      votedOption: responsevote.data.option_id,
+                  if (userEth != 0) {
+                    availableCredentialTable.push({
+                      id: CREDENTIALS.EthHoldingOffchain.id,
+                      identifier: account,
+                      credential: CREDENTIALS.EthHoldingOffchain.name,
+                    });
+                    const checkdata = {
+                      id: id as string,
+                      identifier: account,
+                      credential: CREDENTIALS.EthHoldingOffchain.id,
                     };
-                  }
-                }
-              }
-                  break;
-                case CREDENTIALS.GitcoinPassport.id:
-                  if (account) {
-                    const fetchNewScore = async () => {
-                      let fetchScoreData = { address: account as string, scorerId: '6347' };
-                      try {
-                        let scoreResponse = await fetchScore(fetchScoreData);
-                        let scoreData = scoreResponse.data;
-                        console.log(scoreData.score.toString(), 'score');
-                        setScore(scoreData.score);
-                        return scoreData.score;
-                      } catch (error) {
-                        console.error('Error fetching score:', error);
-                      }
-                    };
-                    let gitscore = await fetchNewScore();
-                    if (poll && poll.gitcoin_score !== undefined && gitscore >= poll.gitcoin_score) {
-                      availableCredentialTable.push({
-                        id: CREDENTIALS.GitcoinPassport.id,
-                        identifier: account,
-                        credential: CREDENTIALS.GitcoinPassport.name,
-                        gitscore: gitscore,
-                      });
-                      const checkdata = {
-                        id: id as string,
-                        identifier: account,
-                        credential: CREDENTIALS.GitcoinPassport.id
+                    const responsevote = await fetchVote(checkdata);
+                    if (responsevote.data.option_id !== '') {
+                      const lastElementIndex =
+                        availableCredentialTable.length - 1;
+                      availableCredentialTable[lastElementIndex] = {
+                        ...availableCredentialTable[lastElementIndex],
+                        votedOption: responsevote.data.option_id,
                       };
-                      const responsevote = await fetchVote(checkdata);
-                      if (responsevote.data.option_id !== '') {
-                        const lastElementIndex = availableCredentialTable.length - 1;
-                        availableCredentialTable[lastElementIndex] = {
-                          ...availableCredentialTable[lastElementIndex],
-                          votedOption: responsevote.data.option_id,
-                        };
-                      }
-                  }else{
-                    console.log(gitscore,'not enough score');
+                    }
                   }
                 }
-                    break;
-                case CREDENTIALS.POAPapi.id:
-                  if (account) {
-                    for (const eventId of credential.poap_events as string[]) {
-                      let userPoapIds=[];
-                      try {
-                        const hasOwnership = await getPoapOwnership(poapApiKey, account, eventId);
-                        if (hasOwnership) {
-                           userPoapIds.push(eventId);
-                        }
-                      } catch (error) {
-                        console.error(`Error checking POAP ownership for event ID ${eventId}:`, error);
+                break;
+              case CREDENTIALS.GitcoinPassport.id:
+                if (account) {
+                  const fetchNewScore = async () => {
+                    let fetchScoreData = {
+                      address: account as string,
+                      scorerId: '6347',
+                    };
+                    try {
+                      let scoreResponse = await fetchScore(fetchScoreData);
+                      let scoreData = scoreResponse.data;
+                      console.log(scoreData.score.toString(), 'score');
+                      setScore(scoreData.score);
+                      return scoreData.score;
+                    } catch (error) {
+                      console.error('Error fetching score:', error);
+                    }
+                  };
+                  let gitscore = await fetchNewScore();
+                  if (
+                    poll &&
+                    poll.gitcoin_score !== undefined &&
+                    gitscore >= poll.gitcoin_score
+                  ) {
+                    availableCredentialTable.push({
+                      id: CREDENTIALS.GitcoinPassport.id,
+                      identifier: account,
+                      credential: CREDENTIALS.GitcoinPassport.name,
+                      gitscore: gitscore,
+                    });
+                    const checkdata = {
+                      id: id as string,
+                      identifier: account,
+                      credential: CREDENTIALS.GitcoinPassport.id,
+                    };
+                    const responsevote = await fetchVote(checkdata);
+                    if (responsevote.data.option_id !== '') {
+                      const lastElementIndex =
+                        availableCredentialTable.length - 1;
+                      availableCredentialTable[lastElementIndex] = {
+                        ...availableCredentialTable[lastElementIndex],
+                        votedOption: responsevote.data.option_id,
+                      };
+                    }
+                  } else {
+                    console.log(gitscore, 'not enough score');
+                  }
+                }
+                break;
+              case CREDENTIALS.POAPapi.id:
+                if (account) {
+                  for (const eventId of credential.poap_events as string[]) {
+                    let userPoapIds = [];
+                    try {
+                      const hasOwnership = await getPoapOwnership(
+                        poapApiKey,
+                        account,
+                        eventId
+                      );
+                      if (hasOwnership) {
+                        userPoapIds.push(eventId);
                       }
-                    if (poll && poll.poap_number!== undefined && userPoapIds.length >= Number(poll?.poap_number)) {
+                    } catch (error) {
+                      console.error(
+                        `Error checking POAP ownership for event ID ${eventId}:`,
+                        error
+                      );
+                    }
+                    if (
+                      poll &&
+                      poll.poap_number !== undefined &&
+                      userPoapIds.length >= Number(poll?.poap_number)
+                    ) {
                       availableCredentialTable.push({
                         id: CREDENTIALS.POAPapi.id,
                         identifier: account,
@@ -341,71 +387,122 @@ const PollPage = () => {
                       const checkdata = {
                         id: id as string,
                         identifier: account,
-                        credential: CREDENTIALS.POAPapi.id
+                        credential: CREDENTIALS.POAPapi.id,
                       };
                       const responsevote = await fetchVote(checkdata);
                       if (responsevote.data.option_id !== '') {
-                        const lastElementIndex = availableCredentialTable.length - 1;
+                        const lastElementIndex =
+                          availableCredentialTable.length - 1;
                         availableCredentialTable[lastElementIndex] = {
                           ...availableCredentialTable[lastElementIndex],
                           votedOption: responsevote.data.option_id,
                         };
                       }
-                  }else{
-                    console.log(userPoapIds,'Poaps you have');
+                    } else {
+                      console.log(userPoapIds, 'Poaps you have');
+                    }
                   }
                 }
-              }
-                    break;
+                break;
               case CREDENTIALS.ProtocolGuildMember.id:
                 if (account) {
                   if (ProtocolGuildMembershipList.includes(account)) {
-                  availableCredentialTable.push({
-                    id: CREDENTIALS.ProtocolGuildMember.id,
-                    credential: CREDENTIALS.ProtocolGuildMember.name,
-                    identifier: account,
-                  });
-                  const checkdata = {
-                    id: id as string,
-                    identifier: account,
-                    credential: CREDENTIALS.ProtocolGuildMember.id
-                  };
-                  const responsevote = await fetchVote(checkdata);
-                  if (responsevote.data.option_id !== '') {
-                    const lastElementIndex = availableCredentialTable.length - 1;
-                    availableCredentialTable[lastElementIndex] = {
-                      ...availableCredentialTable[lastElementIndex],
-                      votedOption: responsevote.data.option_id,
+                    availableCredentialTable.push({
+                      id: CREDENTIALS.ProtocolGuildMember.id,
+                      credential: CREDENTIALS.ProtocolGuildMember.name,
+                      identifier: account,
+                    });
+                    const checkdata = {
+                      id: id as string,
+                      identifier: account,
+                      credential: CREDENTIALS.ProtocolGuildMember.id,
                     };
+                    const responsevote = await fetchVote(checkdata);
+                    if (responsevote.data.option_id !== '') {
+                      const lastElementIndex =
+                        availableCredentialTable.length - 1;
+                      availableCredentialTable[lastElementIndex] = {
+                        ...availableCredentialTable[lastElementIndex],
+                        votedOption: responsevote.data.option_id,
+                      };
+                    }
                   }
                 }
-              }
-                  break;
+                break;
             }
-          }else if (credential.credential === 'EthHolding on-chain' || credential.credential === 'ProtocolGuild on-chain') {
+          } else if (credential.credential === 'EthHolding on-chain') {
             availableCredentialTable.push(credential);
+          } else if (
+            credential.credential === 'ProtocolGuild on-chain' &&
+            account
+          ) {
+            if (ProtocolGuildMembershipList.includes(account as string)) {
+              availableCredentialTable.push(credential);
+            }
           }
         }
-        setAvailableCredentialTable(availableCredentialTable);
-      }
-      else{
-        if (pollType?.toString()== '0'){
+      } else {
+        if (pollType?.toString() == '0') {
           availableCredentialTable.push({
             id: id as string,
             identifier: account,
-            credential: 'EthHolding on-chain'
+            credential: 'EthHolding on-chain',
           });
-        }else{          
+        } else {
           availableCredentialTable.push({
-          id: id as string,
-          identifier: account,
-          credential: 'ProtocolGuild on-chain'
-        });}
+            id: id as string,
+            identifier: account,
+            credential: 'ProtocolGuild on-chain',
+          });
+        }
       }
-      console.log(availableCredentialTable,'available credential table');
+      if (!account) {
+        const filteredCredentialTable = availableCredentialTable.filter(
+          (credential) => {
+            const accountDependentCredentials = [
+              CREDENTIALS.EthHoldingOffchain.name,
+              CREDENTIALS.GitcoinPassport.name,
+              CREDENTIALS.POAPapi.name,
+              CREDENTIALS.ProtocolGuildMember.name,
+              'ProtocolGuild on-chain',
+              'EthHolding on-chain',
+            ];
+            return !accountDependentCredentials.includes(credential.id);
+          }
+        );
+        setAvailableCredentialTable(filteredCredentialTable);
+      }
+      if (!isPassportConnected) {
+        const filteredCredentialTable = availableCredentialTable.filter(
+          (credential) => {
+            const accountDependentCredentials = [
+              CREDENTIALS.ZuConnectResident.id,
+              CREDENTIALS.ZuConnectResident.id,
+              CREDENTIALS.DevConnect.id,
+            ];
+            return !accountDependentCredentials.includes(credential.id);
+          }
+        );
+        setAvailableCredentialTable(filteredCredentialTable);
+      }
+      setAvailableCredentialTable(availableCredentialTable);
+      console.log(availableCredentialTable, 'available credential table');
+      const containsZupassCredentials = availableCredentialTable.some(credential =>
+        [CREDENTIALS.ZuConnectResident.id, CREDENTIALS.DevConnect.id, CREDENTIALS.ZuzaluResident.id].includes(credential.id)
+      );
+      if(containsZupassCredentials){
+        setZupassPoll(true);
+      }
     }
     checkAndSetCredentialsAndVotes();
-  }, [credentialTable,account,isPassportConnected,verifyZuconnectticket,devconnectVerify,zuzaluVerify]);
+  }, [
+    credentialTable,
+    account,
+    isPassportConnected,
+    verifyZuconnectticket,
+    devconnectVerify,
+    zuzaluVerify,
+  ]);
 
   useEffect(() => {
     if (poll?.block_number) {
@@ -414,16 +511,33 @@ const PollPage = () => {
   }, [id, poll?.block_number]);
 
   useEffect(() => {
-    const invokeCastVote = async (vote_credential:string) => {
-      console.log(isSuccess,data,selectedOptionData?.optionId,poll?.id,account,vote_credential,'all information');
-      if (isSuccess && data !== undefined && selectedOptionData?.optionId && poll?.id && account && vote_credential) {
+    const invokeCastVote = async (vote_credential: string) => {
+      console.log(
+        isSuccess,
+        data,
+        selectedOptionData?.optionId,
+        poll?.id,
+        account,
+        vote_credential,
+        'all information'
+      );
+      if (
+        isSuccess &&
+        data !== undefined &&
+        selectedOptionData?.optionId &&
+        poll?.id &&
+        account &&
+        vote_credential
+      ) {
         const voteData = {
           poll_id: poll.id,
-          option_id: selectedOptionData.optionId, 
+          option_id: selectedOptionData.optionId,
           voter_identifier: account,
           signature: data,
           vote_credential: vote_credential,
-          ...(vote_credential === CREDENTIALS.GitcoinPassport.id && { gitscore: score }), 
+          ...(vote_credential === CREDENTIALS.GitcoinPassport.id && {
+            gitscore: score,
+          }),
         };
         console.log(voteData, 'voteData');
         try {
@@ -435,31 +549,32 @@ const PollPage = () => {
           //await fetchPollFromApi(id);
         } catch (error) {
           console.error('Error casting vote:', error);
-          if (typeof error === "object" && error !== null && "status" in error) {
-            const err = error as { status: number, message?: string };
+          if (
+            typeof error === 'object' &&
+            error !== null &&
+            'status' in error
+          ) {
+            const err = error as { status: number; message?: string };
             if (err.status === 403) {
               console.error("You don't have permission to cast this vote.");
               toast({
                 title: 'Error',
-                description:
-                  "You are not a member of Protol Guild",
+                description: 'You are not a member of Protol Guild',
                 variant: 'destructive',
               });
             } else {
-              console.error("An unexpected error occurred.");
+              console.error('An unexpected error occurred.');
               toast({
                 title: 'Error',
-                description:
-                  "An unexpected error occurred.",
+                description: 'An unexpected error occurred.',
                 variant: 'destructive',
               });
             }
           } else {
-            console.error("An unexpected error occurred.");
+            console.error('An unexpected error occurred.');
             toast({
               title: 'Error',
-              description:
-                "An unexpected error occurred.",
+              description: 'An unexpected error occurred.',
               variant: 'destructive',
             });
           }
@@ -476,7 +591,7 @@ const PollPage = () => {
       signMessage();
     }
   }, [message, signMessage]);
-  
+
   useEffect(() => {
     console.log('account changed');
     setSelectedOption(null);
@@ -524,12 +639,16 @@ const PollPage = () => {
     return uuidV4Pattern.test(uuid);
   };
   const getEthHoldings = async () => {
-    if(account){
-    const blockNumber = poll?.block_number ?? 0;
-    const userBalance = await getBalanceAtBlock(account as string, blockNumber);
-    console.log(`Balance at block ${blockNumber}: ${userBalance} ETH`);
-    setUserEthHolding(parseFloat(userBalance).toFixed(2));
-    return parseFloat(userBalance);}
+    if (account) {
+      const blockNumber = poll?.block_number ?? 0;
+      const userBalance = await getBalanceAtBlock(
+        account as string,
+        blockNumber
+      );
+      console.log(`Balance at block ${blockNumber}: ${userBalance} ETH`);
+      setUserEthHolding(parseFloat(userBalance).toFixed(2));
+      return parseFloat(userBalance);
+    }
   };
 
   const fetchPollFromApi = async (pollId: string | string[] | undefined) => {
@@ -578,12 +697,15 @@ const PollPage = () => {
               id: cred.id,
             };
             if (cred.id === CREDENTIALS.POAPapi.id) {
-              pushObject = { ...pushObject, poap_events: data.poap_events, poap_number: data.poap_number };
-            }
-            else if (cred.id === CREDENTIALS.GitcoinPassport.id) {
+              pushObject = {
+                ...pushObject,
+                poap_events: data.poap_events,
+                poap_number: data.poap_number,
+              };
+            } else if (cred.id === CREDENTIALS.GitcoinPassport.id) {
               pushObject = { ...pushObject, gitscore: data.gitcoin_score };
             }
-      
+
             nestedCredentialTable.push(pushObject);
           }
         });
@@ -666,7 +788,9 @@ const PollPage = () => {
               const index = await contract.option_index();
               console.log(index, 'index');
               //optionNames.push(optionName);
-              const existingOptionIndex = options.findIndex(option => option.option_description === optionName);
+              const existingOptionIndex = options.findIndex(
+                (option) => option.option_description === optionName
+              );
               if (existingOptionIndex !== -1) {
                 const updatedOptions = options.map((option, idx) =>
                   idx === existingOptionIndex
@@ -689,34 +813,34 @@ const PollPage = () => {
                   }
                   return 0;
                 });
-                setOptions(updatedOptions); 
+                setOptions(updatedOptions);
               } else {
-              newOptions.push({
-                id: index,
-                pollId: id as string,
-                option_description: optionName,
-                address: address,
-                votersCount: 0,
-                totalEth: '0',
-                votersData: [],
-                optionindex: Number(index),
-              });
-              newOptions.sort((a, b) => {
-                if (
-                  typeof a.optionindex === 'number' &&
-                  typeof b.optionindex === 'number'
-                ) {
-                  return a.optionindex - b.optionindex;
-                }
-                return 0;
-              });
-              setOptions(newOptions);}
+                newOptions.push({
+                  id: index,
+                  pollId: id as string,
+                  option_description: optionName,
+                  address: address,
+                  votersCount: 0,
+                  totalEth: '0',
+                  votersData: [],
+                  optionindex: Number(index),
+                });
+                newOptions.sort((a, b) => {
+                  if (
+                    typeof a.optionindex === 'number' &&
+                    typeof b.optionindex === 'number'
+                  ) {
+                    return a.optionindex - b.optionindex;
+                  }
+                  return 0;
+                });
+                setOptions(newOptions);
+              }
             } catch (error) {
               console.error('Error fetching options:', error);
             }
           }
-        }
-        else {
+        } else {
           console.log('Poll contract not existe');
         }
       } catch (error) {
@@ -761,7 +885,7 @@ const PollPage = () => {
         poll_id: pollId,
         option_id: optionId,
         voter_identifier: voter_identifier,
-        vote_credential:requiredCred,
+        vote_credential: requiredCred,
         signature: null,
       };
       console.log(voteData, 'voteData');
@@ -783,10 +907,14 @@ const PollPage = () => {
     const pollId = poll?.id as string;
     try {
       setSigningCredential(requiredCred);
-      const newMessage =  await generateMessage(pollId, optionId, account as string);
+      const newMessage = await generateMessage(
+        pollId,
+        optionId,
+        account as string
+      );
       if (account === null) return;
       setMessage(newMessage);
-      // 
+      //
       // TODO: We need to sign the message and submit. Wait until isSuccess === true and send the transaction
       // For this we need to save the data
       //
@@ -801,13 +929,13 @@ const PollPage = () => {
     credentialIds: string[],
     optionIndex: number | undefined
   ) => {
-    console.log('handle vote',optionId,credentialIds,optionIndex);
+    console.log('handle vote', optionId, credentialIds, optionIndex);
     if (!localStorage.getItem('userUniqueId')) {
       const uniqueId = uuidv4();
       localStorage.setItem('userUniqueId', uniqueId);
     }
     if (voteTable.length > 0) {
-      console.log(credentialIds,'vote table');
+      console.log(credentialIds, 'vote table');
       for (let credentialId of credentialIds) {
         if (isValidUuidV4(credentialId)) {
           switch (credentialId) {
@@ -819,12 +947,12 @@ const PollPage = () => {
               try {
                 // TODO: Verify again on backend
                 if (localStorage.getItem('devconnectNullifier')) {
-                await handleCastVote(
-                  optionId,
-                  CREDENTIALS.ZuConnectResident.id,
-                  'zuconnectNullifier'
-                );}
-                else{
+                  await handleCastVote(
+                    optionId,
+                    CREDENTIALS.ZuConnectResident.id,
+                    'zuconnectNullifier'
+                  );
+                } else {
                   await verifyZuconnectticket();
                 }
               } catch (error) {
@@ -845,8 +973,7 @@ const PollPage = () => {
                     CREDENTIALS.DevConnect.id,
                     'devconnectNullifier'
                   );
-                }
-                else{
+                } else {
                   await devconnectVerify();
                 }
               } catch (error) {
@@ -854,8 +981,8 @@ const PollPage = () => {
                 return;
               }
               break;
-              //Zuzalu Resident
-              case CREDENTIALS.ZuzaluResident.id:
+            //Zuzalu Resident
+            case CREDENTIALS.ZuzaluResident.id:
               if (!isPassportConnected) {
                 await signIn();
                 return;
@@ -867,8 +994,7 @@ const PollPage = () => {
                     CREDENTIALS.ZuzaluResident.id,
                     'zuzaluNullifier'
                   );
-                }
-                else{
+                } else {
                   await zuzaluVerify();
                 }
               } catch (error) {
@@ -933,7 +1059,7 @@ const PollPage = () => {
                 return;
               }
 
-              // TODO: Check if address has Ether? Done 
+              // TODO: Check if address has Ether? Done
               if (parseFloat(userEthHolding) === 0) {
                 toast({
                   title: 'Error',
@@ -1135,6 +1261,105 @@ const PollPage = () => {
       </div>
     );
   }
+  //To do: Create a child component （don't have time for now)
+  function renderCredentialDetails(credentialName: string) {
+    switch (credentialName) {
+      case 'EthHolding on-chain':
+      case CREDENTIALS.EthHoldingOffchain.name:
+        return (
+          <div className="flex flex-col gap-1">
+            <div className="text-sm">Need to have an Ethereum address</div>
+            <div className="flex items-center gap-2">
+              {account ? (
+                <div className="text-sm">
+                  {account}
+                  <CheckCircleIcon className="w-3 h-3 text-green-500" />
+                </div>
+              ) : (
+                <ConnectButton />
+              )}
+            </div>
+          </div>
+        );
+      case CREDENTIALS.ProtocolGuildMember.name:
+      case 'ProtocolGuild on-chain':
+        const isMember = userAvailableCredentialTable.some(
+          (credentialItem) =>
+            credentialItem.id === CREDENTIALS.ProtocolGuildMember.id ||
+            credentialItem.credential === 'ProtocolGuild on-chain'
+        );
+        return (
+          <div className="flex flex-col gap-1">
+            <div className="text-sm">Need to be a member of Protocol Guild</div>
+            <div className="flex items-center gap-2">
+              <div className="text-sm">
+                {account ? (
+                  isMember ? (
+                    'Protocol Guild Member'
+                  ) : (
+                    'You are not a Protocol Guild member'
+                  )
+                ) : (
+                  <ConnectButton />
+                )}
+                {isMember ? (
+                  <CheckCircleIcon className="w-3 h-3 text-green-500" />
+                ) : (
+                  <LockIcon className="w-7 h-7 text-black opacity-25" />
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      case CREDENTIALS.GitcoinPassport.name:
+        const hasScore = userAvailableCredentialTable.some(
+          (credentialItem) =>
+            credentialItem.id === CREDENTIALS.GitcoinPassport.id
+        );
+        return (
+          <div className="flex flex-col gap-1">
+            <div className="text-sm">
+              Minimum score required: {poll?.gitcoin_score}
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="text-sm">
+                {account ? score : <ConnectButton />}
+                {hasScore ? (
+                  <CheckCircleIcon className="w-3 h-3 text-green-500" />
+                ) : (
+                  <LockIcon className="w-7 h-7 text-black opacity-25" />
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      case CREDENTIALS.POAPapi.name:
+        const hasPoaps = userAvailableCredentialTable.some(
+          (credentialItem) => credentialItem.id === CREDENTIALS.POAPapi.id
+        );
+        return (
+          <div className="flex flex-col gap-1">
+            <div className="text-sm">
+              Need to have a minimum of {poll?.poap_number} POAPs
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="text-sm">
+                {account ? (
+                  <PoapDetails
+                    poapEvents={poll?.poap_events as number[]}
+                    account={account as string}
+                    eventDetails={eventDetails}
+                    setEventDetails={setEventDetails}
+                  />
+                ) : (
+                  <ConnectButton />
+                )}
+              </div>
+            </div>
+          </div>
+        );
+    }
+  }
 
   return (
     <div className="flex flex-col md:flex-row gap-20 px-20 pt-5 text-black w-full justify-center">
@@ -1158,8 +1383,8 @@ const PollPage = () => {
                 </div>
               ) : (
                 <div className="px-2.5 py-0.5 opacity-60 bg-black bg-opacity-5 rounded-lg">
-                <Label className="text-black text-md font-bold">Closed</Label>
-              </div>
+                  <Label className="text-black text-md font-bold">Closed</Label>
+                </div>
               )}
 
               <div className="flex gap-1 opacity-60">
@@ -1196,31 +1421,6 @@ const PollPage = () => {
                 </h4>
                 <p>Votes will be segmented by credentials</p>
               </div>
-              {(!poll?.poap_events || poll?.poap_events.length === 0) &&
-              credentialId === CREDENTIALS.POAPSVerification.id ? (
-                <div>
-                  <div>
-                    <Label className="text-sm">
-                      Number of POAPS you have: {poapsNumber}/5 (You need to
-                      have more than 5 Ethereum POAPS to vote)
-                    </Label>
-                  </div>
-                  <div>
-                    <Label className="text-sm">
-                      Please notice that for now in this test version, we only
-                      stored the participation list of 2 Ethereum events.
-                    </Label>
-                  </div>
-                </div>
-              ) : (
-                <div></div>
-              )}
-              {credentialId === '6ea677c7-f6aa-4da5-88f5-0bcdc5c872c2' && (
-                <Label className="text-sm">
-                  Your gitcoin passport score is: {score}/100 (Your score must
-                  be higher than 0 to vote)
-                </Label>
-              )}
               <div className={styles.options_container}>
                 {/* <div className={styles.gated_poll_disabled}>
                   <div className={styles.gated_content}>
@@ -1243,8 +1443,6 @@ const PollPage = () => {
                         option.option_description
                       )
                     }
-                    //isChecked={selectedOption === option.id}
-                    //type="api"
                     optionAddress={undefined}
                   />
                 ))}
@@ -1328,7 +1526,8 @@ const PollPage = () => {
                   <button
                     className={styles.vote_btn}
                     onClick={() => {
-                      setShowConfirmationPopup(false);if (selectedOptionData) {
+                      setShowConfirmationPopup(false);
+                      if (selectedOptionData) {
                         handleVote(
                           selectedOptionData.optionId,
                           voteTable,
@@ -1346,7 +1545,7 @@ const PollPage = () => {
             {showConfirmationPopup && <ConfirmationPopup />}
           </div>
         )}
-         <PollResultComponent
+        <PollResultComponent
           pollType={PollTypes.HEAD_COUNT}
           optionsData={options}
         />
@@ -1418,75 +1617,120 @@ const PollPage = () => {
                 </Label>
               </div>
 
-              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
-                <div className="flex justify-between">
-                  <Label className="text-sm text-black font-bold opacity-50">
-                    Ether Holding
-                  </Label>
-                  <CheckCircleIcon className="w-7 h-7" />
-                </div>
-
-                <button className="flex gap-1.5 text-sm text-black opacity-60 font-medium">
-                  Show Details
-                  <ChevronDownIcon className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
-                <div className="flex justify-between">
-                  <Label className="text-sm text-black font-bold opacity-50">
-                    Gitcoin Passport
-                  </Label>
-                  <CheckCircleIcon className="w-7 h-7" />
-                </div>
-
-                <button className="flex gap-1.5 text-sm text-black opacity-60 font-medium">
-                  Show Details
-                  <ChevronDownIcon className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
-                <div className="flex justify-between">
-                  <Label className="text-sm text-black font-bold opacity-50">
-                    Zupass Credentials
-                  </Label>
-                  <LockIcon className="w-7 h-7 text-black opacity-25" />
-                </div>
-
-                <button className="flex gap-1.5 text-sm text-black opacity-60 font-medium">
-                  Show Details
-                  <ChevronDownIcon className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
-                <div className="flex justify-between">
-                  <Label className="text-sm text-black font-bold opacity-50">
-                    Protocol Guild
-                  </Label>
-                  <LockIcon className="w-7 h-7 text-black opacity-25" />
-                </div>
-
-                <button className="flex gap-1.5 text-sm text-black opacity-60 font-medium">
-                  Show Details
-                  <ChevronDownIcon className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
-                <div className="flex justify-between">
-                  <Label className="text-sm text-black font-bold opacity-50">
-                    POAPs
-                  </Label>
-                  <LockIcon className="w-7 h-7 text-black opacity-25" />
-                </div>
-
-                <button className="flex gap-1.5 text-sm text-black opacity-60 font-medium">
-                  Show Details
-                  <ChevronDownIcon className="w-5 h-5" />
-                </button>
-              </div>
+              {credentialTable.some((credential) =>
+                    [CREDENTIALS.DevConnect.id, CREDENTIALS.ZuConnectResident.id, CREDENTIALS.ZuzaluResident.id].includes(credential.id)
+                  ) && (
+                    <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                      <div className="flex justify-between">
+                        <Label className="text-sm text-black font-bold opacity-50">
+                          <div className="flex items-center">
+                            <img src='/images/zupass.svg' alt="Credential" className="image-class-name" />
+                            <span>Zupass</span>
+                          </div>
+                        </Label>
+                        {zupasspoll ? (
+                          <CheckCircleIcon className="w-7 h-7" />
+                        ) : (
+                          <LockIcon className="w-7 h-7 text-black opacity-25" />
+                        )}
+                      </div>
+                      <button
+                        className="flex gap-1.5 text-sm text-black opacity-60 font-medium"
+                        onClick={() => {
+                          const isExpanded = expandedIds.includes('Zupass');
+                          setExpandedIds(isExpanded ? expandedIds.filter((id) => id !== 'Zupass') : [...expandedIds, 'Zupass']);
+                        }}
+                      >
+                        {expandedIds.includes('Zupass') ? 'Hide Details' : 'Show Details'}
+                        <ChevronDownIcon className="w-5 h-5" />
+                      </button>
+                      {expandedIds.includes('Zupass') && (isPassportConnected ? (
+                        credentialTable
+                          .filter((credential) =>
+                            [CREDENTIALS.DevConnect.id, CREDENTIALS.ZuConnectResident.id, CREDENTIALS.ZuzaluResident.id].includes(credential.id)
+                          )
+                          .map((credential) => (
+                            <div key={credential.id} className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                              {userAvailableCredentialTable.some((credentialItem) => credentialItem.id === credential.id) ? (
+                                <CheckCircleIcon className="w-7 h-7" />
+                              ) : (
+                                <LockIcon className="w-7 h-7 text-black opacity-25" />
+                              )}
+                              <span className="text-black opacity-75">{credential.credential}</span>
+                            </div>
+                          ))
+                      ) :         <Button className="outline-none h-10 items-center rounded-full" leftIcon={BoltIcon} onClick={signIn}>
+                    </Button>)}
+                    </div>
+                  )
+                }
+              {credentialTable
+                .filter((credential) =>
+                  ![
+                    CREDENTIALS.DevConnect.id,
+                    CREDENTIALS.ZuConnectResident.id,
+                    CREDENTIALS.ZuzaluResident.id,
+                  ].includes(credential.id)
+                )
+                .map((credential) => {
+                  const imagePath = getImagePathByCredential(
+                    credential.credential as string
+                  );
+                  return (
+                    <div
+                      key={credential.id}
+                      className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg"
+                    >
+                      <div className="flex justify-between">
+                        <Label className="text-sm text-black font-bold opacity-50">
+                          {imagePath && (
+                            <div className="flex items-center">
+                              <img
+                                src={imagePath}
+                                alt="Credential"
+                                className="image-class-name"
+                              />
+                              <span>{credential.credential}</span>
+                            </div>
+                          )}
+                        </Label>
+                        {userAvailableCredentialTable.some(
+                          (credentialItem) =>
+                            credentialItem.id === credential.id
+                        ) ? (
+                          <CheckCircleIcon className="w-7 h-7" />
+                        ) : (
+                          <LockIcon className="w-7 h-7 text-black opacity-25" />
+                        )}
+                      </div>
+                      <button
+                        className="flex gap-1.5 text-sm text-black opacity-60 font-medium"
+                        onClick={() => {
+                          const isExpanded = expandedIds.includes(
+                            credential.id
+                          );
+                          setExpandedIds(
+                            isExpanded
+                              ? expandedIds.filter((id) => id !== credential.id)
+                              : [...expandedIds, credential.id]
+                          );
+                        }}
+                      >
+                        {expandedIds.includes(credential.id)
+                          ? 'Hide Details'
+                          : 'Show Details'}
+                        <ChevronDownIcon className="w-5 h-5" />
+                      </button>
+                      {expandedIds.includes(credential.id) && (
+                        <div>
+                          {renderCredentialDetails(
+                            credential.credential as string
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           </div>
         )}

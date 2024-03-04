@@ -97,7 +97,7 @@ export interface Poll {
   description: string;
   options: string[];
   pollMetadata: string;
-  poap_events: number[]
+  poap_events: number[];
   block_number: number;
   contractpoll_index: number[];
   gitcoin_score: number;
