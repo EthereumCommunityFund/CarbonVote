@@ -47,6 +47,7 @@ interface CredentialTable {
   id: string;
   identifier?: string;
   votedOption?: string;
+  votedOptionName?: string;
   gitscore?: number;
   poap_events?: string[];
   poap_number?: string;
@@ -226,6 +227,7 @@ const PollPage = () => {
                     availableCredentialTable[lastElementIndex] = {
                       ...availableCredentialTable[lastElementIndex],
                       votedOption: responsevote.data.option_id,
+                      votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
                     };
                   }
                 }
@@ -251,6 +253,7 @@ const PollPage = () => {
                     availableCredentialTable[lastElementIndex] = {
                       ...availableCredentialTable[lastElementIndex],
                       votedOption: responsevote.data.option_id,
+                      votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
                     };
                   }
                 }
@@ -276,6 +279,7 @@ const PollPage = () => {
                     availableCredentialTable[lastElementIndex] = {
                       ...availableCredentialTable[lastElementIndex],
                       votedOption: responsevote.data.option_id,
+                      votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
                     };
                   }
                 }
@@ -301,6 +305,7 @@ const PollPage = () => {
                       availableCredentialTable[lastElementIndex] = {
                         ...availableCredentialTable[lastElementIndex],
                         votedOption: responsevote.data.option_id,
+                        votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
                       };
                     }
                   }
@@ -347,6 +352,7 @@ const PollPage = () => {
                       availableCredentialTable[lastElementIndex] = {
                         ...availableCredentialTable[lastElementIndex],
                         votedOption: responsevote.data.option_id,
+                        votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
                       };
                     }
                   } else {
@@ -396,6 +402,7 @@ const PollPage = () => {
                         availableCredentialTable[lastElementIndex] = {
                           ...availableCredentialTable[lastElementIndex],
                           votedOption: responsevote.data.option_id,
+                          votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
                         };
                       }
                     } else {
@@ -424,6 +431,7 @@ const PollPage = () => {
                       availableCredentialTable[lastElementIndex] = {
                         ...availableCredentialTable[lastElementIndex],
                         votedOption: responsevote.data.option_id,
+                        votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
                       };
                     }
                   }
@@ -1667,6 +1675,19 @@ const PollPage = () => {
                           ))
                       ) :         <Button className="outline-none h-10 items-center rounded-full" leftIcon={BoltIcon} onClick={signIn}>
                     </Button>)}
+                    {(() => {
+                            const Zupass = [
+                              CREDENTIALS.DevConnect.id, 
+                              CREDENTIALS.ZuConnectResident.id, 
+                              CREDENTIALS.ZuzaluResident.id
+                            ];
+                            const foundVotedOption = userAvailableCredentialTable.find(
+                              (credentialItem) => Zupass.includes(credentialItem.id) && credentialItem.votedOptionName
+                            );
+                            return foundVotedOption ? (
+                              <span>Voted: {foundVotedOption.votedOptionName}</span>
+                            ) : null;
+                          })()}
                     </div>
                   )
                 }
@@ -1734,6 +1755,14 @@ const PollPage = () => {
                           )}
                         </div>
                       )}
+                      {(() => {
+                        const foundVotedOption = userAvailableCredentialTable.find(
+                          (credentialItem) => credentialItem.id === credential.id && credentialItem.votedOptionName
+                        );
+                        return foundVotedOption ? (
+                          <span>Voted: {foundVotedOption.votedOptionName}</span>
+                        ) : null;
+                      })()}
                     </div>
                   );
                 })}

@@ -72,27 +72,25 @@ async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credent
         .select('option_id')
         .eq('vote_hash', vote_hash)
         .eq('vote_credential',vote_credential)
-        .eq('poll_id', poll_id);
+        .eq('poll_id', poll_id)
+        .single();
 
     if (error) throw error;
 
-    let existingVote = votesData ? votesData[0] : null;
+    let existingVote = votesData ? votesData : null;
     if (existingVote) {
         const { error: deleteError } = await supabase
             .from('votes')
             .delete()
             .match({ vote_hash, poll_id , vote_credential});
-
         if (deleteError) throw deleteError;
 
         if (existingVote.option_id !== option_id) {
             const { error: decrementError } = await supabase
                 .rpc('decrement_vote', { option_id_param: existingVote.option_id });
-
             if (decrementError) throw decrementError;
         }
     }
-
     // // Insert the new vote
     const { error: insertError } = await supabase
         .from('votes')
@@ -107,11 +105,9 @@ async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credent
         }]);
 
     // if (insertError) throw insertError;
-
     // Increment the vote count for the new option
     const { error: incrementError } = await supabase
         .rpc('increment_vote', { option_id_param: option_id });
-
     if (incrementError) throw incrementError;
 }
 
