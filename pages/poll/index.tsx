@@ -57,6 +57,10 @@ interface SelectedOptionData {
   optionIndex: number | undefined;
   option_description: string;
 }
+interface VotingProcess {
+  credentialId: string;
+  status: string;
+}
 import { MultiplePeopleIcon } from '@/components/icons/multiplepeople';
 import { DownArrowIcon } from '@/components/icons/downarrow';
 import moment from 'moment-timezone';
@@ -117,25 +121,55 @@ const PollPage = () => {
   const [signingCredential, setSigningCredential] = useState<string>('');
   const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
   const [zupasspoll, setZupassPoll] = useState(false);
+  const [votingProcess, setVotingProcess] = useState<VotingProcess[]>([]);
   const [selectedOptionData, setSelectedOptionData] =
     useState<SelectedOptionData>();
-  const handleVotesRadioChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const credentialId = event.target.value;
-    setVoteTable((prevVoteTable) => {
-      const isCurrentlyChecked = prevVoteTable.includes(credentialId);
-      if (isCurrentlyChecked) {
-        return prevVoteTable.filter((id) => id !== credentialId);
-      } else {
-        return [...prevVoteTable, credentialId];
-      }
-    });
-    console.log(voteTable, 'vote Table');
-  };
-  const handleSelectAllClick = () => {
-    setVoteTable(credentialTable.map((cred) => cred.id));
-  };
+    const handleVotesRadioChange = (
+      event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+      const credentialId = event.target.value;
+      const isCurrentlyChecked = event.target.checked;
+      setVoteTable((prevVoteTable) => {
+        if ([CREDENTIALS.DevConnect.id, CREDENTIALS.ZuConnectResident.id, CREDENTIALS.ZuzaluResident.id].includes(credentialId)) {
+          let newVoteTable = prevVoteTable.filter(id => ![CREDENTIALS.DevConnect.id, CREDENTIALS.ZuConnectResident.id, CREDENTIALS.ZuzaluResident.id].includes(id));
+          if (isCurrentlyChecked) {
+            newVoteTable = [...newVoteTable, credentialId];
+          }
+          return newVoteTable;
+        } else {
+          if (isCurrentlyChecked) {
+            if (!prevVoteTable.includes(credentialId)) {
+              return [...prevVoteTable, credentialId];
+            }
+          } else {
+            return prevVoteTable.filter(id => id !== credentialId);
+          }
+        }
+        return prevVoteTable;
+      });
+    };
+    
+    const handleSelectAllClick = () => {
+      let addedZupassIds = false;
+      const zupassIds: string[] = [CREDENTIALS.DevConnect.id, CREDENTIALS.ZuConnectResident.id, CREDENTIALS.ZuzaluResident.id];
+      
+      const newVoteTable = credentialTable.reduce((acc: string[], cred) => {
+        const isAvailable = userAvailableCredentialTable.some(availableCred => availableCred.id === cred.id);
+        if (isAvailable) {
+          if (zupassIds.includes(cred.id)) {
+            if (!addedZupassIds) {
+              acc.push(cred.id);
+              addedZupassIds = true;
+            }
+          } else {
+            acc.push(cred.id);
+          }
+        }
+        return acc;
+      }, []);
+      setVoteTable(newVoteTable);
+    };
+    
   const handleOptionSelect = (
     optionId: string,
     optionIndex: number | undefined,
@@ -157,6 +191,11 @@ const PollPage = () => {
   };
   useEffect(() => {
     console.log(voteTable, 'vote Table in useEffect');
+    const initialVotingProcess = voteTable.map(credentialId => ({
+      credentialId,
+      status: 'pending',
+    }));
+    setVotingProcess(initialVotingProcess);
   }, [voteTable]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const popupRef = useRef<HTMLDivElement | null>(null);
@@ -1502,15 +1541,13 @@ const PollPage = () => {
                   <p>Select the credentials you want to vote with</p>
                   <div className={styles.v_pop_list}>
                     {credentialTable.map((credential) => {
+                      const isAvailable = userAvailableCredentialTable.some(availCred => availCred.id === credential.id);
                       const imagePath = getImagePathByCredential(
                         credential.credential as string
                       );
                       return (
-                        <div
-                          key={credential.id}
-                          className={styles.radios_flex_col}
-                        >
-                          <label className={styles.choice_option}>
+                        <div key={credential.id} className={styles.radios_flex_col}>
+                          <label className={`${styles.choice_option} ${!isAvailable ? styles.disabled : ''}`}>
                             <div>
                               {imagePath && (
                                 <img
@@ -1521,18 +1558,22 @@ const PollPage = () => {
                               )}
                               <span>
                                 {credential.credential}
-                                {/*votedOptions ? ` (${votedOptions})` : ''*/}
                               </span>
                             </div>
-                            <input
-                              type="checkbox"
-                              name="credentials"
-                              value={credential.id}
-                              checked={voteTable.includes(credential.id)}
-                              onChange={handleVotesRadioChange}
-                              className={styles.hidden_radio}
-                            />
+                            {isAvailable ? (
+                              <input
+                                type="checkbox"
+                                name="credentials"
+                                value={credential.id}
+                                checked={voteTable.includes(credential.id)}
+                                onChange={handleVotesRadioChange}
+                                className={styles.hidden_radio}
+                              />
+                            ) : (
+                              <div className={styles.unavailableCover} /> 
+                            )}
                           </label>
+                          {!isAvailable && <div className={styles.overlay}></div>} 
                         </div>
                       );
                     })}
