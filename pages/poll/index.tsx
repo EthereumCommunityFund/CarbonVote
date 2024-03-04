@@ -63,6 +63,8 @@ import moment from 'moment-timezone';
 import { ChevronDownIcon } from 'lucide-react';
 import { LockIcon } from '@/components/icons/lock';
 import { CheckCircleIcon } from '@/components/icons/checkcircle';
+import { CheckCircleIconWhite } from '@/components/icons/checkcirclewhite';
+import TruncateText from '@/components/TruncateText';
 
 const PollPage = () => {
   const router = useRouter();
@@ -114,7 +116,7 @@ const PollPage = () => {
   const [votedOptions, setVotedOptions] = useState({});
   const [signingCredential, setSigningCredential] = useState<string>('');
   const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
-  const [zupasspoll, setZupassPoll] =useState(false);
+  const [zupasspoll, setZupassPoll] = useState(false);
   const [selectedOptionData, setSelectedOptionData] =
     useState<SelectedOptionData>();
   const handleVotesRadioChange = (
@@ -498,7 +500,7 @@ const PollPage = () => {
       const containsZupassCredentials = availableCredentialTable.some(credential =>
         [CREDENTIALS.ZuConnectResident.id, CREDENTIALS.DevConnect.id, CREDENTIALS.ZuzaluResident.id].includes(credential.id)
       );
-      if(containsZupassCredentials){
+      if (containsZupassCredentials) {
         setZupassPoll(true);
       }
     }
@@ -1279,9 +1281,9 @@ const PollPage = () => {
             <div className="text-sm">Need to have an Ethereum address</div>
             <div className="flex items-center gap-2">
               {account ? (
-                <div className="text-sm">
-                  {account}
-                  <CheckCircleIcon className="w-3 h-3 text-green-500" />
+                <div className={styles.avail_cred}>
+                  <TruncateText text={account} maxLength={15} />
+                  <CheckCircleIconWhite className={styles.avail_cred_icon} />
                 </div>
               ) : (
                 <ConnectButton />
@@ -1303,7 +1305,11 @@ const PollPage = () => {
               <div className="text-sm">
                 {account ? (
                   isMember ? (
-                    'Protocol Guild Member'
+
+                    <div className={styles.avail_cred}>
+                      Protocol Guild Member
+                      <CheckCircleIconWhite className={styles.avail_cred_icon} />
+                    </div>
                   ) : (
                     'You are not a Protocol Guild member'
                   )
@@ -1632,65 +1638,68 @@ const PollPage = () => {
               </div>
 
               {credentialTable.some((credential) =>
-                    [CREDENTIALS.DevConnect.id, CREDENTIALS.ZuConnectResident.id, CREDENTIALS.ZuzaluResident.id].includes(credential.id)
-                  ) && (
-                    <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
-                      <div className="flex justify-between">
-                        <Label className="text-sm text-black font-bold opacity-50">
-                          <div className="flex items-center">
-                            <img src='/images/zupass.svg' alt="Credential" className="image-class-name" />
-                            <span>Zupass</span>
+                [CREDENTIALS.DevConnect.id, CREDENTIALS.ZuConnectResident.id, CREDENTIALS.ZuzaluResident.id].includes(credential.id)
+              ) && (
+                  <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                    <div className="flex justify-between">
+                      <Label className="text-sm text-black font-bold">
+                        <div className="flex items-center gap-2">
+                          <img src='/images/zupass.svg' alt="Credential" className="image-class-name" />
+                          <span className='opacity-60'>Zupass</span>
+                        </div>
+                      </Label>
+                      {zupasspoll ? (
+                        <div className={styles.avail_cred}>
+                          ZuPass
+                          <CheckCircleIconWhite className={styles.avail_cred_icon} />
+                        </div>
+                      ) : (
+                        <LockIcon className="w-7 h-7 text-black opacity-25" />
+                      )}
+                    </div>
+                    <button
+                      className="flex gap-1.5 text-sm text-black opacity-60 font-medium"
+                      onClick={() => {
+                        const isExpanded = expandedIds.includes('Zupass');
+                        setExpandedIds(isExpanded ? expandedIds.filter((id) => id !== 'Zupass') : [...expandedIds, 'Zupass']);
+                      }}
+                    >
+                      {expandedIds.includes('Zupass') ? 'Hide Details' : 'Show Details'}
+                      <ChevronDownIcon className="w-5 h-5" />
+                    </button>
+                    {expandedIds.includes('Zupass') && (isPassportConnected ? (
+                      credentialTable
+                        .filter((credential) =>
+                          [CREDENTIALS.DevConnect.id, CREDENTIALS.ZuConnectResident.id, CREDENTIALS.ZuzaluResident.id].includes(credential.id)
+                        )
+                        .map((credential) => (
+                          <div key={credential.id} className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                            {userAvailableCredentialTable.some((credentialItem) => credentialItem.id === credential.id) ? (
+                              <CheckCircleIcon className="w-7 h-7" />
+                            ) : (
+                              <LockIcon className="w-7 h-7 text-black opacity-25" />
+                            )}
+                            <span className="text-black opacity-75">{credential.credential}</span>
                           </div>
-                        </Label>
-                        {zupasspoll ? (
-                          <CheckCircleIcon className="w-7 h-7" />
-                        ) : (
-                          <LockIcon className="w-7 h-7 text-black opacity-25" />
-                        )}
-                      </div>
-                      <button
-                        className="flex gap-1.5 text-sm text-black opacity-60 font-medium"
-                        onClick={() => {
-                          const isExpanded = expandedIds.includes('Zupass');
-                          setExpandedIds(isExpanded ? expandedIds.filter((id) => id !== 'Zupass') : [...expandedIds, 'Zupass']);
-                        }}
-                      >
-                        {expandedIds.includes('Zupass') ? 'Hide Details' : 'Show Details'}
-                        <ChevronDownIcon className="w-5 h-5" />
-                      </button>
-                      {expandedIds.includes('Zupass') && (isPassportConnected ? (
-                        credentialTable
-                          .filter((credential) =>
-                            [CREDENTIALS.DevConnect.id, CREDENTIALS.ZuConnectResident.id, CREDENTIALS.ZuzaluResident.id].includes(credential.id)
-                          )
-                          .map((credential) => (
-                            <div key={credential.id} className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
-                              {userAvailableCredentialTable.some((credentialItem) => credentialItem.id === credential.id) ? (
-                                <CheckCircleIcon className="w-7 h-7" />
-                              ) : (
-                                <LockIcon className="w-7 h-7 text-black opacity-25" />
-                              )}
-                              <span className="text-black opacity-75">{credential.credential}</span>
-                            </div>
-                          ))
-                      ) :         <Button className="outline-none h-10 items-center rounded-full" leftIcon={BoltIcon} onClick={signIn}>
+                        ))
+                    ) : <Button className="outline-none h-10 items-center rounded-full" leftIcon={BoltIcon} onClick={signIn}>
                     </Button>)}
                     {(() => {
-                            const Zupass = [
-                              CREDENTIALS.DevConnect.id, 
-                              CREDENTIALS.ZuConnectResident.id, 
-                              CREDENTIALS.ZuzaluResident.id
-                            ];
-                            const foundVotedOption = userAvailableCredentialTable.find(
-                              (credentialItem) => Zupass.includes(credentialItem.id) && credentialItem.votedOptionName
-                            );
-                            return foundVotedOption ? (
-                              <span>Voted: {foundVotedOption.votedOptionName}</span>
-                            ) : null;
-                          })()}
-                    </div>
-                  )
-                }
+                      const Zupass = [
+                        CREDENTIALS.DevConnect.id,
+                        CREDENTIALS.ZuConnectResident.id,
+                        CREDENTIALS.ZuzaluResident.id
+                      ];
+                      const foundVotedOption = userAvailableCredentialTable.find(
+                        (credentialItem) => Zupass.includes(credentialItem.id) && credentialItem.votedOptionName
+                      );
+                      return foundVotedOption ? (
+                        <span>Voted: {foundVotedOption.votedOptionName}</span>
+                      ) : null;
+                    })()}
+                  </div>
+                )
+              }
               {credentialTable
                 .filter((credential) =>
                   ![
