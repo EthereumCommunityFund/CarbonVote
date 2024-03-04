@@ -4,6 +4,7 @@ import { Pie } from 'react-chartjs-2';
 
 import { PollOptionType, PollTypes } from '@/types';
 import { Label } from './Label';
+import styles from "@/styles/pollResult.module.css"
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -38,19 +39,31 @@ const PieChartComponent: React.FC<IPieChartComponent> = ({ votes, votingType }) 
     plugins: {
       legend: {
         position: 'bottom', // Align legend at the bottom
+        labels: {
+          font: {
+            size: 16, // Customize font size
+          },
+          color: 'black',
+          boxWidth: 20,
+          boxHeight: 20,
+          borderRadius: 50,
+        },
+
       },
     }
   }
   return (
     <>
       <div className='flex flex-col'>
-        <Label className='text-xl'>{totalWeight.toFixed(5)}</Label>
-        <Label className='text-sm text-black/70'>{votingType === PollTypes.ETH_HOLDING ? 'Total Eth' : 'Total Votes'}</Label>
+        <Label className={styles.votes_count}>{totalWeight.toFixed(5)}</Label>
+        <Label className={styles.votes_count_sec}>{votingType === PollTypes.ETH_HOLDING ? 'Total Eth' : 'Total Votes'}</Label>
       </div>
-      <Pie
-        data={data}
-        options={option}
-      />
+      <div className={styles.pie}>
+        <Pie
+          data={data}
+          options={option}
+        />
+      </div>
     </>
   );
 };

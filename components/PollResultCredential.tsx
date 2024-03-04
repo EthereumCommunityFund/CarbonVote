@@ -8,6 +8,7 @@ import { TbChevronDown } from 'react-icons/tb';
 import PieChartComponent from './ui/PieChart';
 import { HeadCountCredential, PollOptionType, PollTypes } from '@/types';
 import { IconType } from 'react-icons';
+import styles from "@/styles/pollResult.module.css"
 
 interface IPollResultCredentialComponent {
   pollType: PollTypes,
@@ -22,8 +23,8 @@ export const PollResultCredentialComponent: React.FC<IPollResultCredentialCompon
 
   return (
     <>
-      <Button variant="primary" className='w-full rounded-md flex justify-between' onClick={toggleExpanded}>
-        <Label className='flex gap-2.5 items-center text-base'><Credential_Icon />{credentialType}</Label>
+      <Button variant="primary" className={styles.dropdown} onClick={toggleExpanded}>
+        <Label className={styles.cred_flex}><Credential_Icon />{credentialType}</Label>
         <TbChevronDown />
       </Button>
       {isExpanded &&

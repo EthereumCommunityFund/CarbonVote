@@ -795,13 +795,13 @@ const PollPage = () => {
                 const updatedOptions = options.map((option, idx) =>
                   idx === existingOptionIndex
                     ? {
-                        ...option,
-                        address: address,
-                        votersCount: 0,
-                        totalEth: '0',
-                        votersData: [],
-                        optionindex: Number(index),
-                      }
+                      ...option,
+                      address: address,
+                      votersCount: 0,
+                      totalEth: '0',
+                      votersData: [],
+                      optionindex: Number(index),
+                    }
                     : option
                 );
                 updatedOptions.sort((a, b) => {
@@ -1464,9 +1464,13 @@ const PollPage = () => {
                 </p>
                 <span>Show Addresses</span>
               </div>
+
             </>
           ) : (
-            <Label className="text-2xl">Poll finished</Label>
+            <div className={styles.poll_finished}>
+              <h3>Poll finished</h3>
+              <div></div>
+            </div>
           )}
         </div>
         {isPopupOpen && (
@@ -1482,7 +1486,7 @@ const PollPage = () => {
                 </p>
                 <div className={styles.v_pop_content}>
                   <p>Select the credentials you want to vote with</p>
-                  <div className="flex flex-col gap-2.5">
+                  <div className={styles.v_pop_list}>
                     {credentialTable.map((credential) => {
                       const imagePath = getImagePathByCredential(
                         credential.credential as string
@@ -1493,6 +1497,19 @@ const PollPage = () => {
                           className={styles.radios_flex_col}
                         >
                           <label className={styles.choice_option}>
+                            <div>
+                              {imagePath && (
+                                <img
+                                  src={imagePath}
+                                  alt="Credential"
+                                  className="image-class-name"
+                                />
+                              )}
+                              <span>
+                                {credential.credential}
+                                {/*votedOptions ? ` (${votedOptions})` : ''*/}
+                              </span>
+                            </div>
                             <input
                               type="checkbox"
                               name="credentials"
@@ -1501,17 +1518,6 @@ const PollPage = () => {
                               onChange={handleVotesRadioChange}
                               className={styles.hidden_radio}
                             />
-                            {imagePath && (
-                              <img
-                                src={imagePath}
-                                alt="Credential"
-                                className="image-class-name"
-                              />
-                            )}
-                            <span>
-                              {credential.credential}
-                              {/*votedOptions ? ` (${votedOptions})` : ''*/}
-                            </span>
                           </label>
                         </div>
                       );
