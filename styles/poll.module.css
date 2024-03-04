@@ -325,3 +325,22 @@
     margin-top: 20px;
     border-radius: 50px;
 }
+
+.avail_cred {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #000;
+    color: #fff;
+    border-radius: 50px;
+    padding: 7px 10px;
+    font-family: "Inter";
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 7px;
+}
+
+.avail_cred_icon {
+    color: #fff;
+    width: 20px;
+}
