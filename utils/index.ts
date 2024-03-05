@@ -106,6 +106,12 @@ export const convertToHoursAndMinutesToSeconds = (timeLimitString: string): numb
   return seconds;
 };
 
+export function isValidUuidV4  (uuid: string): boolean  {
+  const uuidV4Pattern =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidV4Pattern.test(uuid);
+};
+
 export function getImagePathByCredential(credential: string): string {
   if (
     credential.includes('ProtocolGuild on-chain') ||
@@ -131,6 +137,9 @@ export function getImagePathByCredential(credential: string): string {
   }
   if (credential.includes('POAP API')) {
     return '/images/poaps.svg';
+  }
+  if (credential.includes('Solo Staker')) {
+    return '/images/solo_staker.svg';
   }
   return '';
 }

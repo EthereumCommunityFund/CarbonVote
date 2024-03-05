@@ -64,6 +64,10 @@ export const CREDENTIALS = {
     id: '287e7cf7-83ea-4aac-8311-8d55b49ac85b',
     name: "Zuzalu Resident"
   },
+  EthSoloStaker: {
+    id: '89b2e85c-77c0-4a7e-8c5c-d70d3a57a6cf',
+    name: "Solo Staker"
+  },
 };
 
 // TODO: improve naming (ethholding?)

@@ -19,7 +19,6 @@ export type CredentialType = {
   id: string;
   credential_name: string;
   credential_detail: string;
-  credential_type: string;
 }
 
 export type PollOptionType = {

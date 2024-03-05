@@ -37,11 +37,20 @@ import styles from '@/styles/poll.module.css';
 import { HiArrowRight } from 'react-icons/hi';
 import ConfirmationPopup from '@/components/ConfirmationPopup';
 import { getProviderUrl } from '@/utils/getProviderUrl';
-import { getImagePathByCredential } from '@/utils/index';
+import { getImagePathByCredential,isValidUuidV4 } from '@/utils/index';
 import getPoapOwnership from 'utils/getPoapOwnership';
 import { ProtocolGuildMembershipList } from '@/src/protocolguildmember';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { BoltIcon } from '../../components/icons';
+import { MultiplePeopleIcon } from '@/components/icons/multiplepeople';
+import { DownArrowIcon } from '@/components/icons/downarrow';
+import moment from 'moment-timezone';
+import { ChevronDownIcon } from 'lucide-react';
+import { LockIcon } from '@/components/icons/lock';
+import { CheckCircleIcon } from '@/components/icons/checkcircle';
+import { CheckCircleIconWhite } from '@/components/icons/checkcirclewhite';
+import TruncateText from '@/components/TruncateText';
+import { SoloStakerList } from '@/src/solostaker';
 interface CredentialTable {
   credential?: string;
   id: string;
@@ -60,15 +69,8 @@ interface SelectedOptionData {
 interface VotingProcess {
   credentialId: string;
   status: string;
+  contractpoll?: string;
 }
-import { MultiplePeopleIcon } from '@/components/icons/multiplepeople';
-import { DownArrowIcon } from '@/components/icons/downarrow';
-import moment from 'moment-timezone';
-import { ChevronDownIcon } from 'lucide-react';
-import { LockIcon } from '@/components/icons/lock';
-import { CheckCircleIcon } from '@/components/icons/checkcircle';
-import { CheckCircleIconWhite } from '@/components/icons/checkcirclewhite';
-import TruncateText from '@/components/TruncateText';
 
 const PollPage = () => {
   const router = useRouter();
@@ -122,6 +124,7 @@ const PollPage = () => {
   const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
   const [zupasspoll, setZupassPoll] = useState(false);
   const [votingProcess, setVotingProcess] = useState<VotingProcess[]>([]);
+  const [credentialCardReady, setCredentialCardReady] = useState(false);
   const [selectedOptionData, setSelectedOptionData] =
     useState<SelectedOptionData>();
     const handleVotesRadioChange = (
@@ -195,7 +198,15 @@ const PollPage = () => {
       credentialId,
       status: 'pending',
     }));
-    setVotingProcess(initialVotingProcess);
+    const updatedVotingProcess = initialVotingProcess.map((votingprocess) => {
+      const foundCredential = credentialTable.find(ct => ct.id === votingprocess.credentialId);
+      if (foundCredential && foundCredential.credential) {
+        return { ...votingprocess, contractpoll: foundCredential.credential };
+      }
+      return votingprocess;
+    });
+    setVotingProcess(updatedVotingProcess);
+    console.log(updatedVotingProcess, 'voting process');
   }, [voteTable]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const popupRef = useRef<HTMLDivElement | null>(null);
@@ -217,6 +228,7 @@ const PollPage = () => {
     // Add event listener when popup is open
     if (isPopupOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      setVoteTable([]);
     } else {
       // Remove event listener when popup is closed
       document.removeEventListener('mousedown', handleClickOutside);
@@ -227,7 +239,16 @@ const PollPage = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isPopupOpen]);
-
+  const handleConfirmationPopupClose = () => {
+    setVoteTable([]);
+    setShowConfirmationPopup(false);
+    if (isValidUuidV4(id as string)) {
+      fetchPollFromApi(id);
+      getEthHoldings();
+    } else {
+      fetchPollFromContract(id as string);
+    }
+  };
   console.log('🚀 ~ PollPage ~ data:', data);
   useEffect(() => {
     if (id !== undefined) {
@@ -242,6 +263,7 @@ const PollPage = () => {
 
   useEffect(() => {
     async function checkAndSetCredentialsAndVotes() {
+      setCredentialCardReady(false);
       const availableCredentialTable: CredentialTable[] = [];
       if (credentialTable.length > 0) {
         for (let credential of credentialTable) {
@@ -478,6 +500,32 @@ const PollPage = () => {
                   }
                 }
                 break;
+              case CREDENTIALS.EthSoloStaker.id:
+                if (account) {
+                  if (SoloStakerList.includes(account)) {
+                    availableCredentialTable.push({
+                      id: CREDENTIALS.EthSoloStaker.id,
+                      credential: CREDENTIALS.EthSoloStaker.name,
+                      identifier: account,
+                    });
+                    const checkdata = {
+                      id: id as string,
+                      identifier: account,
+                      credential: CREDENTIALS.EthSoloStaker.id,
+                    };
+                    const responsevote = await fetchVote(checkdata);
+                    if (responsevote.data.option_id !== '') {
+                      const lastElementIndex =
+                        availableCredentialTable.length - 1;
+                      availableCredentialTable[lastElementIndex] = {
+                        ...availableCredentialTable[lastElementIndex],
+                        votedOption: responsevote.data.option_id,
+                        votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
+                      };
+                    }
+                  }
+                }
+                  break;  
             }
           } else if (credential.credential === 'EthHolding on-chain') {
             availableCredentialTable.push(credential);
@@ -513,6 +561,7 @@ const PollPage = () => {
               CREDENTIALS.GitcoinPassport.name,
               CREDENTIALS.POAPapi.name,
               CREDENTIALS.ProtocolGuildMember.name,
+              CREDENTIALS.EthSoloStaker.name,
               'ProtocolGuild on-chain',
               'EthHolding on-chain',
             ];
@@ -542,6 +591,7 @@ const PollPage = () => {
       if (containsZupassCredentials) {
         setZupassPoll(true);
       }
+      setCredentialCardReady(true);
     }
     checkAndSetCredentialsAndVotes();
   }, [
@@ -592,9 +642,11 @@ const PollPage = () => {
         try {
           const response = await castVote(voteData as VoteRequestData);
           console.log(response, 'response');
-          toast({
-            title: 'Vote cast successfully',
-          });
+          setVotingProcess(currentvoting =>
+            currentvoting.map(votingcredential => 
+              votingcredential.credentialId === vote_credential ? { ...votingcredential, status: 'success' } : votingcredential
+            )
+          );
           //await fetchPollFromApi(id);
         } catch (error) {
           console.error('Error casting vote:', error);
@@ -606,26 +658,26 @@ const PollPage = () => {
             const err = error as { status: number; message?: string };
             if (err.status === 403) {
               console.error("You don't have permission to cast this vote.");
-              toast({
-                title: 'Error',
-                description: 'You are not a member of Protol Guild',
-                variant: 'destructive',
-              });
+              setVotingProcess(currentvoting =>
+                currentvoting.map(votingcredential =>
+                  votingcredential.credentialId === vote_credential ? { ...votingcredential, status: 'unauthorized' } : votingcredential
+                )
+              );
             } else {
               console.error('An unexpected error occurred.');
-              toast({
-                title: 'Error',
-                description: 'An unexpected error occurred.',
-                variant: 'destructive',
-              });
+              setVotingProcess(currentvoting =>
+                currentvoting.map(votingcredential =>
+                  votingcredential.credentialId === vote_credential ? { ...votingcredential, status: 'error' } : votingcredential
+                )
+              );
             }
           } else {
             console.error('An unexpected error occurred.');
-            toast({
-              title: 'Error',
-              description: 'An unexpected error occurred.',
-              variant: 'destructive',
-            });
+            setVotingProcess(currentvoting =>
+              currentvoting.map(votingcredential =>
+                votingcredential.credentialId === vote_credential ? { ...votingcredential, status: 'error' } : votingcredential
+              )
+            );
           }
         }
       }
@@ -682,11 +734,7 @@ const PollPage = () => {
     }
   }, [account]);
 
-  const isValidUuidV4 = (uuid: string): boolean => {
-    const uuidV4Pattern =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuidV4Pattern.test(uuid);
-  };
+
   const getEthHoldings = async () => {
     if (account) {
       const blockNumber = poll?.block_number ?? 0;
@@ -940,12 +988,18 @@ const PollPage = () => {
       console.log(voteData, 'voteData');
       const response = await castVote(voteData as VoteRequestData);
       console.log(response, 'response');
-      toast({
-        title: 'Vote cast successfully',
-      });
+      setVotingProcess(currentvoting =>
+        currentvoting.map(votingcredential => 
+          votingcredential.credentialId === requiredCred ? { ...votingcredential, status: 'success' } : votingcredential
+        )
+      );
     } catch (error) {
       console.error('Error casting vote:', error);
-      return;
+      setVotingProcess(currentvoting =>
+        currentvoting.map(votingcredential =>
+          votingcredential.credentialId === requiredCred ? { ...votingcredential, status: 'error' } : votingcredential
+        )
+      );
     }
   };
 
@@ -961,7 +1015,6 @@ const PollPage = () => {
         optionId,
         account as string
       );
-      if (account === null) return;
       setMessage(newMessage);
       //
       // TODO: We need to sign the message and submit. Wait until isSuccess === true and send the transaction
@@ -1074,53 +1127,11 @@ const PollPage = () => {
                 }
               }
               break;
-            // POAPS API
             case CREDENTIALS.POAPapi.id:
-              if (poll?.poap_events && poll?.poap_events.length) {
-                if (!isConnected) {
-                  warnAndConnect();
-                  return;
-                }
-
-                if (!eventDetails || !Array.isArray(eventDetails)) {
-                  console.error('Invalid or empty event details');
-                  return; // Exit if eventDetails is not an array
-                }
-
-                for (let detail of eventDetails) {
-                  if (!detail?.data?.owner) {
-                    console.error('Error: An event is missing an owner');
-                    toast({
-                      title: 'Error',
-                      description: 'You need to own all required POAPs',
-                      variant: 'destructive',
-                    });
-                    return; // Exit the function if an event without an owner is found
-                  }
-                }
-                await handleCastVoteSigned(optionId, CREDENTIALS.POAPapi.id);
-              }
-              break;
-            //  EthHolding
+            case CREDENTIALS.ProtocolGuildMember.id:
+            case CREDENTIALS.EthSoloStaker.id:
             case CREDENTIALS.EthHoldingOffchain.id:
-              if (!isConnected) {
-                warnAndConnect();
-                return;
-              }
-
-              // TODO: Check if address has Ether? Done
-              if (parseFloat(userEthHolding) === 0) {
-                toast({
-                  title: 'Error',
-                  description: 'You need to own some ETH to vote',
-                  variant: 'destructive',
-                });
-                return;
-              }
-              await handleCastVoteSigned(
-                optionId,
-                CREDENTIALS.EthHoldingOffchain.id
-              );
+                await handleCastVoteSigned(optionId, credentialId);
               break;
             // POAPS ONCHAIN
             /*else if (credentialId == CREDENTIALS.POAPSVerification.id) {
@@ -1152,17 +1163,6 @@ const PollPage = () => {
                   CREDENTIALS.ProtocolGuildMember.id
                 );
               }*/
-            // Protocol Guild
-            case CREDENTIALS.ProtocolGuildMember.id:
-              if (!isConnected) {
-                warnAndConnect();
-                return;
-              }
-              await handleCastVoteSigned(
-                optionId,
-                CREDENTIALS.ProtocolGuildMember.id
-              );
-              break;
           }
         } else {
           console.log(credentialId, 'credentialId');
@@ -1189,16 +1189,6 @@ const PollPage = () => {
     return true;
   }
   const handleContractVote = async (pollId: string, optionIndex: number) => {
-    if (!isConnected) {
-      console.error('You need to connect to vote, please try again');
-      toast({
-        title: 'Error',
-        description: 'You need to connect to vote, please try again',
-        variant: 'destructive',
-      });
-      connect();
-      return;
-    }
     const generateSignature = async (message: string) => {
       const response = await fetch('/api/auth/generate_signature', {
         method: 'POST',
@@ -1265,10 +1255,12 @@ const PollPage = () => {
             'Please enable pop-ups in your browser settings to proceed with the transaction.',
           variant: 'destructive',
         });
-        return;
+        setVotingProcess(currentvoting =>
+          currentvoting.map(votingcredential =>
+            votingcredential.credentialId === pollId ? { ...votingcredential, status: 'pop-up disabled' } : votingcredential
+          )
+        );
       }
-      if (Number(network.chainId) === 11155111) {
-        console.log('Connected to Sepolia');
         const transactionResponse = await contract.vote(
           pollIndex,
           newOptionIndex,
@@ -1277,33 +1269,27 @@ const PollPage = () => {
         );
         await transactionResponse.wait(); // Wait for the transaction to be mined
         console.log('Vote cast successfully');
-        toast({
-          title: 'Vote cast successfully',
-        });
+        setVotingProcess(currentvoting =>
+          currentvoting.map(votingcredential =>
+            votingcredential.credentialId === pollId ? { ...votingcredential, status: 'succes' } : votingcredential
+          )
+        );    
         if (isValidUuidV4(id as string)) {
           fetchPollFromApi(id);
           getEthHoldings();
         } else {
           fetchPollFromContract(id as string);
         }
-      } else {
-        console.error('You should connect to Sepolia, please try again');
-        toast({
-          title: 'Error',
-          description: 'You should connect to Sepolia, please try again',
-          variant: 'destructive',
-        });
-      }
     } catch (error: any) {
       console.error('Error casting vote:', error);
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      setVotingProcess(currentvoting =>
+        currentvoting.map(votingcredential =>
+          votingcredential.credentialId === pollId ? { ...votingcredential, status: 'error' } : votingcredential
+        )
+      );
     }
   };
-  if (!poll || isLoading) {
+  if (!poll || !credentialCardReady) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader />
@@ -1344,7 +1330,6 @@ const PollPage = () => {
               <div className="text-sm">
                 {account ? (
                   isMember ? (
-
                     <div className={styles.avail_cred}>
                       Protocol Guild Member
                       <CheckCircleIconWhite className={styles.avail_cred_icon} />
@@ -1354,11 +1339,6 @@ const PollPage = () => {
                   )
                 ) : (
                   <ConnectButton />
-                )}
-                {isMember ? (
-                  <CheckCircleIcon className="w-3 h-3 text-green-500" />
-                ) : (
-                  <LockIcon className="w-7 h-7 text-black opacity-25" />
                 )}
               </div>
             </div>
@@ -1377,11 +1357,6 @@ const PollPage = () => {
             <div className="flex items-center gap-2">
               <div className="text-sm">
                 {account ? score : <ConnectButton />}
-                {hasScore ? (
-                  <CheckCircleIcon className="w-3 h-3 text-green-500" />
-                ) : (
-                  <LockIcon className="w-7 h-7 text-black opacity-25" />
-                )}
               </div>
             </div>
           </div>
@@ -1404,6 +1379,32 @@ const PollPage = () => {
                     eventDetails={eventDetails}
                     setEventDetails={setEventDetails}
                   />
+                ) : (
+                  <ConnectButton />
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      case CREDENTIALS.EthSoloStaker.name:
+        const isStaker = userAvailableCredentialTable.some(
+          (credentialItem) =>
+            credentialItem.id === CREDENTIALS.EthSoloStaker.id
+        );
+        return (
+          <div className="flex flex-col gap-1">
+            <div className="text-sm">Need to be a valid Solo Staker</div>
+            <div className="flex items-center gap-2">
+              <div className="text-sm">
+                {account ? (
+                  isStaker ? (
+                    <div className={styles.avail_cred}>
+                      Ether Solo Staker
+                      <CheckCircleIconWhite className={styles.avail_cred_icon} />
+                    </div>
+                  ) : (
+                    'You are not a valid solo staker'
+                  )
                 ) : (
                   <ConnectButton />
                 )}
@@ -1587,7 +1588,8 @@ const PollPage = () => {
                   <button
                     className={styles.vote_btn}
                     onClick={() => {
-                      setShowConfirmationPopup(false);
+                      setIsPopupOpen(false);
+                      setShowConfirmationPopup(true);
                       if (selectedOptionData) {
                         handleVote(
                           selectedOptionData.optionId,
@@ -1603,9 +1605,9 @@ const PollPage = () => {
                 </div>
               </div>
             </div>
-            {showConfirmationPopup && <ConfirmationPopup />}
           </div>
         )}
+         {showConfirmationPopup && <ConfirmationPopup votingProcess={votingProcess} onClose={handleConfirmationPopupClose}/>}
         <PollResultComponent
           pollType={PollTypes.HEAD_COUNT}
           optionsData={options}

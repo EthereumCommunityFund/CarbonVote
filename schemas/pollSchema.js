@@ -12,7 +12,7 @@ const pollSchema = Joi.object({
     credentials: Joi.array().items(Joi.string().guid({ version: 'uuidv4' })).required(),
     poap_events: Joi.array().allow(''),
     poap_number: Joi.string().allow(''),
-    gitcoin_score: Joi.string().allow(''),
+    gitcoin_score: Joi.number().allow(''),
     contractpoll_index: Joi.array().allow(''),
 });
 

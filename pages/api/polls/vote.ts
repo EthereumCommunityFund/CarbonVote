@@ -10,7 +10,7 @@ import { storeVote, checkNullifier, generateNullifier } from '@/utils/ceramicHel
 import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock'
 import { generateMessage } from '@/utils/generateMessage'
 import { ProtocolGuildMembershipList } from '@/src/protocolguildmember';
-
+import { SoloStakerList } from '@/src/solostaker';
 const poapApiKey = process.env.POAP_API_KEY ?? "";
 
 async function validateRequest(req: NextApiRequest) {
@@ -73,11 +73,10 @@ async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credent
         .eq('vote_hash', vote_hash)
         .eq('vote_credential',vote_credential)
         .eq('poll_id', poll_id)
-        .single();
 
     if (error) throw error;
 
-    let existingVote = votesData ? votesData : null;
+    let existingVote = votesData ? votesData[0] : null;
     if (existingVote) {
         const { error: deleteError } = await supabase
             .from('votes')
@@ -103,7 +102,6 @@ async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credent
             weight,
             vote_credential
         }]);
-
     // if (insertError) throw insertError;
     // Increment the vote count for the new option
     const { error: incrementError } = await supabase
@@ -116,7 +114,8 @@ const isSignatureCredential = (credential: string) => {
         CREDENTIALS.GitcoinPassport.id, 
         CREDENTIALS.POAPapi.id, 
         CREDENTIALS.ProtocolGuildMember.id, 
-        CREDENTIALS.EthHoldingOffchain.id
+        CREDENTIALS.EthHoldingOffchain.id,
+        CREDENTIALS.EthSoloStaker.id,
     ];
 
     return signatureCredentials.includes(credential);
@@ -170,6 +169,13 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
         // Protocol Guild
         if ( vote_credential === CREDENTIALS.ProtocolGuildMember.id) {
             if (!ProtocolGuildMembershipList.includes(voter_identifier)) {
+                res.status(403).json({ error: "You don't qualify to vote for this poll." });
+            }
+        }
+        
+        // Eth solo staker
+        if ( vote_credential === CREDENTIALS.EthSoloStaker.id) {
+            if (!SoloStakerList.includes(voter_identifier)) {
                 res.status(403).json({ error: "You don't qualify to vote for this poll." });
             }
         }

@@ -77,6 +77,7 @@ const CreatePollPage = () => {
   const [zupassEnabled, setZupassEnabled] = useState(false);
   const [protocolGuildMemberEnabled, setProtocolGuildMemberEnabled] = useState(false);
   const [gitcoinPassport, setGitcoinPassport] = useState(false);
+  const [ethSoloStaker, setEthSoloStaker] = useState(false);
   const [showNestedInfoDiv, setShowNestedInfoDiv] = useState(false);
 
   // Check if all toggles are true or false
@@ -90,6 +91,7 @@ const CreatePollPage = () => {
     setZupassEnabled(newValue);
     setProtocolGuildMemberEnabled(newValue);
     setGitcoinPassport(newValue);
+    setEthSoloStaker(newValue);
   };
 
   useEffect(() => {
@@ -108,12 +110,12 @@ const CreatePollPage = () => {
   }, []);
 
   useEffect(() => {
-    const trueCount = [ethHolding, poapsEnabled, zupassEnabled, protocolGuildMemberEnabled, gitcoinPassport].filter(Boolean).length;
+    const trueCount = [ethHolding, poapsEnabled, zupassEnabled, protocolGuildMemberEnabled, gitcoinPassport, ethSoloStaker].filter(Boolean).length;
 
     if (trueCount >= 2) {
       setShowNestedInfoDiv(true);
     }
-  }, [ethHolding, poapsEnabled, zupassEnabled, protocolGuildMemberEnabled, gitcoinPassport]);
+  }, [ethHolding, poapsEnabled, zupassEnabled, protocolGuildMemberEnabled, gitcoinPassport, ethSoloStaker]);
 
   const endDate = new Date(String(endDateTime));
   const durationInSeconds = Math.round((endDate.getTime() - Date.now()) / 1000);
@@ -240,6 +242,10 @@ const CreatePollPage = () => {
     // gitcoinEnabled
     if (gitcoinPassport) {
       credentialsTable.push(CREDENTIALS.GitcoinPassport.id)
+    }
+    // Eth Solo Staker
+    if (ethSoloStaker) {
+      credentialsTable.push(CREDENTIALS.EthSoloStaker.id)
     }
 
     console.log(indexTable, 'indextable');
@@ -669,7 +675,28 @@ const CreatePollPage = () => {
                 </div>
               ) : null}
             </div>
+          <div className={styles.cred_container}>
+            <div className={styles.cred_container_header}>
+              <input
+                type="checkbox"
+                checked={ethSoloStaker}
+                onChange={() => setEthSoloStaker(prevState => !prevState)}
+                className={styles.toggle_btn}
+              />
+              <div className={styles.cred_details}>
+                <img src="images/solo_staker.svg" />
+                <span>Ether Solo Staker</span>
+              </div>
+            </div>
+            {ethSoloStaker ? (
+              <div className={styles.cred_details_toggled_on}>
+                <p className={styles.desc_p}>Desc</p>
+                <div className={styles.cred_content}>
+                </div>
+              </div>
+            ) : null}
           </div>
+        </div>
 
           {showNestedInfoDiv && (
             <div className={styles.multiple_cred_container}>
