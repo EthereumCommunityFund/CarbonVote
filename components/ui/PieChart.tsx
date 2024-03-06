@@ -16,7 +16,7 @@ interface IPieChartComponent {
 const PieChartComponent: React.FC<IPieChartComponent> = ({ votes, votingType }) => {
   // Data for the pie chart
   const labels: string[] = votes.map((vote) => vote.option_description)
-  const weight: number[] = votes.map((vote) => vote.votes);
+  const weight: number[] = votes.map((vote) => vote.votes ?? 0);
   const totalWeight: number = weight.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 
   let backgroundColor: string[] = ['#88F2D5', '#E3F29C', '#EA66A4'];
