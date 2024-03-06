@@ -3,7 +3,7 @@ import { Label } from './ui/Label';
 import Button from './ui/buttons/Button';
 
 import { TbChevronDown } from 'react-icons/tb';
-import { EthIcon, GitCoinIcon, HeadCountIcon, PoapIcon, ProtocolGuildIcon, ZupassHolderIcon, } from './icons';
+import { EthIcon, GitCoinIcon, HeadCountIcon, PoapIcon, ProtocolGuildIcon, ZupassHolderIcon, StakerIcon} from './icons';
 import PollResultCredentialComponent from './PollResultCredential';
 import { useState } from 'react';
 import styles from "@/styles/pollResult.module.css"
@@ -14,8 +14,8 @@ export const PollResultComponent = ({ pollType, optionsData }: PollResultCompone
   const [isPOAPExpanded, setIsPOAPExpanded] = useState<boolean>(true);
   const [isProtocolExpanded, setIsProtocolExpanded] = useState<boolean>(true);
   const [isGitCoinExpanded, setIsGitCoinExpanded] = useState<boolean>(true);
-
-  const areAllExpanded = isZuPassExpanded && isPOAPExpanded && isProtocolExpanded && isGitCoinExpanded;
+  const [isSoloStakerExpanded, setIsSoloStakerExpanded] = useState<boolean>(true);
+  const areAllExpanded = isZuPassExpanded && isPOAPExpanded && isProtocolExpanded && isGitCoinExpanded && isSoloStakerExpanded;
 
   const toggleZuZaluExpanded = () => {
     setIsZuPassExpanded(prevExpanded => !prevExpanded);
@@ -33,12 +33,17 @@ export const PollResultComponent = ({ pollType, optionsData }: PollResultCompone
     setIsGitCoinExpanded(prevExpanded => !prevExpanded);
   };
 
+  const toggleStakerExpanded = () => {
+    setIsSoloStakerExpanded(prevExpanded => !prevExpanded);
+  };
+
   const toggleExpandAllResults = () => {
     const newValue = !areAllExpanded; // If all are expansed, collapse, otherwise expand
     setIsZuPassExpanded(newValue);
     setIsGitCoinExpanded(newValue);
     setIsPOAPExpanded(newValue);
     setIsProtocolExpanded(newValue);
+    setIsSoloStakerExpanded(newValue);
   };
 
   return (
@@ -63,6 +68,7 @@ export const PollResultComponent = ({ pollType, optionsData }: PollResultCompone
         <PollResultCredentialComponent pollType={PollTypes.HEAD_COUNT} credentialType={'POAP Holder Results'} icon={PoapIcon} optionsData={optionsData} toggleExpanded={togglePOAPExpanded} isExpanded={isPOAPExpanded} />
         <PollResultCredentialComponent pollType={PollTypes.HEAD_COUNT} credentialType={'Protocol Guild Member Results'} icon={ProtocolGuildIcon} optionsData={optionsData} toggleExpanded={toggleProtocolExpanded} isExpanded={isProtocolExpanded} />
         <PollResultCredentialComponent pollType={PollTypes.HEAD_COUNT} credentialType={'Gitcoin Passport Results'} icon={GitCoinIcon} optionsData={optionsData} toggleExpanded={toggleGitCoinExpanded} isExpanded={isGitCoinExpanded} />
+        <PollResultCredentialComponent pollType={PollTypes.HEAD_COUNT} credentialType={'Ether Solo Staker'} icon={StakerIcon} optionsData={optionsData} toggleExpanded={toggleStakerExpanded} isExpanded={isSoloStakerExpanded} />
       </div>
     </div>
   );

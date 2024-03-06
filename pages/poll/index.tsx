@@ -90,7 +90,6 @@ const PollPage = () => {
   } = useUserPassportContext(); // zupass
   const { address: account, isConnected } = useAccount();
   const { connect } = useConnect();
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [options, setOptions] = useState<PollOptionType[]>([]);
   // FIXME: For multiple votes this single CredentialId might break the logic. Implementing an agregated credential requirement
   const [credentialId, setCredentialId] = useState('');
@@ -111,22 +110,18 @@ const PollPage = () => {
     CredentialTable[]
   >([]);
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
-  const { data, isError, isLoading, isSuccess, signMessage, reset } =
+  const { data, isError, isLoading, isSuccess, signMessage, signMessageAsync, reset } =
     useSignMessage({
       message,
     });
   const [voteTable, setVoteTable] = useState<string[]>([]);
-  const [selectedCredentialId, setSelectedCredentialId] = useState<
-    string | null
-  >(null);
-  const [votedOptions, setVotedOptions] = useState({});
-  const [signingCredential, setSigningCredential] = useState<string>('');
   const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
   const [zupasspoll, setZupassPoll] = useState(false);
   const [votingProcess, setVotingProcess] = useState<VotingProcess[]>([]);
   const [credentialCardReady, setCredentialCardReady] = useState(false);
-  const [selectedOptionData, setSelectedOptionData] =
-    useState<SelectedOptionData>();
+  const [selectedOptionData, setSelectedOptionData] = useState<SelectedOptionData>();
+  const [requiredgitscore, setRequiredGitScore] = useState(0);
+    
     const handleVotesRadioChange = (
       event: React.ChangeEvent<HTMLInputElement>
     ) => {
@@ -208,6 +203,10 @@ const PollPage = () => {
     setVotingProcess(updatedVotingProcess);
     console.log(updatedVotingProcess, 'voting process');
   }, [voteTable]);
+  useEffect(() => {
+  console.log('current voting process', votingProcess);
+  console.log('remaining time', remainingTime);
+  }, [votingProcess, remainingTime]);    
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const popupRef = useRef<HTMLDivElement | null>(null);
 
@@ -239,6 +238,7 @@ const PollPage = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isPopupOpen]);
+
   const handleConfirmationPopupClose = () => {
     setVoteTable([]);
     setShowConfirmationPopup(false);
@@ -249,7 +249,7 @@ const PollPage = () => {
       fetchPollFromContract(id as string);
     }
   };
-  console.log('🚀 ~ PollPage ~ data:', data);
+
   useEffect(() => {
     if (id !== undefined) {
       if (isValidUuidV4(id as string)) {
@@ -262,337 +262,6 @@ const PollPage = () => {
   }, [id]);
 
   useEffect(() => {
-    async function checkAndSetCredentialsAndVotes() {
-      setCredentialCardReady(false);
-      const availableCredentialTable: CredentialTable[] = [];
-      if (credentialTable.length > 0) {
-        for (let credential of credentialTable) {
-          if (isValidUuidV4(credential.id)) {
-            switch (credential.id) {
-              case CREDENTIALS.ZuConnectResident.id:
-                if (localStorage.getItem('zuconnectNullifier')) {
-                  availableCredentialTable.push({
-                    id: CREDENTIALS.ZuConnectResident.id,
-                    identifier: localStorage.getItem(
-                      'zuconnectNullifier'
-                    ) as string,
-                    credential: CREDENTIALS.ZuConnectResident.name,
-                  });
-                  const checkdata = {
-                    id: id as string,
-                    identifier: localStorage.getItem('zuconnectNullifier'),
-                    credential: CREDENTIALS.ZuConnectResident.id,
-                  };
-                  const responsevote = await fetchVote(checkdata);
-                  if (responsevote.data.option_id !== '') {
-                    const lastElementIndex =
-                      availableCredentialTable.length - 1;
-                    availableCredentialTable[lastElementIndex] = {
-                      ...availableCredentialTable[lastElementIndex],
-                      votedOption: responsevote.data.option_id,
-                      votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
-                    };
-                  }
-                }
-                break;
-              case CREDENTIALS.DevConnect.id:
-                if (localStorage.getItem('devconnectNullifier')) {
-                  availableCredentialTable.push({
-                    id: CREDENTIALS.DevConnect.id,
-                    identifier: localStorage.getItem(
-                      'devconnectNullifier'
-                    ) as string,
-                    credential: CREDENTIALS.DevConnect.name,
-                  });
-                  const checkdata = {
-                    id: id as string,
-                    identifier: localStorage.getItem('devconnectNullifier'),
-                    credential: CREDENTIALS.DevConnect.id,
-                  };
-                  const responsevote = await fetchVote(checkdata);
-                  if (responsevote.data.option_id !== '') {
-                    const lastElementIndex =
-                      availableCredentialTable.length - 1;
-                    availableCredentialTable[lastElementIndex] = {
-                      ...availableCredentialTable[lastElementIndex],
-                      votedOption: responsevote.data.option_id,
-                      votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
-                    };
-                  }
-                }
-                break;
-              case CREDENTIALS.ZuzaluResident.id:
-                if (localStorage.getItem('zuzaluNullifier')) {
-                  availableCredentialTable.push({
-                    id: CREDENTIALS.ZuzaluResident.id,
-                    identifier: localStorage.getItem(
-                      'zuzaluNullifier'
-                    ) as string,
-                    credential: CREDENTIALS.ZuzaluResident.name,
-                  });
-                  const checkdata = {
-                    id: id as string,
-                    identifier: localStorage.getItem('zuzaluNullifier'),
-                    credential: CREDENTIALS.ZuzaluResident.id,
-                  };
-                  const responsevote = await fetchVote(checkdata);
-                  if (responsevote.data.option_id !== '') {
-                    const lastElementIndex =
-                      availableCredentialTable.length - 1;
-                    availableCredentialTable[lastElementIndex] = {
-                      ...availableCredentialTable[lastElementIndex],
-                      votedOption: responsevote.data.option_id,
-                      votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
-                    };
-                  }
-                }
-                break;
-              case CREDENTIALS.EthHoldingOffchain.id:
-                if (account) {
-                  let userEth = await getEthHoldings();
-                  if (userEth != 0) {
-                    availableCredentialTable.push({
-                      id: CREDENTIALS.EthHoldingOffchain.id,
-                      identifier: account,
-                      credential: CREDENTIALS.EthHoldingOffchain.name,
-                    });
-                    const checkdata = {
-                      id: id as string,
-                      identifier: account,
-                      credential: CREDENTIALS.EthHoldingOffchain.id,
-                    };
-                    const responsevote = await fetchVote(checkdata);
-                    if (responsevote.data.option_id !== '') {
-                      const lastElementIndex =
-                        availableCredentialTable.length - 1;
-                      availableCredentialTable[lastElementIndex] = {
-                        ...availableCredentialTable[lastElementIndex],
-                        votedOption: responsevote.data.option_id,
-                        votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
-                      };
-                    }
-                  }
-                }
-                break;
-              case CREDENTIALS.GitcoinPassport.id:
-                if (account) {
-                  const fetchNewScore = async () => {
-                    let fetchScoreData = {
-                      address: account as string,
-                      scorerId: '6347',
-                    };
-                    try {
-                      let scoreResponse = await fetchScore(fetchScoreData);
-                      let scoreData = scoreResponse.data;
-                      console.log(scoreData.score.toString(), 'score');
-                      setScore(scoreData.score);
-                      return scoreData.score;
-                    } catch (error) {
-                      console.error('Error fetching score:', error);
-                    }
-                  };
-                  let gitscore = await fetchNewScore();
-                  if (
-                    poll &&
-                    poll.gitcoin_score !== undefined &&
-                    gitscore >= poll.gitcoin_score
-                  ) {
-                    availableCredentialTable.push({
-                      id: CREDENTIALS.GitcoinPassport.id,
-                      identifier: account,
-                      credential: CREDENTIALS.GitcoinPassport.name,
-                      gitscore: gitscore,
-                    });
-                    const checkdata = {
-                      id: id as string,
-                      identifier: account,
-                      credential: CREDENTIALS.GitcoinPassport.id,
-                    };
-                    const responsevote = await fetchVote(checkdata);
-                    if (responsevote.data.option_id !== '') {
-                      const lastElementIndex =
-                        availableCredentialTable.length - 1;
-                      availableCredentialTable[lastElementIndex] = {
-                        ...availableCredentialTable[lastElementIndex],
-                        votedOption: responsevote.data.option_id,
-                        votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
-                      };
-                    }
-                  } else {
-                    console.log(gitscore, 'not enough score');
-                  }
-                }
-                break;
-              case CREDENTIALS.POAPapi.id:
-                if (account) {
-                  for (const eventId of credential.poap_events as string[]) {
-                    let userPoapIds = [];
-                    try {
-                      const hasOwnership = await getPoapOwnership(
-                        poapApiKey,
-                        account,
-                        eventId
-                      );
-                      if (hasOwnership) {
-                        userPoapIds.push(eventId);
-                      }
-                    } catch (error) {
-                      console.error(
-                        `Error checking POAP ownership for event ID ${eventId}:`,
-                        error
-                      );
-                    }
-                    if (
-                      poll &&
-                      poll.poap_number !== undefined &&
-                      userPoapIds.length >= Number(poll?.poap_number)
-                    ) {
-                      availableCredentialTable.push({
-                        id: CREDENTIALS.POAPapi.id,
-                        identifier: account,
-                        credential: CREDENTIALS.POAPapi.name,
-                        poap_events: userPoapIds,
-                      });
-                      const checkdata = {
-                        id: id as string,
-                        identifier: account,
-                        credential: CREDENTIALS.POAPapi.id,
-                      };
-                      const responsevote = await fetchVote(checkdata);
-                      if (responsevote.data.option_id !== '') {
-                        const lastElementIndex =
-                          availableCredentialTable.length - 1;
-                        availableCredentialTable[lastElementIndex] = {
-                          ...availableCredentialTable[lastElementIndex],
-                          votedOption: responsevote.data.option_id,
-                          votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
-                        };
-                      }
-                    } else {
-                      console.log(userPoapIds, 'Poaps you have');
-                    }
-                  }
-                }
-                break;
-              case CREDENTIALS.ProtocolGuildMember.id:
-                if (account) {
-                  if (ProtocolGuildMembershipList.includes(account)) {
-                    availableCredentialTable.push({
-                      id: CREDENTIALS.ProtocolGuildMember.id,
-                      credential: CREDENTIALS.ProtocolGuildMember.name,
-                      identifier: account,
-                    });
-                    const checkdata = {
-                      id: id as string,
-                      identifier: account,
-                      credential: CREDENTIALS.ProtocolGuildMember.id,
-                    };
-                    const responsevote = await fetchVote(checkdata);
-                    if (responsevote.data.option_id !== '') {
-                      const lastElementIndex =
-                        availableCredentialTable.length - 1;
-                      availableCredentialTable[lastElementIndex] = {
-                        ...availableCredentialTable[lastElementIndex],
-                        votedOption: responsevote.data.option_id,
-                        votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
-                      };
-                    }
-                  }
-                }
-                break;
-              case CREDENTIALS.EthSoloStaker.id:
-                if (account) {
-                  if (SoloStakerList.includes(account)) {
-                    availableCredentialTable.push({
-                      id: CREDENTIALS.EthSoloStaker.id,
-                      credential: CREDENTIALS.EthSoloStaker.name,
-                      identifier: account,
-                    });
-                    const checkdata = {
-                      id: id as string,
-                      identifier: account,
-                      credential: CREDENTIALS.EthSoloStaker.id,
-                    };
-                    const responsevote = await fetchVote(checkdata);
-                    if (responsevote.data.option_id !== '') {
-                      const lastElementIndex =
-                        availableCredentialTable.length - 1;
-                      availableCredentialTable[lastElementIndex] = {
-                        ...availableCredentialTable[lastElementIndex],
-                        votedOption: responsevote.data.option_id,
-                        votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
-                      };
-                    }
-                  }
-                }
-                  break;  
-            }
-          } else if (credential.credential === 'EthHolding on-chain') {
-            availableCredentialTable.push(credential);
-          } else if (
-            credential.credential === 'ProtocolGuild on-chain' &&
-            account
-          ) {
-            if (ProtocolGuildMembershipList.includes(account as string)) {
-              availableCredentialTable.push(credential);
-            }
-          }
-        }
-      } else {
-        if (pollType?.toString() == '0') {
-          availableCredentialTable.push({
-            id: id as string,
-            identifier: account,
-            credential: 'EthHolding on-chain',
-          });
-        } else {
-          availableCredentialTable.push({
-            id: id as string,
-            identifier: account,
-            credential: 'ProtocolGuild on-chain',
-          });
-        }
-      }
-      if (!account) {
-        const filteredCredentialTable = availableCredentialTable.filter(
-          (credential) => {
-            const accountDependentCredentials = [
-              CREDENTIALS.EthHoldingOffchain.name,
-              CREDENTIALS.GitcoinPassport.name,
-              CREDENTIALS.POAPapi.name,
-              CREDENTIALS.ProtocolGuildMember.name,
-              CREDENTIALS.EthSoloStaker.name,
-              'ProtocolGuild on-chain',
-              'EthHolding on-chain',
-            ];
-            return !accountDependentCredentials.includes(credential.id);
-          }
-        );
-        setAvailableCredentialTable(filteredCredentialTable);
-      }
-      if (!isPassportConnected) {
-        const filteredCredentialTable = availableCredentialTable.filter(
-          (credential) => {
-            const accountDependentCredentials = [
-              CREDENTIALS.ZuConnectResident.id,
-              CREDENTIALS.ZuConnectResident.id,
-              CREDENTIALS.DevConnect.id,
-            ];
-            return !accountDependentCredentials.includes(credential.id);
-          }
-        );
-        setAvailableCredentialTable(filteredCredentialTable);
-      }
-      setAvailableCredentialTable(availableCredentialTable);
-      console.log(availableCredentialTable, 'available credential table');
-      const containsZupassCredentials = availableCredentialTable.some(credential =>
-        [CREDENTIALS.ZuConnectResident.id, CREDENTIALS.DevConnect.id, CREDENTIALS.ZuzaluResident.id].includes(credential.id)
-      );
-      if (containsZupassCredentials) {
-        setZupassPoll(true);
-      }
-      setCredentialCardReady(true);
-    }
     checkAndSetCredentialsAndVotes();
   }, [
     credentialTable,
@@ -609,68 +278,389 @@ const PollPage = () => {
     }
   }, [id, poll?.block_number]);
 
-  useEffect(() => {
-    const invokeCastVote = async (vote_credential: string) => {
-      console.log(
-        isSuccess,
-        data,
-        selectedOptionData?.optionId,
-        poll?.id,
-        account,
-        vote_credential,
-        'all information'
+  async function checkAndSetCredentialsAndVotes() {
+    setCredentialCardReady(false);
+    const availableCredentialTable: CredentialTable[] = [];
+    if (credentialTable.length > 0) {
+      for (let credential of credentialTable) {
+        if (isValidUuidV4(credential.id)) {
+          switch (credential.id) {
+            case CREDENTIALS.ZuConnectResident.id:
+              if (localStorage.getItem('zuconnectNullifier')) {
+                availableCredentialTable.push({
+                  id: CREDENTIALS.ZuConnectResident.id,
+                  identifier: localStorage.getItem(
+                    'zuconnectNullifier'
+                  ) as string,
+                  credential: CREDENTIALS.ZuConnectResident.name,
+                });
+                const checkdata = {
+                  id: id as string,
+                  identifier: localStorage.getItem('zuconnectNullifier'),
+                  credential: CREDENTIALS.ZuConnectResident.id,
+                };
+                const responsevote = await fetchVote(checkdata);
+                if (responsevote.data.option_id !== '') {
+                  const lastElementIndex =
+                    availableCredentialTable.length - 1;
+                  availableCredentialTable[lastElementIndex] = {
+                    ...availableCredentialTable[lastElementIndex],
+                    votedOption: responsevote.data.option_id,
+                    votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
+                  };
+                }
+              }
+              break;
+            case CREDENTIALS.DevConnect.id:
+              if (localStorage.getItem('devconnectNullifier')) {
+                availableCredentialTable.push({
+                  id: CREDENTIALS.DevConnect.id,
+                  identifier: localStorage.getItem(
+                    'devconnectNullifier'
+                  ) as string,
+                  credential: CREDENTIALS.DevConnect.name,
+                });
+                const checkdata = {
+                  id: id as string,
+                  identifier: localStorage.getItem('devconnectNullifier'),
+                  credential: CREDENTIALS.DevConnect.id,
+                };
+                const responsevote = await fetchVote(checkdata);
+                if (responsevote.data.option_id !== '') {
+                  const lastElementIndex =
+                    availableCredentialTable.length - 1;
+                  availableCredentialTable[lastElementIndex] = {
+                    ...availableCredentialTable[lastElementIndex],
+                    votedOption: responsevote.data.option_id,
+                    votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
+                  };
+                }
+              }
+              break;
+            case CREDENTIALS.ZuzaluResident.id:
+              if (localStorage.getItem('zuzaluNullifier')) {
+                availableCredentialTable.push({
+                  id: CREDENTIALS.ZuzaluResident.id,
+                  identifier: localStorage.getItem(
+                    'zuzaluNullifier'
+                  ) as string,
+                  credential: CREDENTIALS.ZuzaluResident.name,
+                });
+                const checkdata = {
+                  id: id as string,
+                  identifier: localStorage.getItem('zuzaluNullifier'),
+                  credential: CREDENTIALS.ZuzaluResident.id,
+                };
+                const responsevote = await fetchVote(checkdata);
+                if (responsevote.data.option_id !== '') {
+                  const lastElementIndex =
+                    availableCredentialTable.length - 1;
+                  availableCredentialTable[lastElementIndex] = {
+                    ...availableCredentialTable[lastElementIndex],
+                    votedOption: responsevote.data.option_id,
+                    votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
+                  };
+                }
+              }
+              break;
+            case CREDENTIALS.EthHoldingOffchain.id:
+              if (account) {
+                let userEth = await getEthHoldings();
+                if (userEth != 0) {
+                  availableCredentialTable.push({
+                    id: CREDENTIALS.EthHoldingOffchain.id,
+                    identifier: account,
+                    credential: CREDENTIALS.EthHoldingOffchain.name,
+                  });
+                  const checkdata = {
+                    id: id as string,
+                    identifier: account,
+                    credential: CREDENTIALS.EthHoldingOffchain.id,
+                  };
+                  const responsevote = await fetchVote(checkdata);
+                  if (responsevote.data.option_id !== '') {
+                    const lastElementIndex =
+                      availableCredentialTable.length - 1;
+                    availableCredentialTable[lastElementIndex] = {
+                      ...availableCredentialTable[lastElementIndex],
+                      votedOption: responsevote.data.option_id,
+                      votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
+                    };
+                  }
+                }
+              }
+              break;
+            case CREDENTIALS.GitcoinPassport.id:
+              if (account) {
+                const fetchNewScore = async () => {
+                  let fetchScoreData = {
+                    address: account as string,
+                    scorerId: '6347',
+                  };
+                  try {
+                    let scoreResponse = await fetchScore(fetchScoreData);
+                    let scoreData = scoreResponse.data;
+                    console.log(scoreData.score.toString(), 'score');
+                    setScore(scoreData.score);
+                    return scoreData.score;
+                  } catch (error) {
+                    console.error('Error fetching score:', error);
+                  }
+                };
+                let gitscore = await fetchNewScore();
+                if (
+                  poll &&
+                  poll.gitcoin_score !== undefined &&
+                  gitscore >= poll.gitcoin_score
+                ) {
+                  availableCredentialTable.push({
+                    id: CREDENTIALS.GitcoinPassport.id,
+                    identifier: account,
+                    credential: CREDENTIALS.GitcoinPassport.name,
+                    gitscore: gitscore,
+                  });
+                  const checkdata = {
+                    id: id as string,
+                    identifier: account,
+                    credential: CREDENTIALS.GitcoinPassport.id,
+                  };
+                  const responsevote = await fetchVote(checkdata);
+                  if (responsevote.data.option_id !== '') {
+                    const lastElementIndex =
+                      availableCredentialTable.length - 1;
+                    availableCredentialTable[lastElementIndex] = {
+                      ...availableCredentialTable[lastElementIndex],
+                      votedOption: responsevote.data.option_id,
+                      votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
+                    };
+                  }
+                } else {
+                  console.log(gitscore, 'not enough score');
+                }
+              }
+              break;
+            case CREDENTIALS.POAPapi.id:
+              if (account) {
+                for (const eventId of credential.poap_events as string[]) {
+                  let userPoapIds = [];
+                  try {
+                    const hasOwnership = await getPoapOwnership(
+                      poapApiKey,
+                      account,
+                      eventId
+                    );
+                    if (hasOwnership) {
+                      userPoapIds.push(eventId);
+                    }
+                  } catch (error) {
+                    console.error(
+                      `Error checking POAP ownership for event ID ${eventId}:`,
+                      error
+                    );
+                  }
+                  if (
+                    poll &&
+                    poll.poap_number !== undefined &&
+                    userPoapIds.length >= Number(poll?.poap_number)
+                  ) {
+                    availableCredentialTable.push({
+                      id: CREDENTIALS.POAPapi.id,
+                      identifier: account,
+                      credential: CREDENTIALS.POAPapi.name,
+                      poap_events: userPoapIds,
+                    });
+                    const checkdata = {
+                      id: id as string,
+                      identifier: account,
+                      credential: CREDENTIALS.POAPapi.id,
+                    };
+                    const responsevote = await fetchVote(checkdata);
+                    if (responsevote.data.option_id !== '') {
+                      const lastElementIndex =
+                        availableCredentialTable.length - 1;
+                      availableCredentialTable[lastElementIndex] = {
+                        ...availableCredentialTable[lastElementIndex],
+                        votedOption: responsevote.data.option_id,
+                        votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
+                      };
+                    }
+                  } else {
+                    console.log(userPoapIds, 'Poaps you have');
+                  }
+                }
+              }
+              break;
+            case CREDENTIALS.ProtocolGuildMember.id:
+              if (account) {
+                if (ProtocolGuildMembershipList.includes(account)) {
+                  availableCredentialTable.push({
+                    id: CREDENTIALS.ProtocolGuildMember.id,
+                    credential: CREDENTIALS.ProtocolGuildMember.name,
+                    identifier: account,
+                  });
+                  const checkdata = {
+                    id: id as string,
+                    identifier: account,
+                    credential: CREDENTIALS.ProtocolGuildMember.id,
+                  };
+                  const responsevote = await fetchVote(checkdata);
+                  if (responsevote.data.option_id !== '') {
+                    const lastElementIndex =
+                      availableCredentialTable.length - 1;
+                    availableCredentialTable[lastElementIndex] = {
+                      ...availableCredentialTable[lastElementIndex],
+                      votedOption: responsevote.data.option_id,
+                      votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
+                    };
+                  }
+                }
+              }
+              break;
+            case CREDENTIALS.EthSoloStaker.id:
+              if (account) {
+                if (SoloStakerList.includes(account)) {
+                  availableCredentialTable.push({
+                    id: CREDENTIALS.EthSoloStaker.id,
+                    credential: CREDENTIALS.EthSoloStaker.name,
+                    identifier: account,
+                  });
+                  const checkdata = {
+                    id: id as string,
+                    identifier: account,
+                    credential: CREDENTIALS.EthSoloStaker.id,
+                  };
+                  const responsevote = await fetchVote(checkdata);
+                  if (responsevote.data.option_id !== '') {
+                    const lastElementIndex =
+                      availableCredentialTable.length - 1;
+                    availableCredentialTable[lastElementIndex] = {
+                      ...availableCredentialTable[lastElementIndex],
+                      votedOption: responsevote.data.option_id,
+                      votedOptionName: options.find(option => option.id === responsevote.data.option_id)?.option_description,
+                    };
+                  }
+                }
+              }
+                break;  
+          }
+        } else if (credential.credential === 'EthHolding on-chain') {
+          availableCredentialTable.push(credential);
+        } else if (
+          credential.credential === 'ProtocolGuild on-chain' &&
+          account
+        ) {
+          if (ProtocolGuildMembershipList.includes(account as string)) {
+            availableCredentialTable.push(credential);
+          }
+        }
+      }
+    } else {
+      if (pollType?.toString() == '0') {
+        availableCredentialTable.push({
+          id: id as string,
+          identifier: account,
+          credential: 'EthHolding on-chain',
+        });
+      } else {
+        availableCredentialTable.push({
+          id: id as string,
+          identifier: account,
+          credential: 'ProtocolGuild on-chain',
+        });
+      }
+    }
+    setAvailableCredentialTable(availableCredentialTable);
+    if (!account) {
+      const filteredCredentialTable = availableCredentialTable.filter(
+        (credential) => {
+          const accountDependentCredentials = [
+            CREDENTIALS.EthHoldingOffchain.name,
+            CREDENTIALS.GitcoinPassport.name,
+            CREDENTIALS.POAPapi.name,
+            CREDENTIALS.ProtocolGuildMember.name,
+            CREDENTIALS.EthSoloStaker.name,
+            'ProtocolGuild on-chain',
+            'EthHolding on-chain',
+          ];
+          return !accountDependentCredentials.includes(credential.id);
+        }
       );
-      if (
-        isSuccess &&
-        data !== undefined &&
-        selectedOptionData?.optionId &&
-        poll?.id &&
-        account &&
-        vote_credential
-      ) {
-        const voteData = {
-          poll_id: poll.id,
-          option_id: selectedOptionData.optionId,
-          voter_identifier: account,
-          signature: data,
-          vote_credential: vote_credential,
-          ...(vote_credential === CREDENTIALS.GitcoinPassport.id && {
-            gitscore: score,
-          }),
-        };
-        console.log(voteData, 'voteData');
-        try {
-          const response = await castVote(voteData as VoteRequestData);
-          console.log(response, 'response');
-          setVotingProcess(currentvoting =>
-            currentvoting.map(votingcredential => 
-              votingcredential.credentialId === vote_credential ? { ...votingcredential, status: 'success' } : votingcredential
-            )
-          );
-          //await fetchPollFromApi(id);
-        } catch (error) {
-          console.error('Error casting vote:', error);
-          if (
-            typeof error === 'object' &&
-            error !== null &&
-            'status' in error
-          ) {
-            const err = error as { status: number; message?: string };
-            if (err.status === 403) {
-              console.error("You don't have permission to cast this vote.");
-              setVotingProcess(currentvoting =>
-                currentvoting.map(votingcredential =>
-                  votingcredential.credentialId === vote_credential ? { ...votingcredential, status: 'unauthorized' } : votingcredential
-                )
-              );
-            } else {
-              console.error('An unexpected error occurred.');
-              setVotingProcess(currentvoting =>
-                currentvoting.map(votingcredential =>
-                  votingcredential.credentialId === vote_credential ? { ...votingcredential, status: 'error' } : votingcredential
-                )
-              );
-            }
+      setAvailableCredentialTable(filteredCredentialTable);
+    }
+    if (!isPassportConnected) {
+      const filteredCredentialTable = availableCredentialTable.filter(
+        (credential) => {
+          const accountDependentCredentials = [
+            CREDENTIALS.ZuConnectResident.id,
+            CREDENTIALS.ZuConnectResident.id,
+            CREDENTIALS.DevConnect.id,
+          ];
+          return !accountDependentCredentials.includes(credential.id);
+        }
+      );
+      setAvailableCredentialTable(filteredCredentialTable);
+    }
+    console.log(availableCredentialTable, 'available credential table');
+    const containsZupassCredentials = availableCredentialTable.some(credential =>
+      [CREDENTIALS.ZuConnectResident.id, CREDENTIALS.DevConnect.id, CREDENTIALS.ZuzaluResident.id].includes(credential.id)
+    );
+    if (containsZupassCredentials) {
+      setZupassPoll(true);
+    }
+    setCredentialCardReady(true);
+  }
+
+  const invokeCastVote = async (vote_credential: string, signature: string) => {
+    console.log(
+      signature,
+      selectedOptionData?.optionId,
+      poll?.id,
+      account,
+      vote_credential,
+      'all information'
+    );
+    if (
+      signature &&
+      selectedOptionData?.optionId &&
+      poll?.id &&
+      account &&
+      vote_credential
+    ) {
+      const voteData = {
+        poll_id: poll.id,
+        option_id: selectedOptionData.optionId,
+        voter_identifier: account,
+        signature: signature,
+        vote_credential: vote_credential,
+        ...(vote_credential === CREDENTIALS.GitcoinPassport.id && {
+          gitscore: score,
+        }),
+      };
+      console.log(voteData, 'voteData');
+      try {
+        const response = await castVote(voteData as VoteRequestData);
+        console.log(response, 'response');
+        setVotingProcess(currentvoting =>
+          currentvoting.map(votingcredential => 
+            votingcredential.credentialId === vote_credential ? { ...votingcredential, status: 'success' } : votingcredential
+          )
+        );
+        //await fetchPollFromApi(id);
+      } catch (error) {
+        console.error('Error casting vote:', error);
+        if (
+          typeof error === 'object' &&
+          error !== null &&
+          'status' in error
+        ) {
+          const err = error as { status: number; message?: string };
+          if (err.status === 403) {
+            console.error("You don't have permission to cast this vote.");
+            setVotingProcess(currentvoting =>
+              currentvoting.map(votingcredential =>
+                votingcredential.credentialId === vote_credential ? { ...votingcredential, status: 'unauthorized' } : votingcredential
+              )
+            );
           } else {
             console.error('An unexpected error occurred.');
             setVotingProcess(currentvoting =>
@@ -679,61 +669,17 @@ const PollPage = () => {
               )
             );
           }
+        } else {
+          console.error('An unexpected error occurred.');
+          setVotingProcess(currentvoting =>
+            currentvoting.map(votingcredential =>
+              votingcredential.credentialId === vote_credential ? { ...votingcredential, status: 'error' } : votingcredential
+            )
+          );
         }
       }
-    };
-    invokeCastVote(signingCredential);
-    setMessage('');
-  }, [isSuccess, data]);
-
-  useEffect(() => {
-    if (message) {
-      console.log(message, 'message to be signed');
-      signMessage();
     }
-  }, [message, signMessage]);
-
-  useEffect(() => {
-    console.log('account changed');
-    setSelectedOption(null);
-    if (isValidUuidV4(id as string)) {
-      fetchPollFromApi(id);
-      if (credentialId == CREDENTIALS.GitcoinPassport.id) {
-        const fetchNewScore = async () => {
-          // FIXME: SHOULD THIS SCORE ID BE HARDCODED HERE?
-          let fetchScoreData = { address: account as string, scorerId: '6347' };
-          try {
-            let scoreResponse = await fetchScore(fetchScoreData);
-            let scoreData = scoreResponse.data;
-            console.log(scoreData.score.toString(), 'score');
-            setScore(scoreData.score);
-          } catch (error) {
-            console.error('Error fetching score:', error);
-          }
-        };
-        fetchNewScore();
-      } else if (credentialId == CREDENTIALS.POAPSVerification.id) {
-        const fetchNewNumber = async () => {
-          try {
-            // TODO: Replace hardcoded URL with dynamic.
-            const provider = new ethers.JsonRpcProvider(providerUrl);
-            const contract = new ethers.Contract(
-              CREDENTIALS.POAPSVerification.contract,
-              contractABI,
-              provider
-            );
-            const events = await contract.getEventCountForCollection(account);
-
-            setPoapsNumber(events.toString());
-          } catch (error) {
-            console.error('Error fetching score:', error);
-          }
-        };
-        fetchNewNumber();
-      }
-    }
-  }, [account]);
-
+  };
 
   const getEthHoldings = async () => {
     if (account) {
@@ -756,7 +702,7 @@ const PollPage = () => {
       console.log(data, 'pollData');
       setPoll(data);
       setOptions(data.options);
-      console.log(data.contractpoll_index?.length, 'length');
+      setRequiredGitScore(data.gitcoin_score);
       if (data.contractpoll_index?.length == 1) {
         await fetchPollFromContract(data.contractpoll_index[0]);
         console.log(pollType?.toString(), 'pollType');
@@ -809,7 +755,8 @@ const PollPage = () => {
       });
       console.log(nestedCredentialTable, 'nestedcredentialtable');
       const timeleft = calculateTimeRemaining(data.endTime);
-      console.log(data.endTime);
+      console.log(data.endTime,'end time');
+      console.log(timeleft,'timeleft');
       console.log(data.startTime);
       const startdate = new Date(data.startTime);
       setstartDate(startdate);
@@ -817,6 +764,7 @@ const PollPage = () => {
       if (timeleft) {
         settimeRemaining(timeleft);
       }
+      console.log(timeleft,'time left api poll');
       /*if (newCredentialId) {
         setCredentialId(newCredentialId);
         console.log('credential ID', newCredentialId);
@@ -864,7 +812,7 @@ const PollPage = () => {
           if (!timeleft) {
           } else {
             settimeRemaining(timeleft);
-            console.log(timeleft, 'time left');
+            console.log(timeleft, 'time left contract poll');
           }
           const provider = new ethers.JsonRpcProvider(
             'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
@@ -889,6 +837,7 @@ const PollPage = () => {
                 (option) => option.option_description === optionName
               );
               if (existingOptionIndex !== -1) {
+                console.log('nested option');
                 const updatedOptions = options.map((option, idx) =>
                   idx === existingOptionIndex
                     ? {
@@ -901,17 +850,11 @@ const PollPage = () => {
                     }
                     : option
                 );
-                updatedOptions.sort((a, b) => {
-                  if (
-                    typeof a.optionindex === 'number' &&
-                    typeof b.optionindex === 'number'
-                  ) {
-                    return a.optionindex - b.optionindex;
-                  }
-                  return 0;
-                });
+                updatedOptions.sort((a, b) => a.option_description.localeCompare(b.option_description));
                 setOptions(updatedOptions);
+                console.log(updatedOptions,'updated option');
               } else {
+                console.log('new option');
                 newOptions.push({
                   id: index,
                   pollId: id as string,
@@ -932,6 +875,7 @@ const PollPage = () => {
                   return 0;
                 });
                 setOptions(newOptions);
+                console.log(newOptions,'new option');
               }
             } catch (error) {
               console.error('Error fetching options:', error);
@@ -944,25 +888,6 @@ const PollPage = () => {
         console.error('Error fetching poll:', error);
       }
     }
-  };
-  /*const getRequirement = () => {
-    const current = Object.values(CREDENTIALS).find(
-      (credential) => credential.id === id
-    );
-    return current?.name;
-  };*/
-
-  const warnAndConnect = () => {
-    console.error(
-      'You need to connect to Wallet to get this information, please try again'
-    );
-    toast({
-      title: 'Error',
-      description:
-        'You need to connect to Wallet to get this information, please try again',
-      variant: 'destructive',
-    });
-    connect();
   };
 
   const pollIsLive = remainingTime !== null && remainingTime !== 'Time is up!';
@@ -1003,26 +928,20 @@ const PollPage = () => {
     }
   };
 
-  const handleCastVoteSigned = async (
-    optionId: string,
-    requiredCred: string
-  ) => {
-    const pollId = poll?.id as string;
+  const handleCastVoteSigned = async (optionId: string, credentialId:string) => {
     try {
-      setSigningCredential(requiredCred);
-      const newMessage = await generateMessage(
-        pollId,
-        optionId,
-        account as string
-      );
-      setMessage(newMessage);
-      //
-      // TODO: We need to sign the message and submit. Wait until isSuccess === true and send the transaction
-      // For this we need to save the data
-      //
+      const pollId = poll?.id as string; 
+      const message = await generateMessage(pollId, optionId, account as string); 
+      const signature = await signMessageAsync({ message });
+  
+      if (signature) {
+        await invokeCastVote(credentialId, signature);
+        console.log('success');
+      } else {
+        console.log('cast vote error');
+      }
     } catch (error) {
       console.error('Error signing vote:', error);
-      return;
     }
   };
 
@@ -1106,27 +1025,6 @@ const PollPage = () => {
               break;
             // Gitcoin
             case CREDENTIALS.GitcoinPassport.id:
-              if (!isConnected) {
-                warnAndConnect();
-                return;
-              }
-              if (account !== null) {
-                let fetchScoreData = {
-                  address: account as string,
-                  scorerId: '6347',
-                };
-                let scoreResponse = await fetchScore(fetchScoreData);
-                let scoreData = scoreResponse.data;
-                console.log(scoreData.score.toString(), 'score');
-                setScore(scoreData.score);
-                if (scoreData.score.toString() != '0') {
-                  await handleCastVoteSigned(
-                    optionId,
-                    CREDENTIALS.GitcoinPassport.id
-                  );
-                }
-              }
-              break;
             case CREDENTIALS.POAPapi.id:
             case CREDENTIALS.ProtocolGuildMember.id:
             case CREDENTIALS.EthSoloStaker.id:
@@ -1169,7 +1067,6 @@ const PollPage = () => {
           console.log(optionIndex as number, 'option index');
           await handleContractVote(credentialId, optionIndex as number);
         }
-        await fetchPollFromApi(id);
       }
     } else {
       await handleContractVote(id as string, optionIndex as number);
@@ -1227,11 +1124,6 @@ const PollPage = () => {
       return;
     }
 
-    if (!window.ethereum) {
-      console.error('Please install MetaMask to perform this action.');
-      return;
-    }
-
     try {
       let provider = new ethers.BrowserProvider(window.ethereum as any);
       let signer = await provider.getSigner();
@@ -1247,7 +1139,6 @@ const PollPage = () => {
       // console.log(newOptionIndex, 'newOptionIndex');
       // console.log(signature, 'signature');
       // console.log(message, 'message');
-      const network = await provider.getNetwork();
       if (!canOpenPopup()) {
         toast({
           title: 'Error',
@@ -1274,12 +1165,6 @@ const PollPage = () => {
             votingcredential.credentialId === pollId ? { ...votingcredential, status: 'succes' } : votingcredential
           )
         );    
-        if (isValidUuidV4(id as string)) {
-          fetchPollFromApi(id);
-          getEthHoldings();
-        } else {
-          fetchPollFromContract(id as string);
-        }
     } catch (error: any) {
       console.error('Error casting vote:', error);
       setVotingProcess(currentvoting =>
@@ -1289,6 +1174,7 @@ const PollPage = () => {
       );
     }
   };
+
   if (!poll || !credentialCardReady) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -1349,10 +1235,11 @@ const PollPage = () => {
           (credentialItem) =>
             credentialItem.id === CREDENTIALS.GitcoinPassport.id
         );
+        
         return (
           <div className="flex flex-col gap-1">
             <div className="text-sm">
-              Minimum score required: {poll?.gitcoin_score}
+              Minimum score required: {requiredgitscore}
             </div>
             <div className="flex items-center gap-2">
               <div className="text-sm">
@@ -1630,7 +1517,7 @@ const PollPage = () => {
                 <div className="flex px-2.5 py-1 gap-1 bg-black bg-opacity-5 rounded-xl">
                   <MultiplePeopleIcon className="w-5 h-5" />
                   <Label className="text-black text-opacity-50 font-bold text-sm">
-                    HeadCount
+                  {credentialTable.length > 1 ? 'Nested poll' : null}
                   </Label>
                 </div>
               </div>
