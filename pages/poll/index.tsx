@@ -13,6 +13,7 @@ import {
   castVote,
   fetchPollById,
   fetchVote,
+  fetchCredentialVotes
 } from '@/controllers/poll.controller';
 import { useUserPassportContext } from '@/context/PassportContext';
 import OptionVotingCountProgress from '@/components/OptionVotingCounts';
@@ -25,7 +26,7 @@ import PoapDetails from '@/components/POAPDetails';
 import { fetchScore } from '@/controllers';
 import { Loader } from '@/components/ui/Loader';
 import PieChartComponent from '@/components/ui/PieChart';
-import { PollOptionType, Poll, PollTypes } from '@/types';
+import { PollOptionType, Poll, PollTypes, VoteData, CredentialTable, SelectedOptionData, VotingProcess} from '@/types';
 import { CREDENTIALS, CONTRACT_ADDRESS } from '@/src/constants';
 import { PollResultComponent } from '@/components/PollResult';
 import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock';
@@ -51,26 +52,7 @@ import { CheckCircleIcon } from '@/components/icons/checkcircle';
 import { CheckCircleIconWhite } from '@/components/icons/checkcirclewhite';
 import TruncateText from '@/components/TruncateText';
 import { SoloStakerList } from '@/src/solostaker';
-interface CredentialTable {
-  credential?: string;
-  id: string;
-  identifier?: string;
-  votedOption?: string;
-  votedOptionName?: string;
-  gitscore?: number;
-  poap_events?: string[];
-  poap_number?: string;
-}
-interface SelectedOptionData {
-  optionId: string;
-  optionIndex: number | undefined;
-  option_description: string;
-}
-interface VotingProcess {
-  credentialId: string;
-  status: string;
-  contractpoll?: string;
-}
+
 
 const PollPage = () => {
   const router = useRouter();
@@ -122,7 +104,7 @@ const PollPage = () => {
   const [credentialCardReady, setCredentialCardReady] = useState(false);
   const [selectedOptionData, setSelectedOptionData] = useState<SelectedOptionData>();
   const [requiredgitscore, setRequiredGitScore] = useState(0);
-    
+  const [pollResult, setPollResult] = useState<VoteData[]>();
     const handleVotesRadioChange = (
       event: React.ChangeEvent<HTMLInputElement>
     ) => {
@@ -207,7 +189,8 @@ const PollPage = () => {
   useEffect(() => {
   console.log('current voting process', votingProcess);
   console.log('remaining time', remainingTime);
-  }, [votingProcess, remainingTime]);    
+  console.log('contract poll type', pollType);
+  }, [votingProcess, remainingTime, pollType]);    
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const popupRef = useRef<HTMLDivElement | null>(null);
 
@@ -722,9 +705,9 @@ const PollPage = () => {
       console.log(data.options);
       setRequiredGitScore(data.gitcoin_score);
       if (data.contractpoll_index?.length == 1) {
-        await fetchPollFromContract(data.contractpoll_index[0], data.options);
-        console.log(pollType?.toString(), 'pollType');
-        if (pollType?.toString() == '0') {
+        let contractpoll_type = await fetchPollFromContract(data.contractpoll_index[0], data.options);
+        console.log(contractpoll_type, 'pollType');
+        if (contractpoll_type == '0') {
           nestedCredentialTable.push({
             credential: 'EthHolding on-chain',
             id: data.contractpoll_index[0],
@@ -779,6 +762,12 @@ const PollPage = () => {
       const startdate = new Date(data.startTime);
       setstartDate(startdate);
       console.log(startDate, 'start date');
+      try {
+        const response = await fetchCredentialVotes({ id: id as string });
+        setPollResult(response.data);
+      } catch (error) {
+        console.error('Error fetching poll result:', error);
+      }
       if (timeleft) {
         settimeRemaining(timeleft);
       }
@@ -816,11 +805,11 @@ const PollPage = () => {
           console.log(pollData, 'pollData');
           if (!existingoptions) {
           setPoll(pollData);
-          }
-          setPollType(pollData.pollType);
+          };
+          setPollType(pollData[4]);
           //pollType = pollData.pollType;
-          if (pollType) {
-            console.log(pollType.toString(), 'poll_type123');
+          if (pollData[4]) {
+            console.log(pollData[4].toString(), 'poll_type123');
           } else {
             console.log('no poll type');
           }
@@ -846,8 +835,6 @@ const PollPage = () => {
               optionContractAbi,
               provider
             );
-            // console.log(contract, 'contract');
-
             try {
               const optionName = await contract.name();
               const index = await contract.option_index();
@@ -899,11 +886,12 @@ const PollPage = () => {
                 });
                 setOptions(newOptions);
                 console.log(newOptions,'new option');
-              }
-            } catch (error) {
+              } 
+          }catch (error) {
               console.error('Error fetching options:', error);
             }
           }
+          return pollData[4].toString();
         } else {
           console.log('Poll contract not existe');
         }
@@ -1475,7 +1463,8 @@ const PollPage = () => {
          {showConfirmationPopup && <ConfirmationPopup votingProcess={votingProcess} onClose={handleConfirmationPopupClose}/>}
         <PollResultComponent
           pollType={PollTypes.HEAD_COUNT}
-          optionsData={options}
+          optionsData={pollResult as VoteData[]}
+          credentialTable={credentialTable}
         />
       </div>
 
@@ -1500,6 +1489,14 @@ const PollPage = () => {
                 </div>
               </div>
             </div>
+        
+            {poll.ipfs_link && (
+                <div className="flex flex-wrap items-center gap-1">
+                      <a href={poll.ipfs_link} target="_blank" rel="noopener noreferrer" className="text-black text-opacity-50 font-bold text-sm">
+                        IPFS: {poll.ipfs_link.substring(0, 20)}{poll.ipfs_link.length > 20 ? '...' : ''}
+                      </a>
+                </div>
+              )}
 
             <div className="flex flex-col gap-2.5 py-2.5 border-t border-black border-opacity-10">
               <Label className="text-black opacity-80 text-base font-semibold">
@@ -1553,7 +1550,7 @@ const PollPage = () => {
                       <Label className="text-sm text-black font-bold">
                         <div className="flex items-center gap-2">
                           <img src='/images/zupass.svg' alt="Credential" className="image-class-name" />
-                          <span className='opacity-60'>Zupass</span>
+                          <span className='opacity-60'>Zuppass</span>
                         </div>
                       </Label>
                       {zupasspoll ? (

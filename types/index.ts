@@ -1,3 +1,5 @@
+import { IconType } from "react-icons";
+
 export type OptionType = {
   name: string;
   color: string;
@@ -101,6 +103,7 @@ export interface Poll {
   contractpoll_index: number[];
   gitcoin_score: number;
   poap_number: string;
+  ipfs_link: string;
 }
 
 export interface ProcessVoteInput {
@@ -128,11 +131,45 @@ export interface VerifySignatureInput {
   signature: string;
 }
 
-export interface PollResultComponentType {
-  pollType: PollTypes;
-  optionsData: PollOptionType[];
+export interface VoteData {
+  id: string;
+  votes: number;
+  credential: string; 
 }
 
+export interface CredentialInfo {
+  type: string;
+  icon: IconType;
+}
+
+export interface PollResultComponentType {
+  pollType: PollTypes;
+  optionsData: VoteData[]; 
+  credentialTable: CredentialTable[];  
+}
+
+export interface CredentialTable {
+  credential?: string;
+  id: string;
+  identifier?: string;
+  votedOption?: string;
+  votedOptionName?: string;
+  gitscore?: number;
+  poap_events?: string[];
+  poap_number?: string;
+}
+
+export interface SelectedOptionData {
+  optionId: string;
+  optionIndex: number | undefined;
+  option_description: string;
+}
+
+export interface VotingProcess {
+  credentialId: string;
+  status: string;
+  contractpoll?: string;
+}
 export enum PollTypes {
   ETH_HOLDING,
   HEAD_COUNT,

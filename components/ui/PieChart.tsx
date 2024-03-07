@@ -1,12 +1,82 @@
 import React from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartOptions } from "chart.js";
 import { Pie } from 'react-chartjs-2';
-
 import { PollOptionType, PollTypes } from '@/types';
 import { Label } from './Label';
 import styles from "@/styles/pollResult.module.css"
-
 ChartJS.register(ArcElement, Tooltip, Legend);
+
+interface VoteData {
+  id: string;
+  votes: number;
+  credential: string; 
+}
+
+interface IPieChartComponent {
+  voteData: VoteData[];
+  votingType: string;
+  credentialFilter: string;
+}
+
+const PieChartComponent: React.FC<IPieChartComponent> = ({ voteData, votingType, credentialFilter }) => {
+  if (!Array.isArray(voteData)) {
+    return <div>No data available</div>;
+  }
+
+  if (credentialFilter) {
+    const filteredData = voteData.filter(data => data.credential === credentialFilter);
+  
+
+  const labels: string[] = filteredData.map(data => data.id);
+  const votes: number[] = filteredData.map(data => data.votes);
+  const totalVotes: number = votes.reduce((acc, cur) => acc + cur, 0);
+
+  const backgroundColor: string[] = ['#88F2D5', '#E3F29C', '#EA66A4'];
+
+  const data = {
+    labels: labels,
+    datasets: [
+      {
+        data: votes,
+        backgroundColor: backgroundColor,
+        hoverBackgroundColor: backgroundColor,
+      },
+    ],
+  };
+
+  const option: ChartOptions<'pie'> = {
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          font: {
+            size: 16,
+          },
+          color: 'black',
+          boxWidth: 20,
+          boxHeight: 20,
+          borderRadius: 50,
+        },
+      },
+    },
+  };
+
+  return (
+    <>
+      <div className='flex flex-col'>
+        <div>Total Votes: {totalVotes}</div>
+        <div>{votingType === 'ETH_HOLDING' ? 'Total Eth' : 'Total Votes'}</div>
+      </div>
+      <div>
+        <Pie data={data} options={option} />
+      </div>
+    </>
+  );
+}
+};
+
+export default PieChartComponent;
+/*ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface IPieChartComponent {
   votes: PollOptionType[],
@@ -68,4 +138,4 @@ const PieChartComponent: React.FC<IPieChartComponent> = ({ votes, votingType }) 
   );
 };
 
-export default PieChartComponent;
+export default PieChartComponent;*/
