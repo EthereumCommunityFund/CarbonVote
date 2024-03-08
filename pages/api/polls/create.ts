@@ -19,10 +19,14 @@ const createPoll = async (req: NextApiRequest, res: NextApiResponse) => {
     let { title, description, time_limit, options, credentials, poap_events, poap_number, gitcoin_score, contractpoll_index } = value
 
     try {
-        const block_number = await getLatestBlockNumber();
+        const start_block_number = await getLatestBlockNumber();
+        const averageBlockTimeS = 12;
+        const estimatedBlocks = time_limit / averageBlockTimeS;
+        const end_block_number = start_block_number + Math.round(estimatedBlocks);
+
         const { data, error: pollError } = await supabase
             .from('polls')
-            .insert([{ title, description, time_limit, poap_events, block_number, poap_number, gitcoin_score, contractpoll_index }])
+            .insert([{ title, description, time_limit, poap_events, start_block_number, end_block_number, poap_number, gitcoin_score, contractpoll_index }])
             .select("*");
 
         if (pollError) throw pollError;

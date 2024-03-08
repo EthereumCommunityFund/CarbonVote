@@ -33,6 +33,7 @@ import styles from '@/styles/createPoll.module.css';
 import POAPEvents from '../../components/POAPEvents';
 import { createPoll } from '@/controllers/poll.controller';
 import { getProviderUrl } from '@/utils/getProviderUrl';
+import { getLatestBlockNumber } from '@/utils/getLatestBlockNumber';
 
 interface ZupassOptionType {
   value: string;
@@ -299,8 +300,11 @@ const CreatePollPage = () => {
         const network = await provider.getNetwork();
 
         console.log(`Connected to ${network}`);
-
-        const tx = await contract.createPoll(motionTitle, motionDescription, durationInSeconds, optionNames, pollType, pollMetadata);
+        const start_block_number = await getLatestBlockNumber();
+        const averageBlockTimeS = 12;
+        const estimatedBlocks = durationInSeconds / averageBlockTimeS;
+        const end_block_number = start_block_number + Math.round(estimatedBlocks);
+        const tx = await contract.createPoll(motionTitle, motionDescription, durationInSeconds, optionNames, pollType, pollMetadata, end_block_number);
         await tx.wait();
         toast({
           title: 'On-chain poll created successfully, please wait',

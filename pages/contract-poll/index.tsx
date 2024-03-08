@@ -1,3 +1,4 @@
+/*
 import { ethers } from 'ethers';
 import { ArrowLeftIcon } from '@/components/icons';
 import { ClockIcon } from '@/components/icons/clock';
@@ -15,7 +16,7 @@ import { calculateTimeRemaining, } from '@/utils/index';
 import { Loader } from '@/components/ui/Loader';
 import { useUserPassportContext } from '@/context/PassportContext';
 import PieChartComponent from '@/components/ui/PieChart';
-import { Poll, Option, PollTypes } from '@/types'
+import { Poll, PollTypes } from '@/types'
 import { PollResultComponent } from '@/components/PollResult';
 
 const PollPage = () => {
@@ -312,7 +313,7 @@ const PollPage = () => {
             <Label className="text-black/60 text-lg">Motion: </Label>
             <Label className="text-2xl">{poll?.name}</Label>
           </div>
-          <div className="flex justify-end pb-5 border-b border-black/30">{/* <Label>by: {mockPoll.creator}</Label> */}</div>
+          <div className="flex justify-end pb-5 border-b border-black/30">{/* <Label>by: {mockPoll.creator}</Label> *//*</div>
           <div className="flex flex-col gap-2.5">
             <Label className="text-black/60 text-lg font-bold">Description: </Label>
             <span dangerouslySetInnerHTML={{ __html: poll?.description }} />
@@ -378,10 +379,10 @@ const PollPage = () => {
             </Label>
           </div>
         </div>
-        {/*<PollResultComponent pollType={PollTypes.ETH_HOLDING} optionsData={convertOptionsToPollOptions(optionsData)} />*/}
+        {/*<PollResultComponent pollType={PollTypes.ETH_HOLDING} optionsData={convertOptionsToPollOptions(optionsData)} />*//*
       </div>
     </div>
   );
 };
 
-export default PollPage;
+export default PollPage;*/

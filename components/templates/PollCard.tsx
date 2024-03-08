@@ -23,7 +23,6 @@ interface IPollCard {
 }
 
 export const PollCardTemplate = ({ id, title, topic, subTopic, description, options, polltype, pollMetadata, poll, startTime, endTime }: IPollCard) => {
-  console.log(endTime);
   const router = useRouter();
   const { signIn, isPassportConnected } = useUserPassportContext();
   const getEndDate = (time: string | bigint | number): Date => {

@@ -76,15 +76,6 @@ export type PillInputs = {
   onRemove: (id: number) => void;
 }
 
-export interface Option {
-  optionName: string;
-  votersCount: number;
-  totalEth?: string;
-  votersData?: any;
-  address?: string;
-  optionindex: number;
-}
-
 export interface Poll {
   id: string;
   name: string;
@@ -112,6 +103,7 @@ export interface ProcessVoteInput {
   option_id: string;
   weight?: string;
   vote_credential: string;
+  voter_identifier?: string;
 }
 
 interface PollData {
@@ -134,7 +126,14 @@ export interface VerifySignatureInput {
 export interface VoteData {
   id: string;
   votes: number;
-  credential: string; 
+  credential: string;
+  description: string;
+  voters_account?: string[];  
+}
+
+export interface VoterData {
+  address: string;
+  balance: string; 
 }
 
 export interface CredentialInfo {
@@ -157,6 +156,7 @@ export interface CredentialTable {
   gitscore?: number;
   poap_events?: string[];
   poap_number?: string;
+  endblock_number?: number;
 }
 
 export interface SelectedOptionData {

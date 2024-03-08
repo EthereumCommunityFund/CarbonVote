@@ -34,7 +34,8 @@ export default function Home() {
   //const contractAddress = contract_addresses.VotingContract;
 
 
-  const contractAddress = "0x5092F0161B330A7B2128Fa39a93b10ff32c0AE3e";
+  //const contractAddress = "0x5092F0161B330A7B2128Fa39a93b10ff32c0AE3e";
+  const contractAddress = "0xBc65A294FD0979645D77f75FD408220B79d44E45";
 
 
   const fetchPollsFromContract = async () => {

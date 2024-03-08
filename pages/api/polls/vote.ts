@@ -6,7 +6,7 @@ import getPoapOwnership from 'utils/getPoapOwnership';
 import { supabase } from 'utils/supabaseClient';
 import { CREDENTIALS } from '@/src/constants';
 import { VerifySignatureInput, CheckPOAPOwnershipInput, ProcessVoteInput } from '@/types'
-import { storeVote, checkNullifier, generateNullifier } from '@/utils/ceramicHelpers'
+//import { storeVote, checkNullifier, generateNullifier } from '@/utils/ceramicHelpers'
 import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock'
 import { generateMessage } from '@/utils/generateMessage'
 import { ProtocolGuildMembershipList } from '@/src/protocolguildmember';
@@ -52,7 +52,7 @@ async function checkPOAPOwnership({ pollData, voter_identifier }: CheckPOAPOwner
     }
 }
 
-async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credential }: ProcessVoteInput): Promise<void> {
+async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credential, voter_identifier }: ProcessVoteInput): Promise<void> {
     const { data: existingVoteOnOption } = await supabase
         .from('votes')
         .select('*')
@@ -100,7 +100,8 @@ async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credent
             poll_id,
             cast_at: new Date(),
             weight,
-            vote_credential
+            vote_credential,
+            voter_identifier
         }]);
     // if (insertError) throw insertError;
     // Increment the vote count for the new option
@@ -203,7 +204,7 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
 
         console.log("🚀 ~ createVote ~ weight:", weight)
         const vote_hash = crypto.createHash('sha256').update(voter_identifier).digest('hex');
-        await processVote({ vote_hash, poll_id, option_id, weight,vote_credential });
+        await processVote({ vote_hash, poll_id, option_id, weight,vote_credential, voter_identifier });
 
         res.status(201).send('Vote recorded successfully');
     } catch (error: any) {

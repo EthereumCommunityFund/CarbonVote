@@ -1,6 +1,6 @@
 import { HardhatUserConfig } from 'hardhat/config';
 import '@nomicfoundation/hardhat-toolbox';
-
+import { getProviderUrl } from '../utils/getProviderUrl';
 const config: HardhatUserConfig = {
   solidity: '0.8.20',
   defaultNetwork: 'hardhat',
@@ -9,7 +9,7 @@ const config: HardhatUserConfig = {
       chainId: 1337,
     },
     /*sepolia: {
-      url: '',
+      url: getProviderUrl(),
       accounts: [`0x`],
     },*/
   },

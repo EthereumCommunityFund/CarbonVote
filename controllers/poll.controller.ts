@@ -15,6 +15,7 @@ export type CheckVoteData = {
 
 export type CheckCredentialVotesData = {
     id: string;
+    isEthHolding?: boolean;
 };
 
 export const fetchAllPolls = async () => {

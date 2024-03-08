@@ -1,16 +1,11 @@
 import React from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartOptions } from "chart.js";
 import { Pie } from 'react-chartjs-2';
-import { PollOptionType, PollTypes } from '@/types';
+import { PollOptionType, PollTypes, VoteData } from '@/types';
+import { CREDENTIALS } from '@/src/constants';
 import { Label } from './Label';
 import styles from "@/styles/pollResult.module.css"
 ChartJS.register(ArcElement, Tooltip, Legend);
-
-interface VoteData {
-  id: string;
-  votes: number;
-  credential: string; 
-}
 
 interface IPieChartComponent {
   voteData: VoteData[];
@@ -23,13 +18,21 @@ const PieChartComponent: React.FC<IPieChartComponent> = ({ voteData, votingType,
     return <div>No data available</div>;
   }
 
-  if (credentialFilter) {
-    const filteredData = voteData.filter(data => data.credential === credentialFilter);
+  let filteredData: VoteData[] = []
+  let totalVotes = 0;
+  const zupassIds = [CREDENTIALS.DevConnect.id, CREDENTIALS.ZuConnectResident.id, CREDENTIALS.ZuzaluResident.id];
   
-
-  const labels: string[] = filteredData.map(data => data.id);
-  const votes: number[] = filteredData.map(data => data.votes);
-  const totalVotes: number = votes.reduce((acc, cur) => acc + cur, 0);
+  if (credentialFilter) {
+    if (credentialFilter === 'zupass') {
+      filteredData = voteData.filter(data => zupassIds.includes(data.credential));
+    } else {
+      filteredData = voteData.filter(data => data.credential === credentialFilter);
+    }
+    totalVotes = filteredData.reduce((acc, cur) => acc + cur.votes, 0);
+  }
+  
+  const labels = filteredData.map(data => data.description || 'No description');
+  const votes = filteredData.map(data => data.votes);
 
   const backgroundColor: string[] = ['#88F2D5', '#E3F29C', '#EA66A4'];
 
@@ -65,14 +68,12 @@ const PieChartComponent: React.FC<IPieChartComponent> = ({ voteData, votingType,
     <>
       <div className='flex flex-col'>
         <div>Total Votes: {totalVotes}</div>
-        <div>{votingType === 'ETH_HOLDING' ? 'Total Eth' : 'Total Votes'}</div>
       </div>
-      <div>
+      <div className={styles.pie}>
         <Pie data={data} options={option} />
       </div>
     </>
   );
-}
 };
 
 export default PieChartComponent;

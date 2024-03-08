@@ -26,9 +26,10 @@ import PoapDetails from '@/components/POAPDetails';
 import { fetchScore } from '@/controllers';
 import { Loader } from '@/components/ui/Loader';
 import PieChartComponent from '@/components/ui/PieChart';
-import { PollOptionType, Poll, PollTypes, VoteData, CredentialTable, SelectedOptionData, VotingProcess} from '@/types';
+import { PollOptionType, Poll, PollTypes, VoteData, CredentialTable, SelectedOptionData, VotingProcess, VoterData} from '@/types';
 import { CREDENTIALS, CONTRACT_ADDRESS } from '@/src/constants';
 import { PollResultComponent } from '@/components/PollResult';
+import {ContractPollResultComponent} from '@/components/EthPollResult';
 import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock';
 import { generateMessage } from '@/utils/generateMessage';
 import VotingContract from '../../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
@@ -52,6 +53,8 @@ import { CheckCircleIcon } from '@/components/icons/checkcircle';
 import { CheckCircleIconWhite } from '@/components/icons/checkcirclewhite';
 import TruncateText from '@/components/TruncateText';
 import { SoloStakerList } from '@/src/solostaker';
+import { getLatestBlockNumber } from '@/utils/getLatestBlockNumber';
+import { useLatestBlock } from '@/utils/useLatestBlock';
 
 
 const PollPage = () => {
@@ -73,6 +76,7 @@ const PollPage = () => {
   const { address: account, isConnected } = useAccount();
   const { connect } = useConnect();
   const [options, setOptions] = useState<PollOptionType[]>([]);
+  const [contractPollResult, setContractPollResult] = useState<PollOptionType[]>([]);
   // FIXME: For multiple votes this single CredentialId might break the logic. Implementing an agregated credential requirement
   const [credentialId, setCredentialId] = useState('');
   const [userEthHolding, setUserEthHolding] = useState('0');
@@ -85,7 +89,9 @@ const PollPage = () => {
   const [message, setMessage] = useState('');
   const contractAbi = VotingContract.abi;
   const [pollContract, setPollContract] = useState<Contract | null>(null);
-  const [pollType, setPollType] = useState<string | number>();
+  const [pollType, setPollType] = useState<string>();
+  const [endBlockNumber, setEndBlockNumber] = useState<number>();
+  const [isEthHoldingPoll, setIsEthHoldingPoll] = useState<boolean>(false);
   const [credentialTable, setNestedCredentialTable] = useState<
     CredentialTable[]
   >([]);
@@ -109,7 +115,10 @@ const PollPage = () => {
       event: React.ChangeEvent<HTMLInputElement>
     ) => {
       const credentialId = event.target.value;
+      console.log(credentialId,'selected id');
       const isCurrentlyChecked = event.target.checked;
+      console.log(isCurrentlyChecked,'is selected id checked');
+      console.log(voteTable,'vote table');
       setVoteTable((prevVoteTable) => {
         if ([CREDENTIALS.DevConnect.id, CREDENTIALS.ZuConnectResident.id, CREDENTIALS.ZuzaluResident.id].includes(credentialId)) {
           let newVoteTable = prevVoteTable.filter(id => ![CREDENTIALS.DevConnect.id, CREDENTIALS.ZuConnectResident.id, CREDENTIALS.ZuzaluResident.id].includes(id));
@@ -150,7 +159,83 @@ const PollPage = () => {
       }, []);
       setVoteTable(newVoteTable);
     };
-    
+  const latestBlockNumber = useLatestBlock(isEthHoldingPoll);
+  const providerUrl = getProviderUrl();
+  const provider = new ethers.JsonRpcProvider(providerUrl);
+  useEffect(() => {
+    if (latestBlockNumber !== null) {
+      if(pollType ==='0'){
+      const optionContractAbi = VotingOption.abi;
+      const getOptionVoteCounts = async () => {
+        if (id && poll && options) {
+          let aggregatedData = [...options];
+          for (const optionaddress of options) {
+            if(optionaddress.address){
+            const contract = new ethers.Contract(optionaddress.address as string, optionContractAbi, provider);
+            if (contract !== null) {
+            let votersCount = await contract.getVotersCount();
+            let totalBalance = BigInt(0);
+            let votersData = [];
+            for (let i = 0; i < Number(votersCount); i++) {
+              const voterAddress = await contract.voters(i);
+              const balance = await provider.getBalance(voterAddress);
+              totalBalance += BigInt(balance.toString());
+              votersData.push({
+                address: voterAddress,
+                balance: ethers.formatEther(balance),
+              });
+            }
+            votersCount = Number(votersCount);
+            const optionName = await contract.name();
+            let optionToUpdateIndex = aggregatedData.findIndex(option => option.option_description === optionName);
+            if (optionToUpdateIndex !== -1) {
+              aggregatedData[optionToUpdateIndex] = {
+                ...aggregatedData[optionToUpdateIndex],
+                votersCount,
+                totalEth: ethers.formatEther(totalBalance),
+                votersData,
+              };
+            }
+          console.log(aggregatedData,'aggregated Data');
+          setContractPollResult(aggregatedData);
+          }
+        }
+      }
+      };
+    }
+    getOptionVoteCounts();
+  }else{
+    const getOptionVoteCounts = async () => {
+      const response = await fetchCredentialVotes({ id: id as string, isEthHolding: true });
+      const data = await response.data;
+      let aggregatedData = [...options];
+      for (let voteData of data) {
+        let totalBalance = BigInt(0);
+        let votersData = [];
+
+        for (let voterAddress of voteData.voters_account || []) {
+          const balance = await provider.getBalance(voterAddress);
+          totalBalance += BigInt(balance.toString());
+
+          votersData.push({
+            address: voterAddress,
+            balance: ethers.formatEther(balance), 
+        })
+
+        const optionToUpdateIndex = aggregatedData.findIndex(option => option.id === voteData.id);
+        if (optionToUpdateIndex !== -1) {
+          aggregatedData[optionToUpdateIndex].votersCount = votersData.length;
+          aggregatedData[optionToUpdateIndex].totalEth = ethers.formatEther(totalBalance);
+          aggregatedData[optionToUpdateIndex].votersData = votersData;
+        }
+      }
+      setContractPollResult(aggregatedData);
+    }
+  }
+  getOptionVoteCounts();
+}
+  }}, [latestBlockNumber,pollType]);
+
   const handleOptionSelect = (
     optionId: string,
     optionIndex: number | undefined,
@@ -194,7 +279,6 @@ const PollPage = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const popupRef = useRef<HTMLDivElement | null>(null);
 
-  const providerUrl = getProviderUrl();
 
   useEffect(() => {
     // Function to close popup when clicked outside
@@ -223,15 +307,16 @@ const PollPage = () => {
     };
   }, [isPopupOpen]);
 
-  const handleConfirmationPopupClose = () => {
+  const handleConfirmationPopupClose = async() => {
     setVoteTable([]);
     setShowConfirmationPopup(false);
     if (isValidUuidV4(id as string)) {
-      fetchPollFromApi(id);
-      getEthHoldings();
+      await fetchPollFromApi(id);
+      await getEthHoldings();
     } else {
-      fetchPollFromContract(id as string);
-    }
+      await fetchPollFromContract(id as string);
+    };
+    await checkAndSetCredentialsAndVotes();
   };
 
   useEffect(() => {
@@ -543,7 +628,8 @@ const PollPage = () => {
         }
       }
     } else {
-      if (pollType?.toString() == '0') {
+      if (pollType === '0') {
+        console.log('here');
         availableCredentialTable.push({
           id: id as string,
           identifier: account,
@@ -671,12 +757,12 @@ const PollPage = () => {
 
   const getEthHoldings = async () => {
     if (account) {
-      const blockNumber = poll?.block_number ?? 0;
+      const blockNumber = await getLatestBlockNumber();
       const userBalance = await getBalanceAtBlock(
         account as string,
-        blockNumber
+        blockNumber as number
       );
-      console.log(`Balance at block ${blockNumber}: ${userBalance} ETH`);
+      console.log(`account ${account} Balance at block ${blockNumber}: ${userBalance} ETH`);
       setUserEthHolding(parseFloat(userBalance).toFixed(2));
       return parseFloat(userBalance);
     }
@@ -698,41 +784,16 @@ const PollPage = () => {
     try {
       const response = await fetchPollById(pollId as string);
       const data = await response.data;
-      const nestedCredentialTable: CredentialTable[] = [];
       console.log(data, 'pollData');
       setPoll(data);
+      data.options.sort((a: PollOptionType, b: PollOptionType) => a.option_description.localeCompare(b.option_description));
       setOptions(data.options);
-      console.log(data.options);
       setRequiredGitScore(data.gitcoin_score);
-      if (data.contractpoll_index?.length == 1) {
-        let contractpoll_type = await fetchPollFromContract(data.contractpoll_index[0], data.options);
-        console.log(contractpoll_type, 'pollType');
-        if (contractpoll_type == '0') {
-          nestedCredentialTable.push({
-            credential: 'EthHolding on-chain',
-            id: data.contractpoll_index[0],
-          });
-        } else {
-          nestedCredentialTable.push({
-            credential: 'ProtocolGuild on-chain',
-            id: data.contractpoll_index[1],
-          });
-        }
+      let nestedCredentialTable: CredentialTable[] = [];
+      for (const index of data.contractpoll_index) {
+        nestedCredentialTable = await fetchPollFromContract(index, data.options) as CredentialTable[];
       }
-      //If nested poll with Ethholding on-chain and Protocol guild on-chain
-      if (data.contractpoll_index?.length == 2) {
-        await fetchPollFromContract(data.contractpoll_index[0], data.options);
-        nestedCredentialTable.push({
-          credential: 'EthHolding on-chain',
-          id: data.contractpoll_index[0].toString(),
-        });
-        await fetchPollFromContract(data.contractpoll_index[1], data.options);
-        nestedCredentialTable.push({
-          credential: 'ProtocolGuild on-chain',
-          id: data.contractpoll_index[1].toString(),
-        });
-      }
-      console.log(nestedCredentialTable, 'nestedTable');
+      console.log(nestedCredentialTable, 'contract Table');
       data.credentials.forEach((cred: any) => {
         Object.values(CREDENTIALS).forEach((credential) => {
           if (cred.id === credential.id) {
@@ -748,22 +809,23 @@ const PollPage = () => {
               };
             } else if (cred.id === CREDENTIALS.GitcoinPassport.id) {
               pushObject = { ...pushObject, gitscore: data.gitcoin_score };
+            }else if (cred.id === CREDENTIALS.EthHoldingOffchain.id) {
+              setIsEthHoldingPoll(true);
             }
-
             nestedCredentialTable.push(pushObject);
           }
         });
       });
       console.log(nestedCredentialTable, 'nestedcredentialtable');
       const timeleft = calculateTimeRemaining(data.endTime);
-      console.log(data.endTime,'end time');
-      console.log(timeleft,'timeleft');
-      console.log(data.startTime);
       const startdate = new Date(data.startTime);
+      if(data.end_block_number){
+        setEndBlockNumber(data.end_block_number);
+      };
       setstartDate(startdate);
-      console.log(startDate, 'start date');
       try {
         const response = await fetchCredentialVotes({ id: id as string });
+        console.log(response.data);
         setPollResult(response.data);
       } catch (error) {
         console.error('Error fetching poll result:', error);
@@ -788,7 +850,6 @@ const PollPage = () => {
       //let provider = new ethers.BrowserProvider(window.ethereum as any);
       //let signer = await provider.getSigner();
       //const contract = new ethers.Contract(contractAddress, contractAbi, signer);
-      console.log('fetching', id);
       try {
         const provider = new ethers.JsonRpcProvider(
           'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
@@ -799,22 +860,37 @@ const PollPage = () => {
           provider
         );
         setPollContract(contract);
+        const nestedCredentialTable: CredentialTable[] = [];
         if (contract !== null) {
+          setIsEthHoldingPoll(true);
           const pollData = await contract.getPoll(pollId);
           // console.log(contract);
           console.log(pollData, 'pollData');
           if (!existingoptions) {
           setPoll(pollData);
           };
-          setPollType(pollData[4]);
+          setPollType(pollData[4].toString());
+          setEndBlockNumber(Number(pollData.endBlockNumber));
           //pollType = pollData.pollType;
-          if (pollData[4]) {
-            console.log(pollData[4].toString(), 'poll_type123');
+          const contractpoll_type = pollData[4].toString();
+          if (contractpoll_type) {
+            if (contractpoll_type === '0') {
+              nestedCredentialTable.push({
+                id: pollId.toString(),
+                credential: 'EthHolding on-chain',
+                endblock_number: Number(pollData.endBlockNumber)
+              });
+            } else {
+              nestedCredentialTable.push({
+                id: pollId.toString(),
+                credential: 'ProtocolGuild on-chain',
+                endblock_number: Number(pollData.endBlockNumber)
+              });
+            }
+            setNestedCredentialTable(nestedCredentialTable);
           } else {
             console.log('no poll type');
           }
-          let startdate = new Date(Number(pollData.startTime) * 1000);
-          console.log(startdate, 'start time', pollData.endTime, 'end time');
           const timeleft = calculateTimeRemaining(
             Number(pollData.endTime) * 1000
           );
@@ -891,10 +967,11 @@ const PollPage = () => {
               console.error('Error fetching options:', error);
             }
           }
-          return pollData[4].toString();
         } else {
           console.log('Poll contract not existe');
         }
+        console.log(nestedCredentialTable,'contract nested table');
+        return nestedCredentialTable;
       } catch (error) {
         console.error('Error fetching poll:', error);
       }
@@ -1130,7 +1207,7 @@ const PollPage = () => {
           currentvoting.map(votingcredential =>
             votingcredential.credentialId === pollId ? { ...votingcredential, status: 'success' } : votingcredential
           )
-        );    
+        );
     } catch (error: any) {
       console.error('Error casting vote:', error);
       setVotingProcess(currentvoting =>
@@ -1156,6 +1233,9 @@ const PollPage = () => {
         return (
           <div className="flex flex-col gap-1">
             <div className="text-sm">Need to have an Ethereum address</div>
+            <div className="text-sm">
+              Poll end block: {endBlockNumber}
+            </div>
             <div className="flex items-center gap-2">
               {account ? (
                 <div className={styles.avail_cred}>
@@ -1461,6 +1541,11 @@ const PollPage = () => {
           </div>
         )}
          {showConfirmationPopup && <ConfirmationPopup votingProcess={votingProcess} onClose={handleConfirmationPopupClose}/>}
+         <ContractPollResultComponent
+          aggregatedData={contractPollResult}
+          currentBlock={latestBlockNumber as number}
+          endBlock={endBlockNumber as number}
+        />
         <PollResultComponent
           pollType={PollTypes.HEAD_COUNT}
           optionsData={pollResult as VoteData[]}
@@ -1550,7 +1635,7 @@ const PollPage = () => {
                       <Label className="text-sm text-black font-bold">
                         <div className="flex items-center gap-2">
                           <img src='/images/zupass.svg' alt="Credential" className="image-class-name" />
-                          <span className='opacity-60'>Zuppass</span>
+                          <span className='opacity-60'>Zupass</span>
                         </div>
                       </Label>
                       {zupasspoll ? (

@@ -3,20 +3,15 @@ import Button from './ui/buttons/Button';
 import { Label } from './ui/Label';
 import { TbChevronDown } from 'react-icons/tb';
 import PieChartComponent from './ui/PieChart';
-import { PollOptionType, PollTypes } from '@/types';
+import { PollOptionType, PollTypes, VoteData } from '@/types';
 import { IconType } from 'react-icons';
 import styles from "@/styles/pollResult.module.css"
-
-interface VoteData {
-  id: string;
-  votes: number;
-  credential: string; 
-}
 
 
 interface IPollResultCredentialComponent {
   pollType: PollTypes,
-  credentialType: string,
+  credentialid: string,
+  credentialname: string,
   icon: IconType,
   optionsData: VoteData[], 
   isExpanded: boolean,
@@ -26,7 +21,8 @@ interface IPollResultCredentialComponent {
 const PollResultCredentialComponent: React.FC<IPollResultCredentialComponent> = ({
   icon: Credential_Icon,
   pollType,
-  credentialType,
+  credentialid,
+  credentialname,
   optionsData,
   isExpanded,
   toggleExpanded,
@@ -35,14 +31,14 @@ const PollResultCredentialComponent: React.FC<IPollResultCredentialComponent> = 
   return (
     <>
       <Button variant="primary" className={styles.dropdown} onClick={toggleExpanded}>
-        <div className={styles.cred_flex}><Credential_Icon />{credentialType}</div>
+        <div className={styles.cred_flex}><Credential_Icon />{credentialname}</div>
         <TbChevronDown />
       </Button>
       {isExpanded &&
       <PieChartComponent 
         voteData={optionsData} 
         votingType={`${pollType}`} 
-        credentialFilter={credentialType}
+        credentialFilter={credentialid}
       />
       }
     </>

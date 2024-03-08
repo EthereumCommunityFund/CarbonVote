@@ -36,8 +36,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             .select('*')
             .eq('poll_id', pollId);
 
-        if (options) { options.sort((a, b) => a.option_description.localeCompare(b.option_description)); }
-        console.log(options, "options")
 
         if (optionsError) throw optionsError;
 
