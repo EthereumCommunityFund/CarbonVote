@@ -283,11 +283,11 @@
   font-size: 13px;
   font-style: normal;
   font-weight: 400;
-  line-height: 140%;
-  /* 18.2px */
+  line-height: 140%; /* 18.2px */
   letter-spacing: 0.13px;
   opacity: 0.5;
-  margin: 20px 0;
+  margin: 10px 0;
+  padding-bottom: 5px; 
 }
 
 .cred_dropdown_container {

@@ -1,25 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
-import "easymde/dist/easymde.min.css";
+import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import "easymde/dist/easymde.min.css";
 
 interface TextEditorProps {
   value: string;
   onChange: (value: string) => void;
 }
 
-const SimpleMdeReactWithNoSSR = dynamic(() => import('react-simplemde-editor'), { ssr: false }); // Import SimpleMdeReact dynamically with no SSR
+// Import SimpleMdeReact dynamically with no SSR
+const SimpleMdeReactWithNoSSR = dynamic(() => import('react-simplemde-editor'), { ssr: false });
 
 const TextEditor: React.FC<TextEditorProps> = ({ value, onChange }) => {
-  const editorRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number>(400);
   const [isClient, setIsClient] = useState<boolean>(false);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.buttons !== 1 || !editorRef.current) return; // Check if left mouse button is pressed
-
-    const newHeight = e.clientY - editorRef.current.getBoundingClientRect().top;
-    setHeight(newHeight);
-  };
 
   useEffect(() => {
     setIsClient(true);
@@ -29,7 +22,9 @@ const TextEditor: React.FC<TextEditorProps> = ({ value, onChange }) => {
     <>
       {isClient &&
         // <div ref={editorRef} className="relative" style={{ height: `${height}px` }} onMouseMove={handleMouseMove}>
-        <SimpleMdeReactWithNoSSR value={value} onChange={onChange} style={{ height: `${height}px`, width: '800px' }} />
+        <div style={{ maxHeight: "400px", overflowY: "auto" ,width: "100%"}}>
+        <SimpleMdeReactWithNoSSR value={value} onChange={onChange} />
+      </div>
         // </div> 
       }
     </>

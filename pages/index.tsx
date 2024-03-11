@@ -1,4 +1,4 @@
-'use client'
+'use client';
 require('dotenv').config();
 import { useRouter } from 'next/router';
 import { useQuery } from 'react-query';
@@ -33,17 +33,26 @@ export default function Home() {
   const contractAbi = VotingContract.abi;
   //const contractAddress = contract_addresses.VotingContract;
 
-
   //const contractAddress = "0x5092F0161B330A7B2128Fa39a93b10ff32c0AE3e";
-  const contractAddress = "0xBc65A294FD0979645D77f75FD408220B79d44E45";
-
+  const contractAddress = '0xBc65A294FD0979645D77f75FD408220B79d44E45';
 
   const fetchPollsFromContract = async () => {
     const providerUrl = getProviderUrl();
     const provider = new ethers.JsonRpcProvider(providerUrl);
-    const contract = new ethers.Contract(contractAddress, contractAbi, provider);
-    console.log(contract, provider, 'provider');
-    const { names, descriptions, options, endTimes, pollTypes, pollMetadatas, startTimes } = await contract.getAllPolls();
+    const contract = new ethers.Contract(
+      contractAddress,
+      contractAbi,
+      provider
+    );
+    const {
+      names,
+      descriptions,
+      options,
+      endTimes,
+      pollTypes,
+      pollMetadatas,
+      startTimes,
+    } = await contract.getAllPolls();
     const polls = names.map((name: any, index: string | number) => {
       const pollType = pollTypes[index];
       return {
@@ -63,18 +72,33 @@ export default function Home() {
   const fetchPolls = async () => {
     const pollsFromContract = await fetchPollsFromContract();
     const { data: pollsFromAPI } = await fetchAllPollsFromAPI();
-    const indexesFromAPI = pollsFromAPI.flatMap((poll: Poll) => poll.contractpoll_index || []);
-    const indexesFromAPIAsString = indexesFromAPI.map((index: number) => index.toString());
-    const filteredPollsFromContract = pollsFromContract.filter(
-      (poll: Poll) => !indexesFromAPIAsString.includes(poll.id)
+    const indexesFromAPI = pollsFromAPI.flatMap(
+      (poll: Poll) => poll.contractpoll_index || []
+    );
+    const allNull = indexesFromAPI.every(
+      (index: number | null) => index === null
     );
 
-    return [...filteredPollsFromContract, ...pollsFromAPI].sort((a: Poll, b: Poll) => {
-      return b.startTime - a.startTime;
-    });
-  };
+    if (!allNull) {
+      const indexesFromAPIAsString = indexesFromAPI.map(
+        (index: number) => index?.toString() || ''
+      );
+      const filteredPollsFromContract = pollsFromContract.filter(
+        (poll: Poll) => !indexesFromAPIAsString.includes(poll.id)
+      );
 
-  // TODO: Order 
+      return [...filteredPollsFromContract, ...pollsFromAPI].sort(
+        (a: Poll, b: Poll) => {
+          return b.startTime - a.startTime;
+        }
+      );
+    } else {
+      return pollsFromAPI.sort((a: Poll, b: Poll) => {
+        return b.startTime - a.startTime;
+      });
+    }
+  };
+  // TODO: Order
   const { data: polls, isLoading, error } = useQuery('polls', fetchPolls);
 
   const handleCreatePoll = () => {
@@ -86,18 +110,26 @@ export default function Home() {
       <div className="flex gap-3 pt-5 px-5 bg-gradient-to-r from-red-400 to-white rounded-lg justify-center">
         <div className="flex flex-col gap-2.5 py-10 font-share-tech-mono lg:w-2/3">
           <Label className="text-[39px]">Carbonvote 2 - Beta</Label>
-          <Label className="lg:text-[69px] md:text-[59px]">Empowering Consensus for a Sustainable Future.</Label>
+          <Label className="lg:text-[69px] md:text-[59px]">
+            Empowering Consensus for a Sustainable Future.
+          </Label>
         </div>
       </div>
       <div className="px-[273px] flex flex-col gap-[30px]">
         <div className="flex justify-end">
-          <Button className="rounded-full" leftIcon={PlusCirceIcon} onClick={handleCreatePoll}>
+          <Button
+            className="rounded-full"
+            leftIcon={PlusCirceIcon}
+            onClick={handleCreatePoll}
+          >
             Create a Poll
           </Button>
         </div>
-        {isLoading && <div className="flex justify-center items-center h-full">
-          <Loader />
-        </div>}
+        {isLoading && (
+          <div className="flex justify-center items-center h-full">
+            <Loader />
+          </div>
+        )}
         <div className="flex flex-col gap-2.5 h-[250px]">
           {polls?.map((poll: Poll, index: number) => {
             return (
