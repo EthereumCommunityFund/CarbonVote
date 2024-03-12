@@ -71,5 +71,12 @@ export const CREDENTIALS = {
 };
 
 // TODO: improve naming (ethholding?)
+// process.env always not working for me
 //export const CONTRACT_ADDRESS = "0x5092F0161B330A7B2128Fa39a93b10ff32c0AE3e"
-export const CONTRACT_ADDRESS = "0xBc65A294FD0979645D77f75FD408220B79d44E45"
+//export const CONTRACT_ADDRESS = "0xBc65A294FD0979645D77f75FD408220B79d44E45"
+/*export const CONTRACT_ADDRESS = process.env.NODE_ENV === "test"
+  ? "0x2a7562Beb6653fC1817Ae51af79465d89cA4f945"
+  : "";*/
+export const CONTRACT_ADDRESS = "0x2a7562Beb6653fC1817Ae51af79465d89cA4f945";
+export const TOPIC_CASTVOTE = "0xcb87df07b1c304492bd875a5c8b98672eca500939412809ea229afef1d745188";
+export const TOPIC_CHANGEVOTE = "0xf75b557412ca4429d4ef66a92f3e3aa3becb79b047d943377283ebf79552e3f8"

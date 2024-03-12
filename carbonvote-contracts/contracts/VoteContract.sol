@@ -8,9 +8,9 @@ contract VotingContract {
         Protocol_Guild
     }
 
-    event VoteChanged(address voter, uint256 pollIndex, uint256 optionIndex);
-    event VoteRemoved(address voter, uint256 pollIndex, uint256 optionIndex);
-    event VoteCasted(address voter, uint256 pollIndex, uint256 optionIndex);
+    event VoteChanged(address indexed voter, uint256 indexed pollIndex, uint256 indexed optionIndex);
+    event VoteRemoved(address indexed voter, uint256 indexed pollIndex, uint256 indexed optionIndex);
+    event VoteCasted(address indexed voter, uint256 indexed pollIndex, uint256 indexed optionIndex);
 
     address[] public allowedVoters = [
     0xEB34BD135aFc3054667ca74C9d19fbCD7D05F79F,

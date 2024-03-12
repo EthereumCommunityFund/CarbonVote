@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "D:\\Carbonvotte\\9\\CarbonVote\\carbonvote-contracts\\contracts\\VoteContract.sol": {
-      "lastModificationDate": 1709842500833,
-      "contentHash": "dba4e863318f0ffefa428ec7a26d879e",
+      "lastModificationDate": 1710207059336,
+      "contentHash": "3d3bac1f93d4440600a0877d42106d98",
       "sourceName": "contracts/VoteContract.sol",
       "solcConfig": {
         "version": "0.8.20",

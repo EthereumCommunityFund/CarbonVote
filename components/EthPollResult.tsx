@@ -1,63 +1,196 @@
 import React, { useState } from 'react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartOptions } from "chart.js";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  ChartOptions,
+} from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import { PollOptionType } from '@/types';
 import Button from './ui/buttons/Button';
 import { TbChevronDown } from 'react-icons/tb';
-import styles from "@/styles/pollResult.module.css";
+import styles from '@/styles/pollResult.module.css';
 import { Label } from './ui/Label';
-import { EthIcon, GitCoinIcon, HeadCountIcon, PoapIcon, ProtocolGuildIcon, ZupassHolderIcon, StakerIcon} from './icons';
+import {
+  EthIcon,
+  GitCoinIcon,
+  HeadCountIcon,
+  PoapIcon,
+  ProtocolGuildIcon,
+  ZupassHolderIcon,
+  StakerIcon,
+} from './icons';
+import { isValidUuidV4 } from '@/utils/index';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface ContractPollResultComponentProps {
-  aggregatedData: PollOptionType[];
+  allAggregatedData: {
+    id: string;
+    aggregatedData: PollOptionType[];
+  }[];
   currentBlock: number;
   endBlock: number;
+  onRefresh: () => void;
 }
 
-export const ContractPollResultComponent: React.FC<ContractPollResultComponentProps> = ({ aggregatedData,currentBlock,endBlock }) => {
-  const [expandedState, setExpandedState] = useState<boolean>(false);
-  const totalEthSum = aggregatedData.reduce((acc, data) => acc + parseFloat(data.totalEth || '0'), 0);
-  const generatePieChartData = () => {
-    const labels = aggregatedData.map(data => data.option_description);
-    const votes = aggregatedData.map(data => parseFloat(data.totalEth || '0'));
-    const backgroundColor: string[] = ['#88F2D5', '#E3F29C', '#EA66A4'];
+interface ExpandedStates {
+  [key: string]: boolean;
+}
 
+interface TransactionTableProps {
+  aggregatedData: PollOptionType[];
+}
+
+export const ContractPollResultComponent: React.FC<
+  ContractPollResultComponentProps
+> = ({ allAggregatedData, currentBlock, endBlock, onRefresh }) => {
+  const [expandedStates, setExpandedStates] = useState<ExpandedStates>({});
+  const toggleExpandedState = (id: string) => {
+    setExpandedStates((prevStates) => ({
+      ...prevStates,
+      [id]: !(prevStates as any)[id],
+    }));
+  };
+  const generatePieChartData = (aggregatedData: PollOptionType[]) => {
+    const labels = aggregatedData.map((data) => data.option_description);
+    const votes = aggregatedData.map((data) =>
+      parseFloat(data.totalEth || '0')
+    );
+    const backgroundColor: string[] = [
+      '#88F2D5',
+      '#E3F29C',
+      '#EA66A4',
+      '#FFA07A',
+      '#20B2AA',
+      '#9370DB',
+      '#FFD700',
+      '#FF69B4',
+    ];
+    console.log(allAggregatedData, 'all data');
     return {
       labels,
-      datasets: [{
-        data: votes,
-        backgroundColor: backgroundColor,
-        hoverBackgroundColor: backgroundColor,
-      }]
+      datasets: [
+        {
+          data: votes,
+          backgroundColor: backgroundColor,
+          hoverBackgroundColor: backgroundColor,
+        },
+      ],
     };
+  };
+  const TransactionTable: React.FC<TransactionTableProps> = ({
+    aggregatedData,
+  }) => {
+    const optionsCount = aggregatedData.length;
+    const columnWidth = `${100 / optionsCount}%`;
+    return (
+      <div style={{ overflowX: 'auto' }}>
+        <table
+          style={{ width: '100%', tableLayout: 'fixed', textAlign: 'center' }}
+        >
+          <thead>
+            <tr>
+              {aggregatedData.map((data, index) => (
+                <th key={index} style={{ width: columnWidth }}>
+                  {data.option_description}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {aggregatedData[0]?.votersData.map((_: any, rowIndex: number) => (
+              <tr key={rowIndex}>
+                {aggregatedData.map((columnData, columnIndex) => (
+                  <td key={columnIndex} style={{ width: columnWidth }}>
+                    {columnData.votersData[rowIndex]?.address && (
+                      <a
+                        href={`https://sepolia.etherscan.io/tx/${columnData.votersData[rowIndex]?.voteHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ textDecoration: 'none' }}
+                      >
+                        {`${columnData.votersData[rowIndex].address.substring(0, 6)}...${columnData.votersData[rowIndex].address.substring(columnData.votersData[rowIndex].address.length - 4)}`}
+                      </a>
+                    )}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
   };
 
   return (
     <div className={styles.results_container}>
-    <div className='w-full flex flex-col gap-2.5'>
-        <Label className={styles.cred_header}><EthIcon />Ether Holding Credential</Label>
-        <Label className={styles.cred_header_small}>Ether Holding results are updated every n block until the end of the poll's selected time.</Label>
-      <Button variant="primary" className={styles.dropdown} onClick={() => setExpandedState(!expandedState)}>
-      <Label className={styles.cred_flex}><EthIcon />Ether Holding Results</Label>
-        <TbChevronDown />
-      </Button>
+      <div className="w-full flex flex-col gap-2.5">
+        <Label className={styles.cred_header}>
+          <EthIcon />
+          Ether Holding Credential
+        </Label>
+        <Label className={styles.cred_header_small}>
+          Ether Holding results are updated every n block until the end of the
+          poll's selected time.
+        </Label>
       </div>
-      {expandedState && (
-        <>
-        <div className='flex flex-col'>
-        <div>Total Eth: {totalEthSum.toFixed(2)}</div>
+      <div className="w-full flex flex-col gap-2.5">
+        {allAggregatedData.map(({ id, aggregatedData }) => (
+          <div key={id} className="w-full flex flex-col gap-2.5 mt-5">
+            <Button
+              variant="primary"
+              className={styles.dropdown}
+              onClick={() => toggleExpandedState(id)}
+            >
+              <Label className={styles.cred_flex}>
+                <EthIcon />
+                {!isValidUuidV4(id)
+                  ? 'Ether Holding Smart Contract Results'
+                  : 'Ether Holding IPFS Results'}
+              </Label>
+              <TbChevronDown />
+            </Button>
+            {expandedStates[id] && (
+              <div>
+                <div className="flex flex-col">
+                  Total Eth:{' '}
+                  {aggregatedData
+                    .reduce(
+                      (acc, data) => acc + parseFloat(data.totalEth || '0'),
+                      0
+                    )
+                    .toFixed(2)}
+                </div>
+                <div className="flex flex-col">
+                  Block Status: {currentBlock} / {endBlock}
+                </div>
+                <Button onClick={onRefresh}>Refresh</Button>
+                <div className={styles.pie}>
+                  {' '}
+                  <Pie
+                    data={generatePieChartData(aggregatedData)}
+                    options={{ maintainAspectRatio: false }}
+                  />
+                </div>
+                <div className="flex flex-col items-center">
+                  <Button
+                    onClick={() => toggleExpandedState(`${id}-transactions`)}
+                  >
+                    View Transactions
+                  </Button>
+                </div>
+                {expandedStates[`${id}-transactions`] && (
+                  <div style={{ width: '100%' }}>
+                    <TransactionTable aggregatedData={aggregatedData} />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
-      <div className='flex flex-col'>
-        <div>Block Status: {currentBlock} / {endBlock}</div>
-      </div>
-        <div className={styles.pie}>
-          <Pie data={generatePieChartData()} options={{ maintainAspectRatio: false }} />
-        </div>
-        </>
-      )}
     </div>
   );
 };
-

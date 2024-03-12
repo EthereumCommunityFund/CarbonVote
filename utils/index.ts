@@ -1,4 +1,4 @@
-import { PollOptionType, Option } from "@/types";
+import { PollOptionType} from "@/types";
 
 /*export const calculateTimeRemaining = (endDate: string | bigint | number): string | null => {
   let endTime: Date | null = null;

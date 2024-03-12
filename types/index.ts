@@ -23,6 +23,11 @@ export type CredentialType = {
   credential_detail: string;
 }
 
+export interface AllAggregatedDataType {
+  id: string;
+  aggregatedData: PollOptionType[];
+}
+
 export type PollOptionType = {
   id: string;
   pollId: string;

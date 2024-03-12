@@ -12,7 +12,7 @@ import { Loader } from '@/components/ui/Loader';
 import { ethers } from 'ethers';
 import VotingContract from './../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
 import { getProviderUrl } from '@/utils/getProviderUrl';
-
+import { CONTRACT_ADDRESS } from '@/src/constants';
 interface Poll {
   name: string;
   title: string;
@@ -33,14 +33,12 @@ export default function Home() {
   const contractAbi = VotingContract.abi;
   //const contractAddress = contract_addresses.VotingContract;
 
-  //const contractAddress = "0x5092F0161B330A7B2128Fa39a93b10ff32c0AE3e";
-  const contractAddress = '0xBc65A294FD0979645D77f75FD408220B79d44E45';
 
   const fetchPollsFromContract = async () => {
     const providerUrl = getProviderUrl();
     const provider = new ethers.JsonRpcProvider(providerUrl);
     const contract = new ethers.Contract(
-      contractAddress,
+      CONTRACT_ADDRESS,
       contractAbi,
       provider
     );
