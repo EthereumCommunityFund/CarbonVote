@@ -344,3 +344,16 @@
     color: #fff;
     width: 20px;
 }
+
+.countdown {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 500;
+    color: #666666;
+    font-size: 14px;
+}
+
+.countdown_icon {
+    opacity: 0.5;
+}

@@ -106,7 +106,7 @@ export default function Home() {
   return (
     <div className="flex flex-col p-5 gap-2.5 text-black">
       <div className="flex gap-3 pt-5 px-5 bg-gradient-to-r from-red-400 to-white rounded-lg justify-center">
-        <div className="flex flex-col gap-2.5 py-10 font-share-tech-mono lg:w-2/3">
+        <div className="flex flex-col gap-2.5 py-10 font-share-tech-monorounded-lg lg:w-2/3">
           <Label className="text-[39px]">Carbonvote 2 - Beta</Label>
           <Label className="lg:text-[69px] md:text-[59px]">
             Empowering Consensus for a Sustainable Future.

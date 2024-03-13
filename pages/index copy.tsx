@@ -1514,15 +1514,14 @@ const PollPage = () => {
                 </div>
               )}
 
-              <div className={styles.countdown}>
-                <img src='/images/clock.svg' className={styles.countdown_icon} />
+              <div className="flex gap-1 opacity-60">
+                <ClockIcon />
                 <CountdownTimer endTime={poll.endTime} />
               </div>
-
             </div>
 
             <div className="flex flex-col gap-1">
-              <Label className="text-black uppercase opacity-50 text-base">Motion:</Label>
+              <Label className="text-black opacity-50 text-base">Motion:</Label>
               <Label className="text-2xl">{poll?.title || poll?.name}</Label>
             </div>
           </div>

@@ -6,6 +6,7 @@ import CountdownTimer from '../ui/CountDownTimer';
 import { Label } from '../ui/Label';
 import { useRouter } from 'next/router';
 import { useUserPassportContext } from '@/context/PassportContext';
+import styles from "styles/pollCard.module.css"
 
 interface IPollCard {
   id: string;
@@ -72,28 +73,38 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
 
   return (
     <div className="bg-white rounded-lg p-3 hover:cursor-pointer w-full flex flex-col justify-between" onClick={handleClickItem}>
-      {/* <!-- Header with Title and Live/Closed Status --> */}
-      <div className="flex justify-between">
-        <Label className="text-xl font-bold">{title}
-        </Label>
+
+      <div className={styles.status_countdown_flex}>
         <div className={`${isLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'} px-2.5 py-1 rounded-lg`}>
           <Label className={`${isLive ? 'text-[#44b678]' : 'text-[#656565]'}`}>
             {isLive ? 'Live' : 'Closed'}
           </Label>
         </div>
+        {/* <!-- Time Remaining (Shown only if Live) --> */}
+        {isLive && (
+          <div className={styles.countdown}>
+            <img src='/images/clock.svg' className={styles.countdown_icon} />
+            <CountdownTimer endTime={endTime} />
+          </div>
+        )}
+      </div>
+      {/* <!-- Header with Title and Live/Closed Status --> */}
+      <div className="flex justify-between">
+        <Label className="text-xl font-bold">{title}
+        </Label>
+
       </div>
 
       {/* <!-- Description --> */}
       <span dangerouslySetInnerHTML={{ __html: removeImageTags(shortDescription) }} />
 
 
-      {/* <!-- Time Remaining (Shown only if Live) --> */}
-      {isLive && (
-        <div className="flex items-center gap-3.5 mt-3 text-gray-500">
-          <ClockIcon />
-          <CountdownTimer endTime={endTime} />
-        </div>
-      )}
+      <div className={styles.credentials_flex}>
+        <div>
+          <img src='/images/fingerprint.svg' />
+          Credentials /
+        </div> <span> Zupass, </span><span> EthHolding, </span><span> POAPs, </span><span> ProtocolGuild, </span><span> +1</span>
+      </div>
     </div>
 
   );
