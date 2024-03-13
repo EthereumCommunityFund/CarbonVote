@@ -72,7 +72,7 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
   const shortDescription = cleanDescription.length > 200 ? cleanDescription.substring(0, 200) + '...' : cleanDescription;
 
   return (
-    <div className="bg-white rounded-lg p-3 hover:cursor-pointer w-full flex flex-col justify-between" onClick={handleClickItem}>
+    <div className={styles.poll_card} onClick={handleClickItem}>
 
       <div className={styles.status_countdown_flex}>
         <div className={`${isLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'} px-2.5 py-1 rounded-lg`}>

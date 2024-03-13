@@ -462,7 +462,7 @@ const CreatePollPage = () => {
   };
 
   return (
-    <div className="flex gap-20 px-20 py-5 text-black w-full justify-center overflow-y-auto">
+    <div className="flex gap-20 px-20 py-5 text-black w-800 justify-center overflow-y-auto">
       <div className="flex flex-col gap-5 py-5">
         <div>
           <Button
@@ -540,7 +540,7 @@ const CreatePollPage = () => {
             <div className={styles.input_wrap_flex}>
               <Label className={styles.input_header}>End Date/Time</Label>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DateTimePicker value={endDateTime} onChange={setEndDateTime} />
+                <DateTimePicker value={endDateTime} onChange={setEndDateTime} className={styles.date} />
               </LocalizationProvider>
             </div>
           </div>
@@ -596,19 +596,23 @@ const CreatePollPage = () => {
                         onChange={handleEthHoldingRadioChange}
                         className={styles.hidden_radio}
                       />
-                      <div>
+                      <div className={styles.radio_p_container}>
                         <p>
-                          Classic Carvonvote: Select this option to implement a
+                          <b>Classic Carvonvote</b>: Select this option to implement a
                           smart contract for the vote tallying process.
                         </p>
-                        <p>
-                          Poll creators and voters will need to pay for
-                          transaction fees for deployment of contract and
-                          voting. (SC is under auditing)
-                        </p>
+                        <div className={styles.radio_span}>
+                          <img src="/images/info_circle.svg" alt="Info" />
+                          <span>
+                            Poll creators and voters will need to pay for
+                            transaction fees for deployment of contract and
+                            voting. (SC is under auditing)
+                          </span>
+                        </div>
+
                       </div>
 
-                      <img src="/images/info_circle.svg" alt="Info" />
+
                     </label>
                     <label className={styles.radio_flex}>
                       <input
@@ -619,14 +623,19 @@ const CreatePollPage = () => {
                         onChange={handleEthHoldingRadioChange}
                         className={styles.hidden_radio}
                       />
-                      <p>
-                        Carbonvote V2: Zero Transaction Costs for Poll Creators
-                        and Voters: The voting process is conducted off-chain.{' '}
-                      </p>
-                      <p>
-                        Verification is ensured through IPFS/Ceramic.
-                        (Recommmend)
-                      </p>
+                      <div className={styles.radio_p_container}>
+                        <p>
+                          <b>Carbonvote V2</b>: Zero Transaction Costs for Poll Creators
+                          and Voters: The voting process is conducted off-chain.{' '}
+                        </p>
+                        <div className={styles.radio_span}>
+                          <img src="/images/info_circle.svg" alt="Info" />
+                          <span>
+                            Verification is ensured through IPFS/Ceramic.
+                            (Recommmend)
+                          </span>
+                        </div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -660,9 +669,9 @@ const CreatePollPage = () => {
                   </p>
                   <div className={styles.cred_content}>
                     <div className="flex flex-col gap-2">
-                      <Label className="text-2xl font-semibold">
+                      {/* <Label className="text-2xl font-semibold">
                         Select Event
-                      </Label>
+                      </Label> */}
                       <POAPEvents />
                     </div>
 
@@ -770,19 +779,22 @@ const CreatePollPage = () => {
                         onChange={handleProtocolGuildRadioChange}
                         className={styles.hidden_radio}
                       />
-                      <div>
+                      <div className={styles.radio_p_container}>
                         <p>
-                          Classic Carvonvote : Select this option to implement a
+                          <b>Classic Carvonvote</b>: Select this option to implement a
                           smart contract for the vote tallying process.{' '}
                         </p>
-                        <p>
-                          Poll creators and voters will need to pay for
-                          transaction fees for deployment of contract and
-                          voting. Voters can send transaction from wallets
-                          off-site. (SC is under auditing)
-                        </p>
+                        <div className={styles.radio_span}>
+                          <img src="/images/info_circle.svg" alt="Info" />
+                          <span>
+                            Poll creators and voters will need to pay for
+                            transaction fees for deployment of contract and
+                            voting. Voters can send transaction from wallets
+                            off-site. (SC is under auditing)
+                          </span>
+                        </div>
                       </div>
-                      <img src="/images/info_circle.svg" alt="Info" />
+
                     </label>
                     <label className={styles.radio_flex}>
                       <input
@@ -793,17 +805,20 @@ const CreatePollPage = () => {
                         onChange={handleProtocolGuildRadioChange}
                         className={styles.hidden_radio}
                       />
-                      <div>
+                      <div className={styles.radio_p_container}>
                         <p>
-                          Carbonvote V2: Zero Transaction Costs for Poll
+                          <b>Carbonvote V2</b>: Zero Transaction Costs for Poll
                           Creators and Voters: The voting process is conducted
                           off-chain.{' '}
                         </p>
-                        <p>
-                          Requires voters to sign in with Protocol Guild
-                          recognised address. Verification is ensured through
-                          IPFS/Ceramic.
-                        </p>
+                        <div className={styles.radio_span}>
+                          <img src="/images/info_circle.svg" alt="Info" />
+                          <span>
+                            Requires voters to sign in with Protocol Guild
+                            recognised address. Verification is ensured through
+                            IPFS/Ceramic.
+                          </span>
+                        </div>
                       </div>
                     </label>
                   </div>
@@ -882,9 +897,9 @@ const CreatePollPage = () => {
               <div className={styles.multiple_cred_info2}>
                 <img src="/images/nes.svg" alt="Nested Info" />
                 {selectedNumber === 2 &&
-                selectedEthHoldingOption.length === 1 &&
-                selectedEthHoldingOption[0] === 'on-chain' &&
-                selectedProtocolGuildOption === 'on-chain' ? (
+                  selectedEthHoldingOption.length === 1 &&
+                  selectedEthHoldingOption[0] === 'on-chain' &&
+                  selectedProtocolGuildOption === 'on-chain' ? (
                   <div>
                     <p>
                       <strong>
@@ -908,16 +923,16 @@ const CreatePollPage = () => {
             </div>
           )}
         </div>
-        <div className="flex gap-2.5">
+        <div className={styles.bottom_cta_container}>
           <Button
-            className={styles.bottom_cta}
+            className={styles.bottom_buttons}
             leftIcon={FiX}
             onClick={handleBack}
           >
             Discard
           </Button>
           <Button
-            className={styles.bottom_cta}
+            className={styles.bottom_buttons}
             leftIcon={FiPlusCircle}
             isLoading={isLoading}
             onClick={createNewPoll}

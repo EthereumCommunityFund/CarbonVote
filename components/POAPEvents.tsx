@@ -108,9 +108,8 @@ const POAPEvents = () => {
         )}
 
         <Button
-          className={`${styles.bottom_cta} button-font-size`}
-          style={{ width: '20%' }}
-          leftIcon={FiPlus}
+          className={styles.bottom_cta}
+          rightIcon={FiPlus}
           onClick={addEthPoapEvents}
         >
           Auto-add Ethereum event POAPs

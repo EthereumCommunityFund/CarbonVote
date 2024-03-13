@@ -1,5 +1,6 @@
 'use client';
 require('dotenv').config();
+import { useState } from "react"
 import { useRouter } from 'next/router';
 import { useQuery } from 'react-query';
 import { fetchAllPolls as fetchAllPollsFromAPI } from '@/controllers/poll.controller';
@@ -13,6 +14,7 @@ import { ethers } from 'ethers';
 import VotingContract from './../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
 import { getProviderUrl } from '@/utils/getProviderUrl';
 import { CONTRACT_ADDRESS } from '@/src/constants';
+import styles from "styles/pollList.module.css"
 interface Poll {
   name: string;
   title: string;
@@ -26,6 +28,24 @@ interface Poll {
   id: string;
   contractpoll_index?: number[];
 }
+
+interface Item {
+  id: number;
+  name: string;
+  type: string;
+  category: string;
+}
+
+const data: Item[] = [
+  { id: 1, name: 'Item 1', type: 'Type A', category: 'Category 1' },
+  { id: 2, name: 'Item 2', type: 'Type B', category: 'Category 2' },
+  { id: 3, name: 'Item 3', type: 'Type A', category: 'Category 1' },
+  { id: 4, name: 'Item 4', type: 'Type C', category: 'Category 2' },
+  { id: 5, name: 'Item 5', type: 'Type B', category: 'Category 1' },
+];
+
+const filterTypes: string[] = ['View All', 'Type A', 'Type B', 'Type C'];
+const filterCategories: string[] = ['View All', 'Category 1', 'Category 2'];
 
 export default function Home() {
   const router = useRouter();
@@ -103,8 +123,36 @@ export default function Home() {
     router.push(`/create`);
   };
 
+  const [selectedType, setSelectedType] = useState<string>('View All');
+  const [selectedCategory, setSelectedCategory] = useState<string>('View All');
+  const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+
+  const handleTypeChange = (value: string) => {
+    setSelectedType(value);
+    filterItems(value, selectedCategory);
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+    filterItems(selectedType, value);
+  };
+
+  const filterItems = (type: string, category: string) => {
+    const filtered = data.filter(item => {
+      if (type !== 'View All' && category !== 'View All') {
+        return item.type === type && item.category === category;
+      } else if (type !== 'View All') {
+        return item.type === type;
+      } else if (category !== 'View All') {
+        return item.category === category;
+      }
+      return true;
+    });
+    setFilteredItems(filtered);
+  };
+
   return (
-    <div className="flex flex-col p-5 gap-2.5 text-black">
+    <div className={styles.body_bg}>
       <div className="flex gap-3 pt-5 px-5 bg-gradient-to-r from-red-400 to-white rounded-lg justify-center">
         <div className="flex flex-col gap-2.5 py-10 font-share-tech-monorounded-lg lg:w-2/3">
           <Label className="text-[39px]">Carbonvote 2 - Beta</Label>
@@ -114,7 +162,24 @@ export default function Home() {
         </div>
       </div>
       <div className="px-[273px] flex flex-col gap-[30px]">
-        <div className="flex justify-end">
+        <div className={styles.filter_create_flex}>
+          <div className={styles.filter_dropdowns}>
+            <select value={selectedType} onChange={e => handleTypeChange(e.target.value)}>
+              {filterTypes.map((type, index) => (
+                <option key={index} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+
+            <select value={selectedCategory} onChange={e => handleCategoryChange(e.target.value)}>
+              {filterCategories.map((category, index) => (
+                <option key={index} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
           <Button
             className="rounded-full"
             leftIcon={PlusCirceIcon}
@@ -150,6 +215,6 @@ export default function Home() {
           })}
         </div>
       </div>
-    </div>
+    </div >
   );
 }

@@ -42,3 +42,13 @@
   gap: 10px;
   margin-bottom: 10px;
 }
+
+.poll_card {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #E6E6E6;
+  border-radius: 10px;
+  padding: 15px;
+  cursor: pointer;
+}

@@ -1,0 +1,30 @@
+.filter_create_flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.filter_dropdowns {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.filter_dropdowns select {
+  padding: 10px;
+  border-radius: 10px;
+  background: #EEEEEE;
+  color: #4D4D4D;
+  font-weight: 500;
+}
+
+.body_bg {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding: 50px;
+  height: 100%;
+  background: #fff;
+}
