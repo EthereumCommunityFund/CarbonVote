@@ -357,3 +357,46 @@
 .countdown_icon {
     opacity: 0.5;
 }
+
+.cred_btn {
+    background: transparent;
+    border-radius: 10px;
+}
+
+.cred_btn:hover {
+    background: #dbdbdb;
+}
+
+.cred_btn .zupass_not_logged {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cred_btn .zupass_logged {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.zuconnect {
+    background: #000;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 5px 5px 10px;
+    border-radius: 50px;
+}
+
+.zuconnect img {
+    width: 35px;
+}
+
+.zuzalu {
+    background: #d0d0d0;
+    color: #000;
+    padding: 6px 15px;
+    border-radius: 50px;
+}

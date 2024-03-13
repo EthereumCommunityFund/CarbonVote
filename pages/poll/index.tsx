@@ -1871,13 +1871,25 @@ const PollPage = () => {
                         ))
                     ) : (
                       <Button
-                        className="outline-none h-10 items-center rounded-full"
-                        leftIcon={BoltIcon}
+                        className={styles.cred_btn}
+
                         onClick={signIn}
                       >
                         {isPassportConnected
-                          ? 'Zupass Connected'
-                          : 'Connect Passport'}
+                          ?
+                          <div className={styles.zupass_logged}>
+                            <div className={styles.zuconnect}><span>ZuConnect Resident</span>
+                              <img src="/images/check.svg" /></div>
+                            <span>OR</span>
+                            <div className={styles.zuzalu}>Zuzalu Resident</div>
+                          </div>
+                          :
+                          <div className={styles.zupass_not_logged}>
+                            <img src='/images/zupass_login.svg' />
+                            <span>Zupass Login</span>
+                          </div>
+
+                        }
                       </Button>
                     ))}
                   {(() => {
