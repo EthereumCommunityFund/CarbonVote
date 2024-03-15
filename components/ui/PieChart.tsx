@@ -22,14 +22,12 @@ const PieChartComponent: React.FC<IPieChartComponent> = ({ voteData, votingType,
   let totalVotes = 0;
   const zupassIds = [CREDENTIALS.DevConnect.id, CREDENTIALS.ZuConnectResident.id, CREDENTIALS.ZuzaluResident.id];
   
-  if (credentialFilter) {
-    if (credentialFilter === 'zupass') {
-      filteredData = voteData.filter(data => zupassIds.includes(data.credential));
-    } else {
-      filteredData = voteData.filter(data => data.credential === credentialFilter);
-    }
-    totalVotes = filteredData.reduce((acc, cur) => acc + cur.votes, 0);
+  if (credentialFilter === 'All') {
+    filteredData = voteData;
+  }else {
+    filteredData = voteData.filter(data => data.credential === credentialFilter);
   }
+  totalVotes = filteredData.reduce((acc, cur) => acc + cur.votes, 0);
   
   const labels = filteredData.map(data => data.description || 'No description');
   const votes = filteredData.map(data => data.votes);

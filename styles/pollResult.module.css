@@ -65,3 +65,19 @@
     height: 300px;
     margin: auto;
 }
+
+.select_dropdown {
+    width: 100%;
+    max-width: 300px; 
+    margin: 0 auto; 
+    display: block; 
+
+}
+
+.cred_dropdown_container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+  

@@ -26,7 +26,6 @@ const PollResultCredentialComponent: React.FC<IPollResultCredentialComponent> = 
   isExpanded,
   toggleExpanded,
 }) => {
-  const shouldShowOptions = [CREDENTIALS.DevConnect.name, CREDENTIALS.ZuConnectResident.name, CREDENTIALS.ZuzaluResident.name].some(num => credentialname.includes(num));
 
   return (
     <>
@@ -36,13 +35,6 @@ const PollResultCredentialComponent: React.FC<IPollResultCredentialComponent> = 
       </Button>
       {isExpanded && (
         <>
-          {shouldShowOptions && (
-            <div className={styles.optionsContainer}>
-              {credentialname.includes(CREDENTIALS.DevConnect.name) && <div className={styles.optionItem}>Devconnect</div>}
-              {credentialname.includes(CREDENTIALS.ZuConnectResident.name) && <div className={styles.optionItem}>Zuconnect Resident</div>}
-              {credentialname.includes(CREDENTIALS.ZuzaluResident.name) && <div className={styles.optionItem}>Zuzalu Resident</div>}
-            </div>
-          )}
           <PieChartComponent
             voteData={optionsData}
             votingType={`${pollType}`}

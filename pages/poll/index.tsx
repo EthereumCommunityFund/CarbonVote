@@ -316,7 +316,7 @@ const PollPage = () => {
     if (latestBlockNumber !== null) {
       getOptionVoteCounts();
     }
-  }, [latestBlockNumber, refreshCount, ]);
+  }, [latestBlockNumber, setRefreshCount, ]);
 
   const handleOptionSelect = (
     optionId: string,
@@ -426,6 +426,7 @@ const PollPage = () => {
 
   useEffect(() => {
     checkAndSetCredentialsAndVotes();
+    setRefreshCount;
   }, [
     isFetchFinish,
     account,
