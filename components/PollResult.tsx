@@ -49,11 +49,11 @@ export const PollResultComponent = ({
     )
   );
   const [showZupassDetails, setShowZupassDetails] = useState(false);
-  const [selectedZupassCredential, setSelectedZupassCredential] = useState<string>();
+  const [selectedZupassCredential, setSelectedZupassCredential] =
+    useState<string>('');
   const toggleExpanded = (id: string) => {
     setExpandedStates((prev) => ({ ...prev, [id]: !prev[id] }));
   };
-  console.log(optionsData, 'optionsData');
   const zupassIds = [
     CREDENTIALS.DevConnect.id,
     CREDENTIALS.ZuConnectResident.id,
@@ -101,7 +101,6 @@ export const PollResultComponent = ({
     };
 
     mergedZupassVoteData = mergeVoteData(voteZupassCredentials);
-    console.log(mergedZupassVoteData, 'mergedZupassVoteData');
   }
 
   const areAllExpanded = Object.values(expandedStates).every(
@@ -133,10 +132,10 @@ export const PollResultComponent = ({
   };
 
   const zupassOptions = [
-    { value: "all", label: "All" },
-    ...zupassCredentials.map(credential => ({
-      value: credential.id, 
-      label: credential.credential
+    { value: 'all', label: 'All' },
+    ...zupassCredentials.map((credential) => ({
+      value: credential.id,
+      label: credential.credential,
     })),
   ];
 
@@ -150,8 +149,6 @@ export const PollResultComponent = ({
       credential.id !== CREDENTIALS.EthHoldingOffchain.id &&
       credential.credential !== 'EthHolding on-chain'
   );
-
-  console.log(normalCredentials, 'final credentials');
 
   return (
     <div className={styles.results_container}>
@@ -193,37 +190,38 @@ export const PollResultComponent = ({
             <TbChevronDown />
           </Button>
           {showZupassDetails && (
-            <div className={styles.cred_dropdown_container}>
-              <select
-                onChange={handleZupassSelect}
-                className={styles.select_dropdown}
-                title="Zupass Credential"
-              >
-                <option value="" disabled>
-                  Select Credentials
-                </option>
-                {zupassOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
+            <div>
+              <div className={styles.cred_dropdown_container}>
+                <select
+                  onChange={handleZupassSelect}
+                  className={styles.select_dropdown}
+                  title="Zupass Credential"
+                >
+                  <option value="" disabled>
+                    Select Credentials
                   </option>
-                ))}
-              </select>
+                  {zupassOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {selectedZupassCredential === 'all' || selectedZupassCredential === ''  ? (
+                <PieChartComponent
+                  voteData={mergedZupassVoteData}
+                  votingType={`${pollType}`}
+                  credentialFilter="All"
+                />
+              ) : (
+                <PieChartComponent
+                  voteData={optionsData}
+                  votingType={`${pollType}`}
+                  credentialFilter={selectedZupassCredential as string}
+                />
+              )}
             </div>
           )}
-           {selectedZupassCredential === 'all' ? (
-      <PieChartComponent
-        voteData={mergedZupassVoteData}
-        votingType={`${pollType}`}
-        credentialFilter="All"
-      />
-    ) : (
-      
-      <PieChartComponent
-        voteData={optionsData} 
-        votingType={`${pollType}`}
-        credentialFilter={selectedZupassCredential as string}
-      />
-    )}
         </div>
       )}
     </div>

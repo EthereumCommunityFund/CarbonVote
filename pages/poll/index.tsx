@@ -66,7 +66,7 @@ import { SoloStakerList } from '@/src/solostaker';
 import { getLatestBlockNumber } from '@/utils/getLatestBlockNumber';
 import { useLatestBlock } from '@/utils/useLatestBlock';
 import { identity } from 'lodash';
-import { getEtherscanLogs } from '@/utils/getVoteTransactionHash';
+import { getEthersLogs } from '@/utils/getVoteTransactionHash';
 
 const PollPage = () => {
   const router = useRouter();
@@ -103,6 +103,7 @@ const PollPage = () => {
   const [pollType, setPollType] = useState<string>();
   const [endBlockNumber, setEndBlockNumber] = useState<number>();
   const [isEthHoldingPoll, setIsEthHoldingPoll] = useState<boolean>(false);
+  const [isContractPoll, setIsContractPoll] = useState<boolean>(false);
   const [credentialTable, setNestedCredentialTable] = useState<
     CredentialTable[]
   >([]);
@@ -110,6 +111,10 @@ const PollPage = () => {
     CredentialTable[]
   >([]);
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
+  const [isAddressExpanded, setIsAddressExpanded] = useState(false);
+  const handleAddressToggleExpanded = () => {
+    setIsAddressExpanded(!isAddressExpanded);
+  };
   const [isFetchFinish, setIsFetchFinish] = useState<boolean>(false);
   const {
     data,
@@ -139,65 +144,30 @@ const PollPage = () => {
     const isCurrentlyChecked = event.target.checked;
     console.log(isCurrentlyChecked, 'is selected id checked');
     console.log(voteTable, 'vote table');
+
     setVoteTable((prevVoteTable) => {
-      if (
-        [
-          CREDENTIALS.DevConnect.id,
-          CREDENTIALS.ZuConnectResident.id,
-          CREDENTIALS.ZuzaluResident.id,
-        ].includes(credentialId)
-      ) {
-        let newVoteTable = prevVoteTable.filter(
-          (id) =>
-            ![
-              CREDENTIALS.DevConnect.id,
-              CREDENTIALS.ZuConnectResident.id,
-              CREDENTIALS.ZuzaluResident.id,
-            ].includes(id)
-        );
-        if (isCurrentlyChecked) {
-          newVoteTable = [...newVoteTable, credentialId];
-        }
-        return newVoteTable;
-      } else {
-        if (isCurrentlyChecked) {
-          if (!prevVoteTable.includes(credentialId)) {
-            return [...prevVoteTable, credentialId];
-          }
-        } else {
-          return prevVoteTable.filter((id) => id !== credentialId);
-        }
+      if (isCurrentlyChecked && !prevVoteTable.includes(credentialId)) {
+        return [...prevVoteTable, credentialId];
+      } else if (!isCurrentlyChecked) {
+        return prevVoteTable.filter((id) => id !== credentialId);
       }
       return prevVoteTable;
     });
   };
 
   const handleSelectAllClick = () => {
-    let addedZupassIds = false;
-    const zupassIds: string[] = [
-      CREDENTIALS.DevConnect.id,
-      CREDENTIALS.ZuConnectResident.id,
-      CREDENTIALS.ZuzaluResident.id,
-    ];
-
     const newVoteTable = credentialTable.reduce((acc: string[], cred) => {
       const isAvailable = userAvailableCredentialTable.some(
         (availableCred) => availableCred.id === cred.id
       );
       if (isAvailable) {
-        if (zupassIds.includes(cred.id)) {
-          if (!addedZupassIds) {
-            acc.push(cred.id);
-            addedZupassIds = true;
-          }
-        } else {
-          acc.push(cred.id);
-        }
+        acc.push(cred.id);
       }
       return acc;
     }, []);
     setVoteTable(newVoteTable);
   };
+
   const [refreshCount, setRefreshCount] = useState(0);
   const refreshLatestBlock = () => {
     setRefreshCount((prevCount) => prevCount + 1);
@@ -205,125 +175,148 @@ const PollPage = () => {
   const latestBlockNumber = useLatestBlock(isEthHoldingPoll, refreshCount);
   const providerUrl = getProviderUrl();
   const provider = new ethers.JsonRpcProvider(providerUrl);
-  useEffect(() => {
-    const getOptionVoteCounts = async () => {
-      if (id && poll && options && credentialTable && latestBlockNumber) {
-        let allAggregatedData: AllAggregatedDataType[] = [];
-        const filteredCredentials = credentialTable.filter(
-          (cred) =>
-            cred.credential === 'EthHolding on-chain' ||
-            cred.credential === CREDENTIALS.EthHoldingOffchain.name
-        );
-        console.log(filteredCredentials, 'check credential table');
-        for (const cred of filteredCredentials) {
-          try {
-            let aggregatedDataForCurrentId = [...options];
-            if (cred.credential === 'EthHolding on-chain') {
-              const optionContractAbi = VotingOption.abi;
-              for (const optionaddress of options) {
-                if (optionaddress.address) {
-                  const contract = new ethers.Contract(
-                    optionaddress.address as string,
-                    optionContractAbi,
-                    provider
-                  );
-                  if (contract !== null) {
-                    let votersCount = await contract.getVotersCount();
-                    let totalBalance = BigInt(0);
-                    let votersData = [];
-                    for (let i = 0; i < Number(votersCount); i++) {
-                      const voterAddress = await contract.voters(i);
-                      const balance = await provider.getBalance(voterAddress);
-                      let transactionHash: string = '';
-                      if (voterAddress) {
-                        transactionHash = await getEtherscanLogs(
-                          voterAddress,
-                          Number(cred.id)
-                        );
-                      }
-                      totalBalance += BigInt(balance.toString());
-                      votersData.push({
-                        address: voterAddress,
-                        balance: ethers.formatEther(balance),
-                        voteHash: transactionHash,
-                      });
-                    }
-                    votersCount = Number(votersCount);
-                    const optionName = await contract.name();
-                    let optionToUpdateIndex =
-                      aggregatedDataForCurrentId.findIndex(
-                        (option) => option.option_description === optionName
-                      );
-                    if (optionToUpdateIndex !== -1) {
-                      aggregatedDataForCurrentId[optionToUpdateIndex] = {
-                        ...aggregatedDataForCurrentId[optionToUpdateIndex],
-                        votersCount,
-                        totalEth: ethers.formatEther(totalBalance),
-                        votersData,
-                      };
-                    }
+  async function getOptionVoteCounts() {
+    if (id && poll && options && credentialTable && latestBlockNumber) {
+      let allAggregatedData: AllAggregatedDataType[] = [];
+      const filteredCredentials = credentialTable.filter(
+        (cred) =>
+          cred.credential === 'EthHolding on-chain' ||
+          cred.credential === CREDENTIALS.EthHoldingOffchain.name
+      );
+      for (const cred of filteredCredentials) {
+        try {
+          let aggregatedDataForCurrentId = [...options];
+          if (cred.credential === 'EthHolding on-chain') {
+            const optionContractAbi = VotingOption.abi;
+            for (const optionaddress of options) {
+              if (optionaddress.address) {
+                const contract = new ethers.Contract(
+                  optionaddress.address as string,
+                  optionContractAbi,
+                  provider
+                );
+                if (contract !== null) {
+                  let votersCount = await contract.getVotersCount();
+                  let promises = [];
+                  for (let i = 0; i < Number(votersCount); i++) {
+                    promises.push(contract.voters(i));
                   }
-                }
-              }
-            } else {
-              const response = await fetchCredentialVotes({
-                id: id as string,
-                isEthHolding: true,
-              });
-              const data = await response.data;
-              for (let voteData of data) {
-                let totalBalance = BigInt(0);
-                let votersData = [];
-
-                for (let voterAddress of voteData.voters_account || []) {
-                  const balance = await provider.getBalance(voterAddress);
-                  totalBalance += BigInt(balance.toString());
-
-                  votersData.push({
-                    address: voterAddress,
-                    balance: ethers.formatEther(balance),
-                  });
-
-                  const optionToUpdateIndex =
+                  const addresses = await Promise.all(promises);
+                  promises = [];
+                  for (const voterAddress of addresses) {
+                    const balancePromise = provider
+                      .getBalance(voterAddress)
+                      .then((balance) => ethers.formatEther(balance))
+                      .catch((error) => {
+                        console.error(
+                          `Error getting balance for address ${voterAddress}:`,
+                          error
+                        );
+                        return '0';
+                      });
+                    const transactionHashPromise = getEthersLogs(
+                      voterAddress,
+                      Number(cred.id)
+                    ).catch((error) => {
+                      console.error(
+                        `Error getting logs for address ${voterAddress}:`,
+                        error
+                      );
+                      return '';
+                    });
+                    promises.push(
+                      Promise.all([
+                        balancePromise,
+                        transactionHashPromise,
+                      ]).then(([balance, transactionHash]) => {
+                        return {
+                          address: voterAddress,
+                          balance,
+                          voteHash: transactionHash,
+                        };
+                      })
+                    );
+                  }
+                  const votersData = await Promise.all(promises);
+                  const totalBalance = votersData.reduce(
+                    (acc, { balance }) =>
+                      acc + BigInt(ethers.parseEther(balance)),
+                    BigInt(0)
+                  );
+                  votersCount = Number(votersCount);
+                  const optionName = await contract.name();
+                  let optionToUpdateIndex =
                     aggregatedDataForCurrentId.findIndex(
-                      (option) => option.id === voteData.id
+                      (option) => option.option_description === optionName
                     );
                   if (optionToUpdateIndex !== -1) {
-                    aggregatedDataForCurrentId[
-                      optionToUpdateIndex
-                    ].votersCount = votersData.length;
-                    aggregatedDataForCurrentId[optionToUpdateIndex].totalEth =
-                      ethers.formatEther(totalBalance);
-                    aggregatedDataForCurrentId[optionToUpdateIndex].votersData =
-                      votersData;
+                    aggregatedDataForCurrentId[optionToUpdateIndex] = {
+                      ...aggregatedDataForCurrentId[optionToUpdateIndex],
+                      votersCount,
+                      totalEth: ethers.formatEther(totalBalance),
+                      votersData,
+                    };
                   }
                 }
               }
             }
-            allAggregatedData.push({
-              id: cred.id,
-              aggregatedData: aggregatedDataForCurrentId,
+          } else {
+            const response = await fetchCredentialVotes({
+              id: id as string,
+              isEthHolding: true,
             });
-          } catch (error) {
-            console.error('Error fetching data:', error);
-          }
-        }
-        console.log(allAggregatedData, 'data fetched');
-        setContractPollResult(allAggregatedData);
-      }
-    };
+            const data = await response.data;
+            for (let voteData of data) {
+              let totalBalance = BigInt(0);
+              let votersData = [];
 
+              for (let voterAddress of voteData.voters_account || []) {
+                const balance = await provider.getBalance(voterAddress);
+                totalBalance += BigInt(balance.toString());
+
+                votersData.push({
+                  address: voterAddress,
+                  balance: ethers.formatEther(balance),
+                });
+
+                const optionToUpdateIndex =
+                  aggregatedDataForCurrentId.findIndex(
+                    (option) => option.id === voteData.id
+                  );
+                if (optionToUpdateIndex !== -1) {
+                  aggregatedDataForCurrentId[optionToUpdateIndex].votersCount =
+                    votersData.length;
+                  aggregatedDataForCurrentId[optionToUpdateIndex].totalEth =
+                    ethers.formatEther(totalBalance);
+                  aggregatedDataForCurrentId[optionToUpdateIndex].votersData =
+                    votersData;
+                }
+              }
+            }
+          }
+          allAggregatedData.push({
+            id: cred.id,
+            aggregatedData: aggregatedDataForCurrentId,
+          });
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      }
+      console.log(allAggregatedData, 'data fetched');
+      setContractPollResult(allAggregatedData);
+    }
+  }
+  useEffect(() => {
     if (latestBlockNumber !== null) {
       getOptionVoteCounts();
     }
-  }, [latestBlockNumber, setRefreshCount, ]);
+  }, [latestBlockNumber, refreshCount, isFetchFinish, account]);
 
   const handleOptionSelect = (
     optionId: string,
     optionIndex: number | undefined,
     option_description: string
   ) => {
-    console.log('here');
     console.log(
       optionId,
       voteTable,
@@ -339,7 +332,6 @@ const PollPage = () => {
     setIsPopupOpen(true);
   };
   useEffect(() => {
-    console.log(voteTable, 'vote Table in useEffect');
     const initialVotingProcess = voteTable.map((credentialId) => ({
       credentialId,
       status: 'pending',
@@ -408,8 +400,8 @@ const PollPage = () => {
     } else {
       await fetchPollFromContract(id as string);
     }
+    await getOptionVoteCounts();
     await checkAndSetCredentialsAndVotes();
-    refreshLatestBlock();
   };
 
   useEffect(() => {
@@ -417,7 +409,6 @@ const PollPage = () => {
       if (isValidUuidV4(id as string)) {
         fetchPollFromApi(id);
         getEthHoldings();
-        console.log(poll, 'poll data');
       } else {
         fetchPollFromContract(id as string);
       }
@@ -426,7 +417,6 @@ const PollPage = () => {
 
   useEffect(() => {
     checkAndSetCredentialsAndVotes();
-    setRefreshCount;
   }, [
     isFetchFinish,
     account,
@@ -610,27 +600,26 @@ const PollPage = () => {
               break;
             case CREDENTIALS.POAPapi.id:
               if (account) {
-                for (const eventId of credential.poap_events as string[]) {
-                  let userPoapIds = [];
-                  try {
-                    const hasOwnership = await getPoapOwnership(
-                      poapApiKey,
-                      account,
-                      eventId
-                    );
-                    if (hasOwnership) {
-                      userPoapIds.push(eventId);
-                    }
-                  } catch (error) {
-                    console.error(
-                      `Error checking POAP ownership for event ID ${eventId}:`,
-                      error
-                    );
-                  }
+                try {
+                  const ownershipPromises = (
+                    credential.poap_events as string[]
+                  ).map((eventId) =>
+                    getPoapOwnership(poapApiKey, account, eventId).then(
+                      (hasOwnership) => ({
+                        eventId,
+                        hasOwnership,
+                      })
+                    )
+                  );
+                  const ownershipResults = await Promise.all(ownershipPromises);
+                  const userPoapIds = ownershipResults
+                    .filter((result) => result.hasOwnership)
+                    .map((result) => result.eventId);
+
                   if (
                     poll &&
                     poll.poap_number !== undefined &&
-                    userPoapIds.length >= Number(poll?.poap_number)
+                    userPoapIds.length >= Number(poll.poap_number)
                   ) {
                     availableCredentialTable.push({
                       id: CREDENTIALS.POAPapi.id,
@@ -638,11 +627,13 @@ const PollPage = () => {
                       credential: CREDENTIALS.POAPapi.name,
                       poap_events: userPoapIds,
                     });
+
                     const checkdata = {
                       id: id as string,
                       identifier: account,
                       credential: CREDENTIALS.POAPapi.id,
                     };
+
                     const responsevote = await fetchVote(checkdata);
                     if (responsevote.data.option_id !== '') {
                       const lastElementIndex =
@@ -655,8 +646,9 @@ const PollPage = () => {
                         )?.option_description,
                       };
                     }
-                  } else {
                   }
+                } catch (error) {
+                  console.error('Error processing POAP events:', error);
                 }
               }
               break;
@@ -998,6 +990,7 @@ const PollPage = () => {
           if (contractpoll_type) {
             if (contractpoll_type === '0') {
               setIsEthHoldingPoll(true);
+              setIsContractPoll(true);
               nestedCredentialTable.push({
                 id: pollId.toString(),
                 credential: 'EthHolding on-chain',
@@ -1062,7 +1055,6 @@ const PollPage = () => {
                   }
                 }
               } else {
-                console.log('new option');
                 updatedOptions.push({
                   id: index,
                   pollId: id as string,
@@ -1357,7 +1349,14 @@ const PollPage = () => {
       );
     }
   };
-
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('Address copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
+  };
   if (!poll || !credentialCardReady) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -1369,9 +1368,39 @@ const PollPage = () => {
   function renderCredentialDetails(credentialName: string) {
     switch (credentialName) {
       case 'EthHolding on-chain':
+        return (
+          <div className="flex flex-col gap-1">
+            <div className="text-sm">Need to have an Ethereum address</div>
+            <div className="text-sm">Poll end block: {endBlockNumber}</div>
+            <div className="flex items-center gap-2">
+              {account ? (
+                <div className={styles.avail_cred}>
+                  <TruncateText text={account} maxLength={15} />
+                  <CheckCircleIconWhite className={styles.avail_cred_icon} />
+                </div>
+              ) : (
+                <ConnectButton />
+              )}
+            </div>
+          </div>
+        );
       case CREDENTIALS.EthHoldingOffchain.name:
         return (
           <div className="flex flex-col gap-1">
+            <div
+              className="text-s"
+              style={{
+                border: '1px solid #ccc',
+                padding: '10px',
+                borderRadius: '5px',
+                backgroundColor: '#f9f9f9',
+                marginTop: '10px',
+                marginBottom: '10px',
+              }}
+            >
+              All voting is off-chain and does not require you to pay any
+              transaction fees.
+            </div>
             <div className="text-sm">Need to have an Ethereum address</div>
             <div className="text-sm">Poll end block: {endBlockNumber}</div>
             <div className="flex items-center gap-2">
@@ -1516,14 +1545,18 @@ const PollPage = () => {
               )}
 
               <div className={styles.countdown}>
-                <img src='/images/clock.svg' className={styles.countdown_icon} />
+                <img
+                  src="/images/clock.svg"
+                  className={styles.countdown_icon}
+                />
                 <CountdownTimer endTime={poll.endTime} />
               </div>
-
             </div>
 
             <div className="flex flex-col gap-1">
-              <Label className="text-black uppercase opacity-50 text-base">Motion:</Label>
+              <Label className="text-black uppercase opacity-50 text-base">
+                Motion:
+              </Label>
               <Label className="text-2xl">{poll?.title || poll?.name}</Label>
             </div>
           </div>
@@ -1576,23 +1609,63 @@ const PollPage = () => {
                   />
                 ))}
               </div>
-              <div className={styles.eth_holding_container}>
-                <div>
-                  <img src="/images/eth_logo.svg" />
-                  <h4>
-                    Ether Holding Credential{' '}
-                    <span>
-                      requires a <strong>zero-value transaction</strong> from
-                      your wallet.
-                    </span>
-                  </h4>
+              {isContractPoll && (
+                <div className={styles.eth_holding_container}>
+                  <div>
+                    <img src="/images/eth_logo.svg" />
+                    <h4>
+                      Ether Holding Credential{' '}
+                      <span>
+                        requires a <strong>zero-value transaction</strong> from
+                        your wallet.
+                      </span>
+                    </h4>
+                  </div>
+                  <p>
+                    Optionally, you can manually send a zero-value transaction
+                    by pasting the address directly from your wallet.
+                  </p>
+                  <div>
+                    <div className="w-full flex flex-col gap-2.5">
+                      <button onClick={handleAddressToggleExpanded}>
+                        {isAddressExpanded
+                          ? 'Hide Addresses'
+                          : 'Show Addresses'}
+                      </button>
+
+                      {isAddressExpanded && (
+                        <div className="w-full flex flex-col gap-2">
+                          {options.map((option, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between w-full"
+                              style={{ paddingLeft: '10px' }}
+                            >
+                              <p
+                                className="font-bold"
+                                style={{ marginRight: 'auto' }}
+                              >
+                                {option.option_description}
+                              </p>
+                              <p style={{ width: '50%', textAlign: 'center' }}>
+                                {option.address}
+                              </p>
+                              <button
+                                onClick={() =>
+                                  copyToClipboard(option.address as string)
+                                }
+                                style={{ marginLeft: 'auto' }}
+                              >
+                                Copy
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <p>
-                  Optionally, you can manually send a zero-value transaction by
-                  pasting the address directly from your wallet.
-                </p>
-                <span>Show Addresses</span>
-              </div>
+              )}
             </>
           ) : (
             <div className={styles.poll_finished}>
@@ -1616,12 +1689,24 @@ const PollPage = () => {
                   <p>Select the credentials you want to vote with</p>
                   <div className={styles.v_pop_list}>
                     {credentialTable.map((credential) => {
-                      const isAvailable = userAvailableCredentialTable.some(
-                        (availCred) => availCred.id === credential.id
-                      );
+                      const credentialDetail =
+                        userAvailableCredentialTable.find(
+                          (availCred) => availCred.id === credential.id
+                        );
+
+                      const currentSelectedOptionName =
+                        selectedOptionData?.option_description;
+
+                      const isAvailable =
+                        credentialDetail &&
+                        (!credentialDetail.votedOption ||
+                          credentialDetail.votedOptionName !==
+                            currentSelectedOptionName);
+
                       const imagePath = getImagePathByCredential(
                         credential.credential as string
                       );
+
                       return (
                         <div
                           key={credential.id}
@@ -1638,7 +1723,12 @@ const PollPage = () => {
                                   className="image-class-name"
                                 />
                               )}
-                              <span>{credential.credential}</span>
+                              <span>
+                                {credential.credential}
+                                {credentialDetail &&
+                                  credentialDetail.votedOptionName &&
+                                  ` (Voted: ${credentialDetail.votedOptionName})`}
+                              </span>
                             </div>
                             {isAvailable ? (
                               <input
@@ -1730,9 +1820,8 @@ const PollPage = () => {
                 </div>
               </div>
             </div>
-
-            {poll.ipfs_link && (
-              <div className="flex flex-wrap items-center gap-1">
+            <div className="flex flex-wrap items-center gap-1">
+              {poll.ipfs_link ? (
                 <a
                   href={poll.ipfs_link}
                   target="_blank"
@@ -1742,8 +1831,12 @@ const PollPage = () => {
                   IPFS: {poll.ipfs_link.substring(0, 20)}
                   {poll.ipfs_link.length > 20 ? '...' : ''}
                 </a>
-              </div>
-            )}
+              ) : (
+                <span className="text-black text-opacity-50 font-bold text-sm">
+                  IPFS: Update every day at 12 pm CET
+                </span>
+              )}
+            </div>
 
             <div className="flex flex-col gap-2.5 py-2.5 border-t border-black border-opacity-10">
               <Label className="text-black opacity-80 text-base font-semibold">
@@ -1788,56 +1881,63 @@ const PollPage = () => {
                 CREDENTIALS.ZuzaluResident.id,
               ].includes(credential.id)
             ) && (
-                <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
-                  <div className="flex justify-between">
-                    <Label className="text-sm text-black font-bold">
-                      <div className="flex items-center gap-2">
-                        <img
-                          src="/images/zupass.svg"
-                          alt="Credential"
-                          className="image-class-name"
-                        />
-                        <span className="opacity-60">Zupass</span>
-                      </div>
-                    </Label>
-                    {zupasspoll ? (
-                      <div className={styles.avail_cred}>
-                        ZuPass
-                        <CheckCircleIconWhite
-                          className={styles.avail_cred_icon}
-                        />
-                      </div>
-                    ) : (
-                      <LockIcon className="w-7 h-7 text-black opacity-25" />
-                    )}
-                  </div>
-                  <button
-                    className="flex gap-1.5 text-sm text-black opacity-60 font-medium"
-                    onClick={() => {
-                      const isExpanded = expandedIds.includes('Zupass');
-                      setExpandedIds(
-                        isExpanded
-                          ? expandedIds.filter((id) => id !== 'Zupass')
-                          : [...expandedIds, 'Zupass']
-                      );
-                    }}
-                  >
-                    {expandedIds.includes('Zupass')
-                      ? 'Hide Details'
-                      : 'Show Details'}
-                    <ChevronDownIcon className="w-5 h-5" />
-                  </button>
-                  {expandedIds.includes('Zupass') &&
-                    (isPassportConnected ? (
-                      credentialTable
-                        .filter((credential) =>
-                          [
-                            CREDENTIALS.DevConnect.id,
-                            CREDENTIALS.ZuConnectResident.id,
-                            CREDENTIALS.ZuzaluResident.id,
-                          ].includes(credential.id)
-                        )
-                        .map((credential) => (
+              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                <div className="flex justify-between">
+                  <Label className="text-sm text-black font-bold">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src="/images/zupass.svg"
+                        alt="Credential"
+                        className="image-class-name"
+                      />
+                      <span className="opacity-60">Zupass</span>
+                    </div>
+                  </Label>
+                  {zupasspoll ? (
+                    <div className={styles.avail_cred}>
+                      ZuPass
+                      <CheckCircleIconWhite
+                        className={styles.avail_cred_icon}
+                      />
+                    </div>
+                  ) : (
+                    <LockIcon className="w-7 h-7 text-black opacity-25" />
+                  )}
+                </div>
+                <button
+                  className="flex gap-1.5 text-sm text-black opacity-60 font-medium"
+                  onClick={() => {
+                    const isExpanded = expandedIds.includes('Zupass');
+                    setExpandedIds(
+                      isExpanded
+                        ? expandedIds.filter((id) => id !== 'Zupass')
+                        : [...expandedIds, 'Zupass']
+                    );
+                  }}
+                >
+                  {expandedIds.includes('Zupass')
+                    ? 'Hide Details'
+                    : 'Show Details'}
+                  <ChevronDownIcon className="w-5 h-5" />
+                </button>
+                {expandedIds.includes('Zupass') &&
+                  (isPassportConnected ? (
+                    credentialTable
+                      .filter((credential) =>
+                        [
+                          CREDENTIALS.DevConnect.id,
+                          CREDENTIALS.ZuConnectResident.id,
+                          CREDENTIALS.ZuzaluResident.id,
+                        ].includes(credential.id)
+                      )
+                      .map((credential) => {
+                        const votedOption = userAvailableCredentialTable.find(
+                          (credentialItem) =>
+                            credentialItem.id === credential.id &&
+                            credentialItem.votedOptionName
+                        );
+
+                        return (
                           <div
                             key={credential.id}
                             className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg"
@@ -1851,6 +1951,11 @@ const PollPage = () => {
                                 <span className="text-black opacity-75">
                                   {credential.credential}
                                 </span>
+                                {votedOption && (
+                                  <span className="text-sm">
+                                    Voted: {votedOption.votedOptionName}
+                                  </span>
+                                )}
                               </>
                             ) : (
                               <>
@@ -1869,47 +1974,29 @@ const PollPage = () => {
                               </>
                             )}
                           </div>
-                        ))
-                    ) : (
-                      <Button
-                        className={styles.cred_btn}
-
-                        onClick={signIn}
-                      >
-                        {isPassportConnected
-                          ?
-                          <div className={styles.zupass_logged}>
-                            <div className={styles.zuconnect}><span>ZuConnect Resident</span>
-                              <img src="/images/check.svg" /></div>
-                            <span>OR</span>
-                            <div className={styles.zuzalu}>Zuzalu Resident</div>
+                        );
+                      })
+                  ) : (
+                    <Button className={styles.cred_btn} onClick={signIn}>
+                      {isPassportConnected ? (
+                        <div className={styles.zupass_logged}>
+                          <div className={styles.zuconnect}>
+                            <span>ZuConnect Resident</span>
+                            <img src="/images/check.svg" />
                           </div>
-                          :
-                          <div className={styles.zupass_not_logged}>
-                            <img src='/images/zupass_login.svg' />
-                            <span>Zupass Login</span>
-                          </div>
-
-                        }
-                      </Button>
-                    ))}
-                  {(() => {
-                    const Zupass = [
-                      CREDENTIALS.DevConnect.id,
-                      CREDENTIALS.ZuConnectResident.id,
-                      CREDENTIALS.ZuzaluResident.id,
-                    ];
-                    const foundVotedOption = userAvailableCredentialTable.find(
-                      (credentialItem) =>
-                        Zupass.includes(credentialItem.id) &&
-                        credentialItem.votedOptionName
-                    );
-                    return foundVotedOption ? (
-                      <span>Voted: {foundVotedOption.votedOptionName}</span>
-                    ) : null;
-                  })()}
-                </div>
-              )}
+                          <span>OR</span>
+                          <div className={styles.zuzalu}>Zuzalu Resident</div>
+                        </div>
+                      ) : (
+                        <div className={styles.zupass_not_logged}>
+                          <img src="/images/zupass_login.svg" />
+                          <span>Zupass Login</span>
+                        </div>
+                      )}
+                    </Button>
+                  ))}
+              </div>
+            )}
             {credentialTable
               .filter(
                 (credential) =>

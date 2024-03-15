@@ -68,7 +68,6 @@ export const ContractPollResultComponent: React.FC<
       '#FFD700',
       '#FF69B4',
     ];
-    console.log(allAggregatedData, 'all data');
     return {
       labels,
       datasets: [
@@ -80,11 +79,15 @@ export const ContractPollResultComponent: React.FC<
       ],
     };
   };
-  const TransactionTable: React.FC<TransactionTableProps> = ({
-    aggregatedData,
-  }) => {
+  const TransactionTable: React.FC<
+    TransactionTableProps & { isClickable: boolean }
+  > = ({ aggregatedData, isClickable }) => {
     const optionsCount = aggregatedData.length;
     const columnWidth = `${100 / optionsCount}%`;
+    const maxRows = aggregatedData.reduce(
+      (max, curr) => Math.max(max, curr.votersData.length),
+      0
+    );
     return (
       <div style={{ overflowX: 'auto' }}>
         <table
@@ -100,20 +103,25 @@ export const ContractPollResultComponent: React.FC<
             </tr>
           </thead>
           <tbody>
-            {aggregatedData[0]?.votersData.map((_: any, rowIndex: number) => (
+            {Array.from({ length: maxRows }).map((_, rowIndex) => (
               <tr key={rowIndex}>
                 {aggregatedData.map((columnData, columnIndex) => (
                   <td key={columnIndex} style={{ width: columnWidth }}>
-                    {columnData.votersData[rowIndex]?.address && (
-                      <a
-                        href={`https://sepolia.etherscan.io/tx/${columnData.votersData[rowIndex]?.voteHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ textDecoration: 'none' }}
-                      >
-                        {`${columnData.votersData[rowIndex].address.substring(0, 6)}...${columnData.votersData[rowIndex].address.substring(columnData.votersData[rowIndex].address.length - 4)}`}
-                      </a>
-                    )}
+                    {columnData.votersData[rowIndex]?.address &&
+                      (isClickable ? (
+                        <a
+                          href={`https://sepolia.etherscan.io/tx/${columnData.votersData[rowIndex]?.voteHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ textDecoration: 'none' }}
+                        >
+                          {`${columnData.votersData[rowIndex].address.substring(0, 6)}...${columnData.votersData[rowIndex].address.substring(columnData.votersData[rowIndex].address.length - 4)}`}
+                        </a>
+                      ) : (
+                        <span>
+                          {`${columnData.votersData[rowIndex].address.substring(0, 6)}...${columnData.votersData[rowIndex].address.substring(columnData.votersData[rowIndex].address.length - 4)}`}
+                        </span>
+                      ))}
                   </td>
                 ))}
               </tr>
@@ -183,7 +191,10 @@ export const ContractPollResultComponent: React.FC<
                 </div>
                 {expandedStates[`${id}-transactions`] && (
                   <div style={{ width: '100%' }}>
-                    <TransactionTable aggregatedData={aggregatedData} />
+                    <TransactionTable
+                      aggregatedData={aggregatedData}
+                      isClickable={!isValidUuidV4(id)}
+                    />
                   </div>
                 )}
               </div>

@@ -100,7 +100,7 @@ const POAPEvents = () => {
         {selectedEvents.length > 0 && (
           <Button
             className={`${styles.bottom_cta} button-font-size mr-4`}
-            style={{ width: '10%' }}
+            style={{ width: '20%', fontSize: '13px' }}
             onClick={deleteAllSelected}
           >
             Delete all selected

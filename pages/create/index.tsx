@@ -297,8 +297,6 @@ const CreatePollPage = () => {
     if (ethSoloStaker) {
       credentialsTable.push(CREDENTIALS.EthSoloStaker.id);
     }
-
-    console.log(indexTable, 'indextable');
     const pollData = {
       title: motionTitle,
       description: motionDescription,

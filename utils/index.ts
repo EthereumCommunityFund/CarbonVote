@@ -121,7 +121,7 @@ export function getImagePathByCredential(credential: string): string {
   }
   if (
     credential.includes('EthHolding on-chain') ||
-    credential.includes('Eth Holding (Offchain)')
+    credential.includes('Eth Holding')
   ) {
     return '/images/eth_logo.svg';
   }

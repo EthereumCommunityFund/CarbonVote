@@ -98,13 +98,13 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
       {/* <!-- Description --> */}
       <span dangerouslySetInnerHTML={{ __html: removeImageTags(shortDescription) }} />
 
-
+      {/*
       <div className={styles.credentials_flex}>
         <div>
           <img src='/images/fingerprint.svg' />
           Credentials /
         </div> <span> Zupass, </span><span> EthHolding, </span><span> POAPs, </span><span> ProtocolGuild, </span><span> +1</span>
-      </div>
+      </div>*/}
     </div>
 
   );
