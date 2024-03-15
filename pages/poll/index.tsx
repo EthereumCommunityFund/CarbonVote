@@ -316,7 +316,7 @@ const PollPage = () => {
     if (latestBlockNumber !== null) {
       getOptionVoteCounts();
     }
-  }, [latestBlockNumber, refreshCount]);
+  }, [latestBlockNumber, refreshCount, ]);
 
   const handleOptionSelect = (
     optionId: string,

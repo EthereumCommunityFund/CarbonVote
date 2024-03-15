@@ -162,6 +162,7 @@ export interface CredentialTable {
   poap_events?: string[];
   poap_number?: string;
   endblock_number?: number;
+  subCredentials?: CredentialTable[]; 
 }
 
 export interface SelectedOptionData {
