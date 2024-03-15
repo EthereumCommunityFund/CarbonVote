@@ -62,7 +62,6 @@ export default function Home() {
       contractAbi,
       provider
     );
-    console.log(provider,CONTRACT_ADDRESS,'connection info')
     const {
       names,
       descriptions,
