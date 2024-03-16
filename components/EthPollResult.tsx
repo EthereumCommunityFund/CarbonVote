@@ -84,10 +84,12 @@ export const ContractPollResultComponent: React.FC<
   > = ({ aggregatedData, isClickable }) => {
     const optionsCount = aggregatedData.length;
     const columnWidth = `${100 / optionsCount}%`;
-    const maxRows = aggregatedData.reduce(
-      (max, curr) => Math.max(max, curr.votersData.length),
-      0
-    );
+    const maxRows = aggregatedData.reduce((max, currOption) => {
+      if (currOption.votersData && Array.isArray(currOption.votersData)) {
+        return Math.max(max, currOption.votersData.length);
+      }
+      return max;
+    }, 0);
     return (
       <div style={{ overflowX: 'auto' }}>
         <table
@@ -105,25 +107,30 @@ export const ContractPollResultComponent: React.FC<
           <tbody>
             {Array.from({ length: maxRows }).map((_, rowIndex) => (
               <tr key={rowIndex}>
-                {aggregatedData.map((columnData, columnIndex) => (
-                  <td key={columnIndex} style={{ width: columnWidth }}>
-                    {columnData.votersData[rowIndex]?.address &&
-                      (isClickable ? (
-                        <a
-                          href={`https://sepolia.etherscan.io/tx/${columnData.votersData[rowIndex]?.voteHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ textDecoration: 'none' }}
-                        >
-                          {`${columnData.votersData[rowIndex].address.substring(0, 6)}...${columnData.votersData[rowIndex].address.substring(columnData.votersData[rowIndex].address.length - 4)}`}
-                        </a>
-                      ) : (
-                        <span>
-                          {`${columnData.votersData[rowIndex].address.substring(0, 6)}...${columnData.votersData[rowIndex].address.substring(columnData.votersData[rowIndex].address.length - 4)}`}
-                        </span>
-                      ))}
-                  </td>
-                ))}
+                {aggregatedData.map((columnData, columnIndex) => {
+                  const voterInfo =
+                    columnData.votersData && columnData.votersData[rowIndex];
+                  return (
+                    <td key={columnIndex} style={{ width: columnWidth }}>
+                      {voterInfo &&
+                        voterInfo.address &&
+                        (isClickable ? (
+                          <a
+                            href={`https://sepolia.etherscan.io/tx/${voterInfo.voteHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ textDecoration: 'none' }}
+                          >
+                            {`${voterInfo.address.substring(0, 6)}...${voterInfo.address.substring(voterInfo.address.length - 4)}`}
+                          </a>
+                        ) : (
+                          <span>
+                            {`${voterInfo.address.substring(0, 6)}...${voterInfo.address.substring(voterInfo.address.length - 4)}`}
+                          </span>
+                        ))}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>

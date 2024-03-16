@@ -220,96 +220,99 @@ const CreatePollPage = () => {
     let credentialsTable: string[] = [];
     let indexTable: number[] = [];
     // ethHolding
-    if (ethHolding) {
-      for (const option of selectedEthHoldingOption) {
-        if (option === 'on-chain') {
+    try {
+      if (ethHolding) {
+        for (const option of selectedEthHoldingOption) {
+          if (option === 'on-chain') {
+            if (!isConnected) {
+              console.error(
+                'You need to connect to Wallet to create, please try again'
+              );
+              toast({
+                title: 'Error',
+                description:
+                  'You need to connect to Wallet to create, please try again',
+                variant: 'destructive',
+              });
+              setIsLoading(false);
+              connect();
+              return;
+            }
+            const contractPollIndexEth = await contractPollCreation(0);
+            if (contractPollIndexEth) {
+              indexTable.push(contractPollIndexEth as number);
+            }
+          } else {
+            credentialsTable.push(CREDENTIALS.EthHoldingOffchain.id);
+          }
+        }
+      }
+
+      // Protocol Guild
+      if (protocolGuildMemberEnabled) {
+        if (selectedProtocolGuildOption === 'on-chain') {
           if (!isConnected) {
-            console.error('You need to connect to Wallet to create, please try again');
+            console.error(
+              'You need to connect to Wallet to create, please try again'
+            );
             toast({
               title: 'Error',
-              description: 'You need to connect to Wallet to create, please try again',
+              description:
+                'You need to connect to Wallet to create, please try again',
               variant: 'destructive',
             });
             setIsLoading(false);
             connect();
             return;
           }
-          const contractPollIndexEth = await contractPollCreation(0);
-          if (contractPollIndexEth) {
-            indexTable.push(contractPollIndexEth as number);
+          const contractPollIndexPro = await contractPollCreation(1);
+          if (contractPollIndexPro) {
+            indexTable.push(contractPollIndexPro as number);
           }
         } else {
-          credentialsTable.push(CREDENTIALS.EthHoldingOffchain.id);
+          credentialsTable.push(CREDENTIALS.ProtocolGuildMember.id);
         }
       }
-    }
 
-    // Protocol Guild
-    if (protocolGuildMemberEnabled) {
-      if (selectedProtocolGuildOption === 'on-chain') {
-        if (!isConnected) {
-          console.error(
-            'You need to connect to Wallet to create, please try again'
-          );
-          toast({
-            title: 'Error',
-            description:
-              'You need to connect to Wallet to create, please try again',
-            variant: 'destructive',
-          });
-          setIsLoading(false);
-          connect();
-          return;
+      // poapsEnabled
+      if (poapsEnabled) {
+        credentialsTable.push(CREDENTIALS.POAPapi.id);
+      }
+
+      // zupassEnabled
+      console.log(zupassCredential);
+      if (zupassEnabled) {
+        if (zupassCredential.includes('Zuzalu')) {
+          credentialsTable.push(CREDENTIALS.ZuzaluResident.id);
         }
-        const contractPollIndexPro = await contractPollCreation(1);
-        if (contractPollIndexPro) {
-          indexTable.push(contractPollIndexPro as number);
+        if (zupassCredential.includes('Zuconnect')) {
+          credentialsTable.push(CREDENTIALS.ZuConnectResident.id);
         }
-      } else {
-        credentialsTable.push(CREDENTIALS.ProtocolGuildMember.id);
+        if (zupassCredential.includes('Devconnect')) {
+          credentialsTable.push(CREDENTIALS.DevConnect.id);
+        }
       }
-    }
 
-    // poapsEnabled
-    if (poapsEnabled) {
-      credentialsTable.push(CREDENTIALS.POAPapi.id);
-    }
-
-    // zupassEnabled
-    console.log(zupassCredential);
-    if (zupassEnabled) {
-      if (zupassCredential.includes('Zuzalu')) {
-        credentialsTable.push(CREDENTIALS.ZuzaluResident.id);
+      // gitcoinEnabled
+      if (gitcoinPassport) {
+        credentialsTable.push(CREDENTIALS.GitcoinPassport.id);
       }
-      if (zupassCredential.includes('Zuconnect')) {
-        credentialsTable.push(CREDENTIALS.ZuConnectResident.id);
+      // Eth Solo Staker
+      if (ethSoloStaker) {
+        credentialsTable.push(CREDENTIALS.EthSoloStaker.id);
       }
-      if (zupassCredential.includes('Devconnect')) {
-        credentialsTable.push(CREDENTIALS.DevConnect.id);
-      }
-    }
+      const pollData = {
+        title: motionTitle,
+        description: motionDescription,
+        time_limit: durationInSeconds,
+        options: options.map((option) => ({ option_description: option.name })),
+        credentials: credentialsTable,
+        poap_events: selectedPOAPEvents.map((event) => event.id),
+        poap_number: POAPNumber,
+        gitcoin_score: Number(gitcoinScore),
+        contractpoll_index: indexTable,
+      };
 
-    // gitcoinEnabled
-    if (gitcoinPassport) {
-      credentialsTable.push(CREDENTIALS.GitcoinPassport.id);
-    }
-    // Eth Solo Staker
-    if (ethSoloStaker) {
-      credentialsTable.push(CREDENTIALS.EthSoloStaker.id);
-    }
-    const pollData = {
-      title: motionTitle,
-      description: motionDescription,
-      time_limit: durationInSeconds,
-      options: options.map((option) => ({ option_description: option.name })),
-      credentials: credentialsTable,
-      poap_events: selectedPOAPEvents.map((event) => event.id),
-      poap_number: POAPNumber,
-      gitcoin_score: Number(gitcoinScore),
-      contractpoll_index: indexTable,
-    };
-
-    try {
       console.log('Creating poll...', pollData);
 
       const response = await createPoll(pollData);
@@ -331,6 +334,7 @@ const CreatePollPage = () => {
         description: 'Failed to create poll',
         variant: 'destructive',
       });
+      return;
     }
   };
   const contractPollCreation = async (pollType: number) => {
@@ -399,6 +403,7 @@ const CreatePollPage = () => {
         description: error.message,
         variant: 'destructive',
       });
+      throw error;
     }
   };
 
@@ -538,7 +543,11 @@ const CreatePollPage = () => {
             <div className={styles.input_wrap_flex}>
               <Label className={styles.input_header}>End Date/Time</Label>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DateTimePicker value={endDateTime} onChange={setEndDateTime} className={styles.date} />
+                <DateTimePicker
+                  value={endDateTime}
+                  onChange={setEndDateTime}
+                  className={styles.date}
+                />
               </LocalizationProvider>
             </div>
           </div>
@@ -596,8 +605,9 @@ const CreatePollPage = () => {
                       />
                       <div className={styles.radio_p_container}>
                         <p>
-                          <b>Classic Carvonvote</b>: Select this option to implement a
-                          smart contract for the vote tallying process.
+                          <b>Classic Carvonvote</b>: Select this option to
+                          implement a smart contract for the vote tallying
+                          process.
                         </p>
                         <div className={styles.radio_span}>
                           <img src="/images/info_circle.svg" alt="Info" />
@@ -607,10 +617,7 @@ const CreatePollPage = () => {
                             voting. (SC is under auditing)
                           </span>
                         </div>
-
                       </div>
-
-
                     </label>
                     <label className={styles.radio_flex}>
                       <input
@@ -623,8 +630,9 @@ const CreatePollPage = () => {
                       />
                       <div className={styles.radio_p_container}>
                         <p>
-                          <b>Carbonvote V2</b>: Zero Transaction Costs for Poll Creators
-                          and Voters: The voting process is conducted off-chain.{' '}
+                          <b>Carbonvote V2</b>: Zero Transaction Costs for Poll
+                          Creators and Voters: The voting process is conducted
+                          off-chain.{' '}
                         </p>
                         <div className={styles.radio_span}>
                           <img src="/images/info_circle.svg" alt="Info" />
@@ -779,8 +787,9 @@ const CreatePollPage = () => {
                       />
                       <div className={styles.radio_p_container}>
                         <p>
-                          <b>Classic Carvonvote</b>: Select this option to implement a
-                          smart contract for the vote tallying process.{' '}
+                          <b>Classic Carvonvote</b>: Select this option to
+                          implement a smart contract for the vote tallying
+                          process.{' '}
                         </p>
                         <div className={styles.radio_span}>
                           <img src="/images/info_circle.svg" alt="Info" />
@@ -792,7 +801,6 @@ const CreatePollPage = () => {
                           </span>
                         </div>
                       </div>
-
                     </label>
                     <label className={styles.radio_flex}>
                       <input
@@ -878,7 +886,8 @@ const CreatePollPage = () => {
                   <p className={styles.desc_p}>
                     Description: Ether Solo Staker voters are individuals who
                     stake their Ethereum (ETH) independently, without relying on
-                    a staking pool or service. (Smart contract version will come soon)
+                    a staking pool or service. (Smart contract version will come
+                    soon)
                   </p>
                   <div className={styles.cred_content}></div>
                 </div>
@@ -895,9 +904,9 @@ const CreatePollPage = () => {
               <div className={styles.multiple_cred_info2}>
                 <img src="/images/nes.svg" alt="Nested Info" />
                 {selectedNumber === 2 &&
-                  selectedEthHoldingOption.length === 1 &&
-                  selectedEthHoldingOption[0] === 'on-chain' &&
-                  selectedProtocolGuildOption === 'on-chain' ? (
+                selectedEthHoldingOption.length === 1 &&
+                selectedEthHoldingOption[0] === 'on-chain' &&
+                selectedProtocolGuildOption === 'on-chain' ? (
                   <div>
                     <p>
                       <strong>

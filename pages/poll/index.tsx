@@ -967,7 +967,7 @@ const PollPage = () => {
       //const contract = new ethers.Contract(contractAddress, contractAbi, signer);
       try {
         const provider = new ethers.JsonRpcProvider(
-          'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
+          getProviderUrl()
         );
         const contract = new ethers.Contract(
           CONTRACT_ADDRESS,
@@ -1015,7 +1015,7 @@ const PollPage = () => {
             console.log(timeleft, 'time left contract poll');
           }
           const provider = new ethers.JsonRpcProvider(
-            'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243'
+            getProviderUrl()
           );
           console.log(pollData.options, 'poll.options');
           const optionContractAbi = VotingOption.abi;

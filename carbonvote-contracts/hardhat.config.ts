@@ -11,7 +11,7 @@ const config: HardhatUserConfig = {
       chainId: 1337,
     },
     /*mainnet: {
-      url: '',
+      url: 'https://mainnet.infura.io/v3/01371fc4052946bd832c20ca12496243',
       accounts: [`0x`],
       gas: 5000000,
     },*/
