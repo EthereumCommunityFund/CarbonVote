@@ -10,8 +10,8 @@ import { mainnet, sepolia } from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 
-const envChains: any = process.env.NODE_ENV === 'production' ? [mainnet] : [sepolia];
-const alchemyApi: any = process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_ALCHEMY_ID : process.env.NEXT_PUBLIC_ALCHEMY_ID_SEPOLIA;
+const envChains: any = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ? [mainnet] : [sepolia];
+const alchemyApi: any = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ? process.env.NEXT_PUBLIC_ALCHEMY_ID : process.env.NEXT_PUBLIC_ALCHEMY_ID_SEPOLIA;
 
 const { chains, publicClient } = configureChains(
   envChains,
