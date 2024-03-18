@@ -54,3 +54,9 @@ and then run it with this command:
 ```
 ceramic daemon
 ```
+
+For development purposes you can check options at:
+
+```
+ceramic --help
+```

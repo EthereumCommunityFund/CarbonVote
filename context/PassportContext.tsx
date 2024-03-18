@@ -84,7 +84,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
   const [pcd, setPcd] = useState<string | null>(null);
   //const [eventpcd, setEventPcd] = useState<string | null>(null);
   //const [mode, setMode] = useState<'ticket|sign-in'>('sign-in');
-  const [mode, setMode] = useState<'zuconnect' | 'sign-in' | 'devconnect'|'zuzalu'>('sign-in');
+  const [mode, setMode] = useState<'zuconnect' | 'sign-in' | 'devconnect' | 'zuzalu'>('sign-in');
   const processPcd = (pcdStr: string) => {
     console.log(pcdStr);
     const pcd = JSON.parse(pcdStr);
@@ -121,7 +121,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
         catch (error) {
           console.error('Error processing devconnect PCD string:', error);
         }
-      }else if (pcdStr && mode === 'zuzalu') {
+      } else if (pcdStr && mode === 'zuzalu') {
         try {
           let _pcd = processPcd(pcdStr);
           console.log(_pcd, 'zuzalu event pcd');
@@ -146,7 +146,6 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
               headers: {
                 'Content-Type': 'application/json',
               },
-
               body: JSON.stringify({ account, message }),
             });
 
@@ -247,7 +246,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
     const encReq = encodeURIComponent(JSON.stringify(req));
     return `${zupassClientUrl}#/prove?request=${encReq}`;
   }
-  const zuconnecteventids =['91312aa1-5f74-4264-bdeb-f4a3ddb8670c','54863995-10c4-46e4-9342-75e48b68d307','797de414-2aec-4ef8-8655-09df7e2b6cc6','a6109324-7ca0-4198-9583-77962d1b9d53']
+  const zuconnecteventids = ['91312aa1-5f74-4264-bdeb-f4a3ddb8670c', '54863995-10c4-46e4-9342-75e48b68d307', '797de414-2aec-4ef8-8655-09df7e2b6cc6', 'a6109324-7ca0-4198-9583-77962d1b9d53']
   function openZKEdDSAEventTicketPopup(
     fieldsToReveal: EdDSATicketFieldsToReveal,
     watermark: bigint,

@@ -6,7 +6,7 @@ import getPoapOwnership from 'utils/getPoapOwnership';
 import { supabase } from 'utils/supabaseClient';
 import { CREDENTIALS } from '@/src/constants';
 import { VerifySignatureInput, CheckPOAPOwnershipInput, ProcessVoteInput } from '@/types'
-//import { storeVote, checkNullifier, generateNullifier } from '@/utils/ceramicHelpers'
+import { storeVote, checkNullifier, generateNullifier } from '@/utils/ceramicHelpers'
 import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock'
 import { generateMessage } from '@/utils/generateMessage'
 import { ProtocolGuildMembershipList } from '@/src/protocolguildmember';
@@ -18,8 +18,8 @@ async function validateRequest(req: NextApiRequest) {
         throw new Error('Method Not Allowed');
     }
 
-    const { option_id, voter_identifier, poll_id,vote_credential } = req.body;
-    if (!option_id || !voter_identifier || !poll_id|| !vote_credential) {
+    const { option_id, voter_identifier, poll_id, vote_credential } = req.body;
+    if (!option_id || !voter_identifier || !poll_id || !vote_credential) {
         throw new Error('Option ID, Poll ID, and Voter Identifier are required');
     }
 }
@@ -52,14 +52,14 @@ async function checkPOAPOwnership({ pollData, voter_identifier }: CheckPOAPOwner
     }
 }
 
-async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credential, voter_identifier }: ProcessVoteInput): Promise<void> {
+async function processVote({ vote_hash, poll_id, option_id, weight, vote_credential, voter_identifier }: ProcessVoteInput): Promise<void> {
     const { data: existingVoteOnOption } = await supabase
         .from('votes')
         .select('*')
         .eq('vote_hash', vote_hash)
         .eq('poll_id', poll_id)
         .eq('option_id', option_id)
-        .eq('vote_credential',vote_credential)
+        .eq('vote_credential', vote_credential)
         .single();
 
     if (existingVoteOnOption) {
@@ -71,7 +71,7 @@ async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credent
         .from('votes')
         .select('option_id')
         .eq('vote_hash', vote_hash)
-        .eq('vote_credential',vote_credential)
+        .eq('vote_credential', vote_credential)
         .eq('poll_id', poll_id)
 
     if (error) throw error;
@@ -81,7 +81,7 @@ async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credent
         const { error: deleteError } = await supabase
             .from('votes')
             .delete()
-            .match({ vote_hash, poll_id , vote_credential});
+            .match({ vote_hash, poll_id, vote_credential });
         if (deleteError) throw deleteError;
 
         if (existingVote.option_id !== option_id) {
@@ -112,9 +112,9 @@ async function processVote({ vote_hash, poll_id, option_id, weight ,vote_credent
 
 const isSignatureCredential = (credential: string) => {
     const signatureCredentials = [
-        CREDENTIALS.GitcoinPassport.id, 
-        CREDENTIALS.POAPapi.id, 
-        CREDENTIALS.ProtocolGuildMember.id, 
+        CREDENTIALS.GitcoinPassport.id,
+        CREDENTIALS.POAPapi.id,
+        CREDENTIALS.ProtocolGuildMember.id,
         CREDENTIALS.EthHoldingOffchain.id,
         CREDENTIALS.EthSoloStaker.id,
     ];
@@ -134,8 +134,8 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
     let signerAddress;
     try {
         await validateRequest(req);
-        const { poll_id, option_id, voter_identifier, signature,vote_credential , gitscore} = req.body;
-        console.log(poll_id, option_id, voter_identifier, signature,vote_credential,'all info');
+        const { poll_id, option_id, voter_identifier, signature, vote_credential, gitscore } = req.body;
+        console.log(poll_id, option_id, voter_identifier, signature, vote_credential, 'all info');
 
         const { data: pollData } = await supabase
             .from('polls')
@@ -151,60 +151,61 @@ const createVote = async (req: NextApiRequest, res: NextApiResponse) => {
             if (signerAddress === undefined) {
                 res.status(401).json({ error: 'Signer not verified' });
             }
-       
-        // POAP verification
-        if (vote_credential === CREDENTIALS.POAPapi.id) {
-        if (pollData?.poap_events && pollData?.poap_events.length) {
-            await checkPOAPOwnership({ pollData, voter_identifier });
-        }
-        }
 
-        // EthHolding count
-        if ( vote_credential === CREDENTIALS.EthHoldingOffchain.id) {
-            const blockNumber = pollData.block_number;
-            if (signerAddress !== undefined) {
-                weight = await getBalanceAtBlock(signerAddress, blockNumber);
+            // POAP verification
+            if (vote_credential === CREDENTIALS.POAPapi.id) {
+                if (pollData?.poap_events && pollData?.poap_events.length) {
+                    await checkPOAPOwnership({ pollData, voter_identifier });
+                }
+            }
+
+            // EthHolding count
+            if (vote_credential === CREDENTIALS.EthHoldingOffchain.id) {
+                const blockNumber = pollData.block_number;
+                if (signerAddress !== undefined) {
+                    weight = await getBalanceAtBlock(signerAddress, blockNumber);
+                }
+            }
+
+            // Protocol Guild
+            if (vote_credential === CREDENTIALS.ProtocolGuildMember.id) {
+                if (!ProtocolGuildMembershipList.includes(voter_identifier)) {
+                    res.status(403).json({ error: "You don't qualify to vote for this poll." });
+                }
+            }
+
+            // Eth solo staker
+            if (vote_credential === CREDENTIALS.EthSoloStaker.id) {
+                if (!SoloStakerList.includes(voter_identifier)) {
+                    res.status(403).json({ error: "You don't qualify to vote for this poll." });
+                }
+            }
+
+            if (vote_credential === CREDENTIALS.GitcoinPassport.id) {
+                if (gitscore < pollData.gitcoin_score)
+                    res.status(403).json({ error: "You don't have enough score to vote for this poll." });
             }
         }
-
-        // Protocol Guild
-        if ( vote_credential === CREDENTIALS.ProtocolGuildMember.id) {
-            if (!ProtocolGuildMembershipList.includes(voter_identifier)) {
-                res.status(403).json({ error: "You don't qualify to vote for this poll." });
-            }
-        }
-        
-        // Eth solo staker
-        if ( vote_credential === CREDENTIALS.EthSoloStaker.id) {
-            if (!SoloStakerList.includes(voter_identifier)) {
-                res.status(403).json({ error: "You don't qualify to vote for this poll." });
-            }
-        }
-
-        if ( vote_credential === CREDENTIALS.GitcoinPassport.id) {
-            if(gitscore < pollData.gitcoin_score)
-                res.status(403).json({ error: "You don't have enough score to vote for this poll." });
-        }
-    }
         console.log('voter_identifier', voter_identifier);
 
-        // // Generate a nullifier for the voterCredential
-        // // TODO: Make one nullifier per credentialId and credentials used (i.e: POAP used)
-        // const nullifier = generateNullifier(voter_identifier);
+        // Generate a nullifier for the voterCredential
+        // TODO: Make one nullifier per credentialId and credentials used (i.e: POAP used)
+        const nullifier = generateNullifier(voter_identifier);
 
-        // TODO: Uncomment when ceramic is ready
-        // Check if the nullifier already exists (indicating vote reuse)
+        // // TODO: Uncomment when ceramic is ready
+        // // Check if the nullifier already exists (indicating vote reuse)
         // const isNullifierUsed = await checkNullifier(nullifier);
         // if (isNullifierUsed) {
         //     throw new Error('Credential has already been used.');
         // }
 
-        // // Store the vote with the nullifier as an identifier
-        // await storeVote(voteData, nullifier, weight);
-
         console.log("🚀 ~ createVote ~ weight:", weight)
         const vote_hash = crypto.createHash('sha256').update(voter_identifier).digest('hex');
-        await processVote({ vote_hash, poll_id, option_id, weight,vote_credential, voter_identifier });
+        const voteData = { vote_hash, poll_id, option_id, weight, vote_credential, voter_identifier };
+        // Store the vote with the nullifier as an identifier
+        await storeVote(voteData, nullifier, weight);
+
+        await processVote(voteData);
 
         res.status(201).send('Vote recorded successfully');
     } catch (error: any) {
