@@ -23,7 +23,7 @@
     "@emotion/styled": "^11.11.0",
     "@headlessui/react": "^1.7.18",
     "@mui/material": "^5.15.10",
-    "@mui/x-date-pickers": "^6.19.4",
+    "@mui/x-date-pickers": "^6.19.8",
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "@openzeppelin/contracts-upgradeable": "^5.0.1",
     "@pcd/email-pcd": "^0.3.0",

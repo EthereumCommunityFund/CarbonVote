@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect} from 'react';
 import styles from '@/styles/pollResult.module.css';
 import { CREDENTIALS } from '@/src/constants';
 import { PollResultComponentType, CredentialTable, VoteData } from '@/types';
@@ -48,7 +48,7 @@ export const PollResultComponent = ({
       {}
     )
   );
-  const [showZupassDetails, setShowZupassDetails] = useState(false);
+  const [showZupassDetails, setShowZupassDetails] = useState(true);
   const [selectedZupassCredential, setSelectedZupassCredential] =
     useState<string>('');
   const toggleExpanded = (id: string) => {
@@ -59,6 +59,14 @@ export const PollResultComponent = ({
     CREDENTIALS.ZuConnectResident.id,
     CREDENTIALS.ZuzaluResident.id,
   ];
+  useEffect(() => {
+    setExpandedStates(
+      credentialTable.reduce(
+        (acc, credential) => ({ ...acc, [credential.id]: true }),
+        {}
+      )
+    );
+  }, [credentialTable]);
   const zupassCredentials = credentialTable.filter((credential) =>
     zupassIds.includes(credential.id)
   );

@@ -22,7 +22,8 @@ import { toast } from '@/components/ui/use-toast';
 import { OptionType } from '@/types';
 import { useFormStore } from '@/zustand/create';
 import { CREDENTIALS, CONTRACT_ADDRESS } from '@/src/constants';
-import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { Dayjs } from 'dayjs';
 import moment from 'moment-timezone';
@@ -904,9 +905,9 @@ const CreatePollPage = () => {
               <div className={styles.multiple_cred_info2}>
                 <img src="/images/nes.svg" alt="Nested Info" />
                 {selectedNumber === 2 &&
-                selectedEthHoldingOption.length === 1 &&
-                selectedEthHoldingOption[0] === 'on-chain' &&
-                selectedProtocolGuildOption === 'on-chain' ? (
+                  selectedEthHoldingOption.length === 1 &&
+                  selectedEthHoldingOption[0] === 'on-chain' &&
+                  selectedProtocolGuildOption === 'on-chain' ? (
                   <div>
                     <p>
                       <strong>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -53,6 +53,14 @@ export const ContractPollResultComponent: React.FC<
       [id]: !(prevStates as any)[id],
     }));
   };
+  useEffect(() => {
+    const initialStates: ExpandedStates = {};
+    allAggregatedData.forEach(({ id }) => {
+      initialStates[id] = true;
+    });
+    setExpandedStates(initialStates);
+  }, [allAggregatedData]);
+
   const generatePieChartData = (aggregatedData: PollOptionType[]) => {
     const labels = aggregatedData.map((data) => data.option_description);
     const votes = aggregatedData.map((data) =>
@@ -116,7 +124,7 @@ export const ContractPollResultComponent: React.FC<
                         voterInfo.address &&
                         (isClickable ? (
                           <a
-                            href={`https://sepolia.etherscan.io/tx/${voterInfo.voteHash}`}
+                            href={`https://etherscan.io/tx/${voterInfo.voteHash}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{ textDecoration: 'none' }}
@@ -125,7 +133,7 @@ export const ContractPollResultComponent: React.FC<
                           </a>
                         ) : (
                           <span>
-                            {`${voterInfo.address.substring(0, 6)}...${voterInfo.address.substring(voterInfo.address.length - 4)}`}
+                            {`${voterInfo.address.substring(0, 6)}...${voterInfo.address.substring(voterInfo.address.length - 4)} : ${voterInfo.balance.substring(0, 4)} Eth`}
                           </span>
                         ))}
                     </td>
@@ -163,7 +171,7 @@ export const ContractPollResultComponent: React.FC<
                 <EthIcon />
                 {!isValidUuidV4(id)
                   ? 'Ether Holding Smart Contract Results'
-                  : 'Ether Holding IPFS Results'}
+                  : 'Ether Holding Results'}
               </Label>
               <TbChevronDown />
             </Button>
@@ -181,7 +189,9 @@ export const ContractPollResultComponent: React.FC<
                 <div className="flex flex-col">
                   Block Status: {currentBlock} / {endBlock}
                 </div>
-                <Button onClick={onRefresh}>Refresh</Button>
+                {currentBlock < endBlock && (
+                  <Button onClick={onRefresh}>Refresh</Button>
+                )}
                 <div className={styles.pie}>
                   {' '}
                   <Pie
