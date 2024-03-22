@@ -132,9 +132,14 @@ export const ContractPollResultComponent: React.FC<
                             {`${voterInfo.address.substring(0, 6)}...${voterInfo.address.substring(voterInfo.address.length - 4)}`}
                           </a>
                         ) : (
-                          <span>
+                          <a
+                          href={`https://etherscan.io/address/${voterInfo.address}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ textDecoration: 'none' }}
+                        >
                             {`${voterInfo.address.substring(0, 6)}...${voterInfo.address.substring(voterInfo.address.length - 4)} : ${voterInfo.balance.substring(0, 4)} Eth`}
-                          </span>
+                            </a>
                         ))}
                     </td>
                   );
@@ -155,7 +160,7 @@ export const ContractPollResultComponent: React.FC<
           Ether Holding Credential
         </Label>
         <Label className={styles.cred_header_small}>
-          Ether Holding results are updated every n block until the end of the
+          Ether Holding results are updated every one block until the end of the
           poll's selected time.
         </Label>
       </div>

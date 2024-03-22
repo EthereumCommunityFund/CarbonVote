@@ -2,6 +2,10 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '@/utils/supabaseClient';
 import { getLatestBlockNumber } from '@/utils/getLatestBlockNumber';
 import pollSchema from '@/schemas/pollSchema';
+interface Option {
+    option_description: string;
+    option_index: number;
+  }
 
 const createPoll = async (req: NextApiRequest, res: NextApiResponse) => {
     if (req.method !== 'POST') {
@@ -34,10 +38,11 @@ const createPoll = async (req: NextApiRequest, res: NextApiResponse) => {
         console.log('data', data)
         let pollData = data[0];
 
-        const optionsWithPollId = options.map((option: any) => ({
-            ...option,
-            poll_id: pollData.id
-        }));
+        const optionsWithPollId = options.map((option : Option) => ({
+            option_description: option.option_description,
+            option_index: option.option_index,
+            poll_id: pollData.id 
+          }));
 
         const { error: optionsError } = await supabase
             .from('options')

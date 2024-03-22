@@ -2,7 +2,8 @@ import { IconType } from "react-icons";
 
 export type OptionType = {
   name: string;
-  color: string;
+  color?: string;
+  index: number;
 }
 
 export interface PollStatusType {
@@ -38,7 +39,7 @@ export type PollOptionType = {
   totalEth?: string;
   votersData?: any;
   address?: string;
-  optionindex?: number;
+  option_index?: number;
 }
 
 export type PollType = {

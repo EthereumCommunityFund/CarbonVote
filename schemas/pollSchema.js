@@ -2,6 +2,7 @@ import Joi from 'joi';
 
 const optionSchema = Joi.object({
     option_description: Joi.string().required(),
+    option_index: Joi.number().required()
 });
 
 const pollSchema = Joi.object({

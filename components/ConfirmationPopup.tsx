@@ -11,6 +11,7 @@ interface VotingProcess {
 interface ConfirmationPopupProps {
     votingProcess: VotingProcess[];
     onClose: () => void;
+    option_description: string;
   }
 
   function getCredentialDetails(credential: VotingProcess): { imgSrc: string, text: string } {
@@ -40,7 +41,7 @@ interface ConfirmationPopupProps {
 };
 
 
-const ConfirmationPopup: React.FC<ConfirmationPopupProps> = ({ votingProcess, onClose}) => {
+const ConfirmationPopup: React.FC<ConfirmationPopupProps> = ({ votingProcess, onClose, option_description}) => {
     
     const getStatusIcon = (credentialId: string) => {
         const process = votingProcess.find(voting => voting.credentialId === credentialId);
@@ -76,7 +77,7 @@ const ConfirmationPopup: React.FC<ConfirmationPopupProps> = ({ votingProcess, on
         if (!allConfirmed) {
             return (
             <div className={styles.vote_confirmation_div}>
-                <img src='/images/loader.png' alt="Loading" />
+                 <img src='/images/loader.png' alt="Loading" className="loader" />
                 <span>Verifying vote...</span>
             </div>
             );
@@ -104,7 +105,7 @@ const ConfirmationPopup: React.FC<ConfirmationPopupProps> = ({ votingProcess, on
             {getConfirmationText()}
     
             <p className={styles.header_p}>You voted for</p>
-            <p className={styles.choice}>NO</p>
+            <p className={styles.choice}>{option_description}</p>
             <div className={styles.status_img}>
                 {votingProcess.map((process, index) => (
                     <React.Fragment key={index}>

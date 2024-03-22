@@ -68,8 +68,8 @@ const CreatePollPage = () => {
   const [selectedProtocolGuildOption, setSelectedProtocolGuildOption] =
     useState<string>('off-chain');
   const [options, setOptions] = useState<OptionType[]>([
-    { name: '', color: 'blue' },
-    { name: '', color: 'green' },
+    { name: '', color: 'blue', index: 0 },
+    { name: '', color: 'green', index: 1 },
   ]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -150,11 +150,15 @@ const CreatePollPage = () => {
 
   const addOption = () => {
     // TODO: Add color picker for different options
-    setOptions([...options, { name: '', color: 'yellow' }]);
+    const newIndex = options.length;
+    setOptions([...options, { name: '', color: 'yellow', index: newIndex }]);
   };
 
-  const removeOption = (index: number) => {
-    setOptions(options.filter((_, i) => i !== index));
+  const removeOption = (removeIndex: number) => {
+    const updatedOptions = options
+      .filter((_, index) => index !== removeIndex)
+      .map((option, index) => ({ ...option, index }));
+    setOptions(updatedOptions);
   };
 
   const createNewPoll = async () => {
@@ -306,7 +310,10 @@ const CreatePollPage = () => {
         title: motionTitle,
         description: motionDescription,
         time_limit: durationInSeconds,
-        options: options.map((option) => ({ option_description: option.name })),
+        options: options.map((option, index) => ({
+          option_description: option.name,
+          option_index: index,
+        })),
         credentials: credentialsTable,
         poap_events: selectedPOAPEvents.map((event) => event.id),
         poap_number: POAPNumber,
@@ -534,12 +541,14 @@ const CreatePollPage = () => {
                 </div>
               ))}
 
-              <div className="flex justify-end">
-                <Button className={styles.add_option_btn} onClick={addOption}>
-                  <FiPlus />
-                  <span>Add an Option</span>
-                </Button>
-              </div>
+              {options.length < 5 && (
+                <div className="flex justify-end">
+                  <Button className={styles.add_option_btn} onClick={addOption}>
+                    <FiPlus />
+                    <span>Add an Option</span>
+                  </Button>
+                </div>
+              )}
             </div>
             <div className={styles.input_wrap_flex}>
               <Label className={styles.input_header}>End Date/Time</Label>
@@ -776,6 +785,17 @@ const CreatePollPage = () => {
                     membership Protocol Guild. Each address (person) counts as
                     one vote.
                   </p>
+                  <p className={styles.desc_p}>
+                    <a
+                      href="https://app.splits.org/accounts/0xF29Ff96aaEa6C9A1fBa851f74737f3c069d4f1a9/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: 'blue', textTransform: 'uppercase' }}
+                    >
+                      Source link
+                    </a>
+                    {'    '}Updated: 02/2024{' '}
+                  </p>
                   <div className={styles.radios_flex_col}>
                     <label className={styles.radio_flex}>
                       <input
@@ -890,6 +910,17 @@ const CreatePollPage = () => {
                     a staking pool or service. (Smart contract version will come
                     soon)
                   </p>
+                  <p className={styles.desc_p}>
+                    <a
+                      href="https://github.com/starknet-io/provisions-data/tree/main/eth"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: 'blue', textTransform: 'uppercase' }}
+                    >
+                      Source link
+                    </a>
+                    {'    '}Updated: 03/2024{' '}
+                  </p>
                   <div className={styles.cred_content}></div>
                 </div>
               ) : null}
@@ -905,9 +936,9 @@ const CreatePollPage = () => {
               <div className={styles.multiple_cred_info2}>
                 <img src="/images/nes.svg" alt="Nested Info" />
                 {selectedNumber === 2 &&
-                  selectedEthHoldingOption.length === 1 &&
-                  selectedEthHoldingOption[0] === 'on-chain' &&
-                  selectedProtocolGuildOption === 'on-chain' ? (
+                selectedEthHoldingOption.length === 1 &&
+                selectedEthHoldingOption[0] === 'on-chain' &&
+                selectedProtocolGuildOption === 'on-chain' ? (
                   <div>
                     <p>
                       <strong>
