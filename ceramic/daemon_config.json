@@ -4,7 +4,8 @@
     "hostname": "127.0.0.1",
     "port": 7007,
     "admin-dids": [
-      "did:key:z6MkuaAZQAb1kAK8pweisQJZrmVAGFWErVe8hQzgqrmPXHff"
+      "did:key:z6MkuaAZQAb1kAK8pweisQJZrmVAGFWErVe8hQzgqrmPXHff",
+      "did:key:z6MkvjadTpyTWoEEvoQYijWcPATAxDdeJbhykNebrML85kvX"
     ]
   },
   "ipfs": {
