@@ -26,13 +26,9 @@ async function validateRequest(req: NextApiRequest) {
 
 async function verifySignature({ poll_id, option_id, voter_identifier, signature }: VerifySignatureInput): Promise<string | undefined> {
     try {
-
         let signerAddress;
         const message = generateMessage(poll_id, option_id, voter_identifier);
-        console.log("🚀 ~ verifySignature ~ signature:", signature)
-        console.log("🚀 ~ verifySignature ~ message:", message)
         signerAddress = verifyTypedData(EIP712_DOMAIN, EIP712_TYPE, message, signature);
-        console.log("🚀 ~ verifySignature ~ signerAddress:", signerAddress)
 
         if (signerAddress !== voter_identifier) {
             throw new Error("Signature doesn't correspond with address.");
