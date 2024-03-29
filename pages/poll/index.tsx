@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeftIcon, EthIcon } from '@/components/icons';
-import { ClockIcon } from '@/components/icons/clock';
+import { ArrowLeftIcon } from '@/components/icons';
 import Button from '@/components/ui/buttons/Button';
 import CountdownTimer from '@/components/ui/CountDownTimer';
 import { Label } from '@/components/ui/Label';
@@ -16,16 +15,14 @@ import {
   fetchCredentialVotes,
 } from '@/controllers/poll.controller';
 import { useUserPassportContext } from '@/context/PassportContext';
-import OptionVotingCountProgress from '@/components/OptionVotingCounts';
 import { useAccount, useConnect, useSignMessage } from 'wagmi';
-import { Contract, ethers, BigNumberish } from 'ethers';
-import contractABI from '@/carbonvote-contracts/deployment/contracts/poapsverification.json';
+import { signTypedData } from '@wagmi/core'
+import { Contract, ethers } from 'ethers';
 import { calculateTimeRemaining } from '@/utils/index';
 import { v4 as uuidv4 } from 'uuid';
 import PoapDetails from '@/components/POAPDetails';
 import { fetchScore } from '@/controllers';
 import { Loader } from '@/components/ui/Loader';
-import PieChartComponent from '@/components/ui/PieChart';
 import {
   PollOptionType,
   Poll,
@@ -37,7 +34,7 @@ import {
   VoterData,
   AllAggregatedDataType,
 } from '@/types';
-import { CREDENTIALS, CONTRACT_ADDRESS } from '@/src/constants';
+import { CREDENTIALS, CONTRACT_ADDRESS, EIP712_DOMAIN, EIP712_TYPE } from '@/src/constants';
 import { PollResultComponent } from '@/components/PollResult';
 import { ContractPollResultComponent } from '@/components/EthPollResult';
 import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock';
@@ -53,9 +50,7 @@ import { getImagePathByCredential, isValidUuidV4 } from '@/utils/index';
 import { getPoapOwnership } from '@/controllers/poap.controller';
 import { ProtocolGuildMembershipList } from '@/src/protocolguildmember';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { BoltIcon } from '../../components/icons';
 import { MultiplePeopleIcon } from '@/components/icons/multiplepeople';
-import { DownArrowIcon } from '@/components/icons/downarrow';
 import moment from 'moment-timezone';
 import { ChevronDownIcon } from 'lucide-react';
 import { LockIcon } from '@/components/icons/lock';
@@ -65,7 +60,6 @@ import TruncateText from '@/components/TruncateText';
 import { SoloStakerList } from '@/src/solostaker';
 import { getLatestBlockNumber } from '@/utils/getLatestBlockNumber';
 import { useLatestBlock } from '@/utils/useLatestBlock';
-import { identity } from 'lodash';
 import { getEthersLogs } from '@/utils/getVoteTransactionHash';
 
 const PollPage = () => {
@@ -75,7 +69,6 @@ const PollPage = () => {
   const handleBack = () => {
     router.push('/');
   };
-  const poapApiKey = process.env.POAP_API_KEY ?? '';
   const [poll, setPoll] = useState<Poll>();
   const {
     signIn,
@@ -812,7 +805,7 @@ const PollPage = () => {
     setCredentialCardReady(true);
   }
 
-  const invokeCastVote = async (vote_credential: string, signature: string) => {
+  const invokeCastVote = async (vote_credential: string, signature: `0x${string}`) => {
     console.log(
       signature,
       selectedOptionData?.optionId,
@@ -1172,7 +1165,17 @@ const PollPage = () => {
         optionId,
         account as string
       );
-      const signature = await signMessageAsync({ message });
+
+      const signature = await signTypedData({
+        types: EIP712_TYPE,
+        // @ts-ignore-next-line
+        domain: EIP712_DOMAIN,
+        primaryType: 'PollVote',
+        message
+      });
+
+      // TODO: Throw error when user rejects signature
+      console.log("🚀 ~ signature:", signature)
 
       if (signature) {
         await invokeCastVote(credentialId, signature);

@@ -81,3 +81,19 @@ export const CREDENTIALS = {
 export const CONTRACT_ADDRESS = "0x0d8dBAcA55fA5EE902463a3e75e157f5c7Ff67Ef";
 export const TOPIC_CASTVOTE = "0xcb87df07b1c304492bd875a5c8b98672eca500939412809ea229afef1d745188";
 export const TOPIC_CHANGEVOTE = "0xf75b557412ca4429d4ef66a92f3e3aa3becb79b047d943377283ebf79552e3f8"
+
+// EIP712_
+export const EIP712_DOMAIN = {
+  name: 'CarbonVote',
+  version: '1',
+  chainId: 1,
+  verifyingContract: '0x1111111111111111111111111111111111111111'
+};
+
+export const EIP712_TYPE = {
+  PollVote: [
+    { name: 'poll_id', type: 'string' },
+    { name: 'option_id', type: 'string' },
+    { name: 'voter_identifier', type: 'address' },
+  ],
+};

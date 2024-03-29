@@ -1,17 +1,17 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { verifyMessage } from 'ethers';
+import { verifyTypedData } from 'ethers';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import { supabase } from 'utils/supabaseClient';
-import { CREDENTIALS } from '@/src/constants';
 import { VerifySignatureInput, CheckPOAPOwnershipInput, ProcessVoteInput } from '@/types'
-//import { storeVote, checkNullifier, generateNullifier } from '@/utils/ceramicHelpers'
 import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock'
 import { generateMessage } from '@/utils/generateMessage'
 import { ProtocolGuildMembershipList } from '@/src/protocolguildmember';
 import { SoloStakerList } from '@/src/solostaker';
 const poapApiKey = process.env.POAP_API_KEY ?? "";
 import { getPoapOwnership } from '@/controllers/poap.controller';
+import { CREDENTIALS, EIP712_DOMAIN, EIP712_TYPE } from '@/src/constants';
+
 
 async function validateRequest(req: NextApiRequest) {
     if (req.method !== 'POST') {
@@ -25,18 +25,23 @@ async function validateRequest(req: NextApiRequest) {
 }
 
 async function verifySignature({ poll_id, option_id, voter_identifier, signature }: VerifySignatureInput): Promise<string | undefined> {
-    let signerAddress;
-    const message = generateMessage(poll_id, option_id, voter_identifier);
-    console.log("🚀 ~ verifySignature ~ signature:", signature)
-    console.log("🚀 ~ verifySignature ~ message:", message)
-    signerAddress = verifyMessage(message, signature);
-    console.log("🚀 ~ verifySignature ~ signerAddress:", signerAddress)
+    try {
 
-    if (signerAddress !== voter_identifier) {
-        throw new Error("Signature doesn't correspond with address.");
+        let signerAddress;
+        const message = generateMessage(poll_id, option_id, voter_identifier);
+        console.log("🚀 ~ verifySignature ~ signature:", signature)
+        console.log("🚀 ~ verifySignature ~ message:", message)
+        signerAddress = verifyTypedData(EIP712_DOMAIN, EIP712_TYPE, message, signature);
+        console.log("🚀 ~ verifySignature ~ signerAddress:", signerAddress)
+
+        if (signerAddress !== voter_identifier) {
+            throw new Error("Signature doesn't correspond with address.");
+        }
+        // Additional verification logic for other credentials can be added here
+        return signerAddress;
+    } catch (error) {
+        console.error("verifySignature ~ error:", error)
     }
-    // Additional verification logic for other credentials can be added here
-    return signerAddress;
 }
 
 async function checkPOAPOwnership({ pollData, voter_identifier }: CheckPOAPOwnershipInput): Promise<void> {
