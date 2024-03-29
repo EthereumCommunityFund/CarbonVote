@@ -1596,12 +1596,12 @@ const PollPage = () => {
           <div className="flex flex-col p-5 gap-5 border-b border-black border-opacity-10">
             <div className="flex gap-3.5">
               {pollIsLive ? (
-                <div className="px-2.5 py-0.5 bg-red-500 bg-opacity-20 rounded-lg">
-                  <Label className="text-red-500 text-md font-bold">Live</Label>
+                <div className="px-2.5 py-0.5 bg-[#44b678] bg-opacity-20 rounded-lg">
+                  <Label className="text-[#44b678] text-md font-bold">Live</Label>
                 </div>
               ) : (
-                <div className="px-2.5 py-0.5 opacity-60 bg-black bg-opacity-5 rounded-lg">
-                  <Label className="text-black text-md font-bold">Closed</Label>
+                <div className="px-2.5 py-0.5 opacity-60 bg-red-500 bg-opacity-20 rounded-lg">
+                  <Label className="text-black text-red-500 font-bold">Closed</Label>
                 </div>
               )}
 
