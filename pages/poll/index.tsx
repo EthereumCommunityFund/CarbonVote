@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeftIcon, EthIcon } from '@/components/icons';
-import { ClockIcon } from '@/components/icons/clock';
+import { ArrowLeftIcon } from '@/components/icons';
 import Button from '@/components/ui/buttons/Button';
 import CountdownTimer from '@/components/ui/CountDownTimer';
 import { Label } from '@/components/ui/Label';
@@ -16,16 +15,14 @@ import {
   fetchCredentialVotes,
 } from '@/controllers/poll.controller';
 import { useUserPassportContext } from '@/context/PassportContext';
-import OptionVotingCountProgress from '@/components/OptionVotingCounts';
 import { useAccount, useConnect, useSignMessage } from 'wagmi';
-import { Contract, ethers, BigNumberish } from 'ethers';
-import contractABI from '@/carbonvote-contracts/deployment/contracts/poapsverification.json';
+import { signTypedData } from '@wagmi/core'
+import { Contract, ethers } from 'ethers';
 import { calculateTimeRemaining } from '@/utils/index';
 import { v4 as uuidv4 } from 'uuid';
 import PoapDetails from '@/components/POAPDetails';
 import { fetchScore } from '@/controllers';
 import { Loader } from '@/components/ui/Loader';
-import PieChartComponent from '@/components/ui/PieChart';
 import {
   PollOptionType,
   Poll,
@@ -37,7 +34,7 @@ import {
   VoterData,
   AllAggregatedDataType,
 } from '@/types';
-import { CREDENTIALS, CONTRACT_ADDRESS } from '@/src/constants';
+import { CREDENTIALS, CONTRACT_ADDRESS, EIP712_DOMAIN, EIP712_TYPE } from '@/src/constants';
 import { PollResultComponent } from '@/components/PollResult';
 import { ContractPollResultComponent } from '@/components/EthPollResult';
 import { getBalanceAtBlock } from '@/utils/getBalanceAtBlock';
@@ -50,12 +47,10 @@ import { HiArrowRight } from 'react-icons/hi';
 import ConfirmationPopup from '@/components/ConfirmationPopup';
 import { getProviderUrl } from '@/utils/getProviderUrl';
 import { getImagePathByCredential, isValidUuidV4 } from '@/utils/index';
-import getPoapOwnership from 'utils/getPoapOwnership';
+import { getPoapOwnership } from '@/controllers/poap.controller';
 import { ProtocolGuildMembershipList } from '@/src/protocolguildmember';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { BoltIcon } from '../../components/icons';
 import { MultiplePeopleIcon } from '@/components/icons/multiplepeople';
-import { DownArrowIcon } from '@/components/icons/downarrow';
 import moment from 'moment-timezone';
 import { ChevronDownIcon } from 'lucide-react';
 import { LockIcon } from '@/components/icons/lock';
@@ -65,7 +60,6 @@ import TruncateText from '@/components/TruncateText';
 import { SoloStakerList } from '@/src/solostaker';
 import { getLatestBlockNumber } from '@/utils/getLatestBlockNumber';
 import { useLatestBlock } from '@/utils/useLatestBlock';
-import { identity } from 'lodash';
 import { getEthersLogs } from '@/utils/getVoteTransactionHash';
 
 const PollPage = () => {
@@ -75,7 +69,6 @@ const PollPage = () => {
   const handleBack = () => {
     router.push('/');
   };
-  const poapApiKey = process.env.POAP_API_KEY ?? '';
   const [poll, setPoll] = useState<Poll>();
   const {
     signIn,
@@ -622,7 +615,7 @@ const PollPage = () => {
                   const ownershipPromises = (
                     credential.poap_events as string[]
                   ).map((eventId) =>
-                    getPoapOwnership(poapApiKey, account, eventId).then(
+                    getPoapOwnership(account, eventId).then(
                       (hasOwnership) => ({
                         eventId,
                         hasOwnership,
@@ -812,7 +805,7 @@ const PollPage = () => {
     setCredentialCardReady(true);
   }
 
-  const invokeCastVote = async (vote_credential: string, signature: string) => {
+  const invokeCastVote = async (vote_credential: string, signature: `0x${string}`) => {
     console.log(
       signature,
       selectedOptionData?.optionId,
@@ -1172,7 +1165,17 @@ const PollPage = () => {
         optionId,
         account as string
       );
-      const signature = await signMessageAsync({ message });
+
+      const signature = await signTypedData({
+        types: EIP712_TYPE,
+        // @ts-ignore-next-line
+        domain: EIP712_DOMAIN,
+        primaryType: 'PollVote',
+        message
+      });
+
+      // TODO: Throw error when user rejects signature
+      console.log("🚀 ~ signature:", signature)
 
       if (signature) {
         await invokeCastVote(credentialId, signature);
@@ -1593,12 +1596,12 @@ const PollPage = () => {
           <div className="flex flex-col p-5 gap-5 border-b border-black border-opacity-10">
             <div className="flex gap-3.5">
               {pollIsLive ? (
-                <div className="px-2.5 py-0.5 bg-red-500 bg-opacity-20 rounded-lg">
-                  <Label className="text-red-500 text-md font-bold">Live</Label>
+                <div className="px-2.5 py-0.5 bg-[#44b678] bg-opacity-20 rounded-lg">
+                  <Label className="text-[#44b678] text-md font-bold">Live</Label>
                 </div>
               ) : (
-                <div className="px-2.5 py-0.5 opacity-60 bg-black bg-opacity-5 rounded-lg">
-                  <Label className="text-black text-md font-bold">Closed</Label>
+                <div className="px-2.5 py-0.5 opacity-60 bg-red-500 bg-opacity-20 rounded-lg">
+                  <Label className="text-black text-red-500 font-bold">Closed</Label>
                 </div>
               )}
 
@@ -1759,7 +1762,7 @@ const PollPage = () => {
                         credentialDetail &&
                         (!credentialDetail.votedOption ||
                           credentialDetail.votedOptionName !==
-                            currentSelectedOptionName);
+                          currentSelectedOptionName);
 
                       const imagePath = getImagePathByCredential(
                         credential.credential as string
@@ -1951,122 +1954,122 @@ const PollPage = () => {
                 CREDENTIALS.ZuzaluResident.id,
               ].includes(credential.id)
             ) && (
-              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
-                <div className="flex justify-between">
-                  <Label className="text-sm text-black font-bold">
-                    <div className="flex items-center gap-2">
-                      <img
-                        src="/images/zupass.svg"
-                        alt="Credential"
-                        className="image-class-name"
-                      />
-                      <span className="opacity-60">Zupass</span>
-                    </div>
-                  </Label>
-                  {zupasspoll ? (
-                    <div className={styles.avail_cred}>
-                      ZuPass
-                      <CheckCircleIconWhite
-                        className={styles.avail_cred_icon}
-                      />
-                    </div>
-                  ) : (
-                    <LockIcon className="w-7 h-7 text-black opacity-25" />
-                  )}
-                </div>
-                <button
-                  className="flex gap-1.5 text-sm text-black opacity-60 font-medium"
-                  onClick={() => {
-                    const isExpanded = expandedIds.includes('Zupass');
-                    setExpandedIds(
-                      isExpanded
-                        ? expandedIds.filter((id) => id !== 'Zupass')
-                        : [...expandedIds, 'Zupass']
-                    );
-                  }}
-                >
-                  {expandedIds.includes('Zupass')
-                    ? 'Hide Details'
-                    : 'Show Details'}
-                  <ChevronDownIcon className="w-5 h-5" />
-                </button>
-                {expandedIds.includes('Zupass') &&
-                  (isPassportConnected ? (
-                    credentialTable
-                      .filter((credential) =>
-                        [
-                          CREDENTIALS.DevConnect.id,
-                          CREDENTIALS.ZuConnectResident.id,
-                          CREDENTIALS.ZuzaluResident.id,
-                        ].includes(credential.id)
-                      )
-                      .map((credential) => {
-                        const votedOption = userAvailableCredentialTable.find(
-                          (credentialItem) =>
-                            credentialItem.id === credential.id &&
-                            credentialItem.votedOptionName
-                        );
+                <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                  <div className="flex justify-between">
+                    <Label className="text-sm text-black font-bold">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src="/images/zupass.svg"
+                          alt="Credential"
+                          className="image-class-name"
+                        />
+                        <span className="opacity-60">Zupass</span>
+                      </div>
+                    </Label>
+                    {zupasspoll ? (
+                      <div className={styles.avail_cred}>
+                        ZuPass
+                        <CheckCircleIconWhite
+                          className={styles.avail_cred_icon}
+                        />
+                      </div>
+                    ) : (
+                      <LockIcon className="w-7 h-7 text-black opacity-25" />
+                    )}
+                  </div>
+                  <button
+                    className="flex gap-1.5 text-sm text-black opacity-60 font-medium"
+                    onClick={() => {
+                      const isExpanded = expandedIds.includes('Zupass');
+                      setExpandedIds(
+                        isExpanded
+                          ? expandedIds.filter((id) => id !== 'Zupass')
+                          : [...expandedIds, 'Zupass']
+                      );
+                    }}
+                  >
+                    {expandedIds.includes('Zupass')
+                      ? 'Hide Details'
+                      : 'Show Details'}
+                    <ChevronDownIcon className="w-5 h-5" />
+                  </button>
+                  {expandedIds.includes('Zupass') &&
+                    (isPassportConnected ? (
+                      credentialTable
+                        .filter((credential) =>
+                          [
+                            CREDENTIALS.DevConnect.id,
+                            CREDENTIALS.ZuConnectResident.id,
+                            CREDENTIALS.ZuzaluResident.id,
+                          ].includes(credential.id)
+                        )
+                        .map((credential) => {
+                          const votedOption = userAvailableCredentialTable.find(
+                            (credentialItem) =>
+                              credentialItem.id === credential.id &&
+                              credentialItem.votedOptionName
+                          );
 
-                        return (
-                          <div
-                            key={credential.id}
-                            className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg"
-                          >
-                            {userAvailableCredentialTable.some(
-                              (credentialItem) =>
-                                credentialItem.id === credential.id
-                            ) ? (
-                              <>
-                                <CheckCircleIcon className="w-7 h-7" />
-                                <span className="text-black opacity-75">
-                                  {credential.credential}
-                                </span>
-                                {votedOption && (
-                                  <span className="text-sm">
-                                    Voted: {votedOption.votedOptionName}
+                          return (
+                            <div
+                              key={credential.id}
+                              className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg"
+                            >
+                              {userAvailableCredentialTable.some(
+                                (credentialItem) =>
+                                  credentialItem.id === credential.id
+                              ) ? (
+                                <>
+                                  <CheckCircleIcon className="w-7 h-7" />
+                                  <span className="text-black opacity-75">
+                                    {credential.credential}
                                   </span>
-                                )}
-                              </>
-                            ) : (
-                              <>
-                                <LockIcon className="w-7 h-7 text-black opacity-25" />
-                                <span className="text-black opacity-75">
-                                  {credential.credential}
-                                </span>
-                                <button
-                                  className="mt-2 py-2 px-4 bg-blue-500 text-white rounded-lg focus:outline-none"
-                                  onClick={() => {
-                                    handleZupassConnect(credential.id);
-                                  }}
-                                >
-                                  Connect {credential.credential}
-                                </button>
-                              </>
-                            )}
+                                  {votedOption && (
+                                    <span className="text-sm">
+                                      Voted: {votedOption.votedOptionName}
+                                    </span>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  <LockIcon className="w-7 h-7 text-black opacity-25" />
+                                  <span className="text-black opacity-75">
+                                    {credential.credential}
+                                  </span>
+                                  <button
+                                    className="mt-2 py-2 px-4 bg-blue-500 text-white rounded-lg focus:outline-none"
+                                    onClick={() => {
+                                      handleZupassConnect(credential.id);
+                                    }}
+                                  >
+                                    Connect {credential.credential}
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          );
+                        })
+                    ) : (
+                      <Button className={styles.cred_btn} onClick={signIn}>
+                        {isPassportConnected ? (
+                          <div className={styles.zupass_logged}>
+                            <div className={styles.zuconnect}>
+                              <span>ZuConnect Resident</span>
+                              <img src="/images/check.svg" />
+                            </div>
+                            <span>OR</span>
+                            <div className={styles.zuzalu}>Zuzalu Resident</div>
                           </div>
-                        );
-                      })
-                  ) : (
-                    <Button className={styles.cred_btn} onClick={signIn}>
-                      {isPassportConnected ? (
-                        <div className={styles.zupass_logged}>
-                          <div className={styles.zuconnect}>
-                            <span>ZuConnect Resident</span>
-                            <img src="/images/check.svg" />
+                        ) : (
+                          <div className={styles.zupass_not_logged}>
+                            <img src="/images/zupass_login.svg" />
+                            <span>Zupass Login</span>
                           </div>
-                          <span>OR</span>
-                          <div className={styles.zuzalu}>Zuzalu Resident</div>
-                        </div>
-                      ) : (
-                        <div className={styles.zupass_not_logged}>
-                          <img src="/images/zupass_login.svg" />
-                          <span>Zupass Login</span>
-                        </div>
-                      )}
-                    </Button>
-                  ))}
-              </div>
-            )}
+                        )}
+                      </Button>
+                    ))}
+                </div>
+              )}
             {credentialTable
               .filter(
                 (credential) =>

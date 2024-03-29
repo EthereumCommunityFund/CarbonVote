@@ -1,7 +1,4 @@
 import { useEffect, useState } from 'react';
-import { ClockIcon } from '../icons/clock';
-import { LockClosedIcon } from '../icons/lockclosed';
-import { LockOpenIcon } from '../icons/lockopen';
 import CountdownTimer from '../ui/CountDownTimer';
 import { Label } from '../ui/Label';
 import { useRouter } from 'next/router';
@@ -25,7 +22,6 @@ interface IPollCard {
 
 export const PollCardTemplate = ({ id, title, topic, subTopic, description, options, polltype, pollMetadata, poll, startTime, endTime }: IPollCard) => {
   const router = useRouter();
-  const { signIn, isPassportConnected } = useUserPassportContext();
   const getEndDate = (time: string | bigint | number): Date => {
     if (typeof time === 'string') {
       return new Date(time);
@@ -47,7 +43,6 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
     return () => clearInterval(interval);
   }, [endTime]);
   const handleClickItem = () => {
-
     // Define the base path
     let path = '/poll'; // Default path for API polls
     // Update path if the voting method is 'ethholding' for contract polls
@@ -73,10 +68,9 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
 
   return (
     <div className={styles.poll_card} onClick={handleClickItem}>
-
       <div className={styles.status_countdown_flex}>
-        <div className={`${isLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'} px-2.5 py-1 rounded-lg`}>
-          <Label className={`${isLive ? 'text-[#44b678]' : 'text-[#656565]'}`}>
+        <div className={`${isLive ? 'bg-[#44b678]' : 'bg-red-500'} bg-opacity-20 px-2.5 py-1 rounded-lg`}>
+          <Label className={`${isLive ? 'text-[#44b678]' : 'text-red-500'}`}>
             {isLive ? 'Live' : 'Closed'}
           </Label>
         </div>
@@ -97,15 +91,6 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
 
       {/* <!-- Description --> */}
       <span dangerouslySetInnerHTML={{ __html: removeImageTags(shortDescription) }} />
-
-      {/*
-      <div className={styles.credentials_flex}>
-        <div>
-          <img src='/images/fingerprint.svg' />
-          Credentials /
-        </div> <span> Zupass, </span><span> EthHolding, </span><span> POAPs, </span><span> ProtocolGuild, </span><span> +1</span>
-      </div>*/}
     </div>
-
   );
 };

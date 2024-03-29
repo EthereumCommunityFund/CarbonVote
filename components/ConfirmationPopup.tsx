@@ -12,9 +12,9 @@ interface ConfirmationPopupProps {
     votingProcess: VotingProcess[];
     onClose: () => void;
     option_description: string;
-  }
+}
 
-  function getCredentialDetails(credential: VotingProcess): { imgSrc: string, text: string } {
+function getCredentialDetails(credential: VotingProcess): { imgSrc: string, text: string } {
     if (credential.contractpoll && credential.contractpoll.includes('ProtocolGuild on-chain') ||
         credential.credentialId === CREDENTIALS.ProtocolGuildMember.id) {
         return { imgSrc: '/images/guild.png', text: 'Protocol Guild Membership' };
@@ -41,8 +41,8 @@ interface ConfirmationPopupProps {
 };
 
 
-const ConfirmationPopup: React.FC<ConfirmationPopupProps> = ({ votingProcess, onClose, option_description}) => {
-    
+const ConfirmationPopup: React.FC<ConfirmationPopupProps> = ({ votingProcess, onClose, option_description }) => {
+
     const getStatusIcon = (credentialId: string) => {
         const process = votingProcess.find(voting => voting.credentialId === credentialId);
         if (process?.status === 'success') {
@@ -56,54 +56,54 @@ const ConfirmationPopup: React.FC<ConfirmationPopupProps> = ({ votingProcess, on
 
     const getConfirmationText = () => {
         return votingProcess.map((process, index) => {
-          if (process.status !== 'success') {
-            const { imgSrc: imagePath, text } = getCredentialDetails(process);
-            return (
-              <div key={index} className={styles.choice_option_flex}>
-                <div className={styles.choice_option}>
-                  <img src={imagePath} alt={text} />
-                  <span>{text}</span>
-                </div>
-                {index < votingProcess.length - 1 ? <span>+</span> : null}
-              </div>
-            );
-          }
-          return null; 
-        }).filter(component => component !== null); 
-      };
+            if (process.status !== 'success') {
+                const { imgSrc: imagePath, text } = getCredentialDetails(process);
+                return (
+                    <div key={index} className={styles.choice_option_flex}>
+                        <div className={styles.choice_option}>
+                            <img src={imagePath} alt={text} />
+                            <span>{text}</span>
+                        </div>
+                        {index < votingProcess.length - 1 ? <span>+</span> : null}
+                    </div>
+                );
+            }
+            return null;
+        }).filter(component => component !== null);
+    };
 
     const getConfirmedVotePrompt = () => {
         const allConfirmed = votingProcess.every(vote => vote.status === 'success');
         if (!allConfirmed) {
             return (
-            <div className={styles.vote_confirmation_div}>
-                 <img src='/images/loader.png' alt="Loading" className="loader" />
-                <span>Verifying vote...</span>
-            </div>
+                <div className={styles.vote_confirmation_div}>
+                    <img src='/images/loader.png' alt="Loading" className="loader" />
+                    <span>Verifying vote...</span>
+                </div>
             );
         } else {
             return (
-            <div className={styles.vote_confirmation_div}>
-                <img src='/images/vote_check.svg' alt="Vote Confirmed" />
-                <span>Your vote is confirmed!</span>
-            </div>
+                <div className={styles.vote_confirmation_div}>
+                    <img src='/images/vote_check.svg' alt="Vote Confirmed" />
+                    <span>Your vote is confirmed!</span>
+                </div>
             );
         }
     };
 
     const getConfirmedButton = () => {
-    const allConfirmed = votingProcess.every(vote => vote.status !== 'pending');
-    if (!allConfirmed) {
-        return <button className={styles.vote_btn}><span>Confirming...</span></button>;
-    } else {
-        return <button className={styles.vote_btn} onClick={onClose}><HiCheck /><span>Done</span></button>;
-    }
+        const allConfirmed = votingProcess.every(vote => vote.status !== 'pending');
+        if (!allConfirmed) {
+            return <button className={styles.vote_btn}><span>Confirming...</span></button>;
+        } else {
+            return <button className={styles.vote_btn} onClick={onClose}><HiCheck /><span>Done</span></button>;
+        }
     };
 
     return (
         <div className={styles.confirmation_popup}>
             {getConfirmationText()}
-    
+
             <p className={styles.header_p}>You voted for</p>
             <p className={styles.choice}>{option_description}</p>
             <div className={styles.status_img}>
