@@ -36,11 +36,9 @@ const POAPEvents = () => {
   };
 
   const handleSelectOption = (event: Event) => {
-    if (selectedEvents.length) {
-      setSearchTerm('');
-      setSearchResults([]);
-      addEvent(event);
-    }
+    setSearchTerm('');
+    setSearchResults([]);
+    addEvent(event);
   };
 
   const removeOption = (id: number) => {
