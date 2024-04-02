@@ -1,4 +1,4 @@
-import { PollOptionType, Option } from "@/types";
+import { PollOptionType} from "@/types";
 
 /*export const calculateTimeRemaining = (endDate: string | bigint | number): string | null => {
   let endTime: Date | null = null;
@@ -31,9 +31,14 @@ import { PollOptionType, Option } from "@/types";
 
   return `${days} days ${hours} hours ${minutes} mins and ${seconds} seconds remaining`;
 };*/
-export const calculateTimeRemaining = (endDate: number): string | null => {
+export const calculateTimeRemaining = (endDate: number | BigInt): string | null => {
+  let endTime: Date;
+  if (typeof endDate === 'bigint') {
+    endTime = new Date(Number(endDate));
+  } else {
+    endTime = new Date(endDate as number);
+  }
 
-  let endTime = new Date(endDate);
 
   if (!endTime) {
     return null;
@@ -101,7 +106,46 @@ export const convertToHoursAndMinutesToSeconds = (timeLimitString: string): numb
   return seconds;
 };
 
-export const convertOptionsToPollOptions = (options: Option[]): PollOptionType[] => {
+export function isValidUuidV4  (uuid: string): boolean  {
+  const uuidV4Pattern =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidV4Pattern.test(uuid);
+};
+
+export function getImagePathByCredential(credential: string): string {
+  if (
+    credential.includes('ProtocolGuild on-chain') ||
+    credential.includes('Protocol Guild Member')
+  ) {
+    return '/images/guild.png';
+  }
+  if (
+    credential.includes('EthHolding on-chain') ||
+    credential.includes('Eth Holding')
+  ) {
+    return '/images/eth_logo.svg';
+  }
+  if (
+    credential.includes('ZuConnect Resident') ||
+    credential.includes('DevConnect') ||
+    credential.includes('Zuzalu Resident')
+  ) {
+    return '/images/zupass.svg';
+  }
+  if (credential.includes('Gitcoin Passport')) {
+    return '/images/gitcoin.svg';
+  }
+  if (credential.includes('POAP API')) {
+    return '/images/poaps.svg';
+  }
+  if (credential.includes('Solo Staker')) {
+    return '/images/solo_staker.svg';
+  }
+  return '';
+}
+
+
+/*export const convertOptionsToPollOptions = (options: Option[]): PollOptionType[] => {
   return options.map((option, index) => {
     // You may need to generate unique IDs based on your requirements
     const id = `option_${index + 1}`;
@@ -114,4 +158,4 @@ export const convertOptionsToPollOptions = (options: Option[]): PollOptionType[]
       votes: Number(option.totalEth), // Assuming initial votes count is 0, adjust accordingly
     };
   });
-};
+};*/

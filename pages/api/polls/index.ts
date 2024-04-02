@@ -35,7 +35,6 @@ const viewAllPolls = async (req: NextApiRequest, res: NextApiResponse) => {
                  credential_id,
                  credentials!inner (
                      credential_name,
-                     credential_type,
                      credential_detail
                  )
              `)

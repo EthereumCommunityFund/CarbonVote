@@ -1,0 +1,4 @@
+
+#!/usr/bin/env sh
+
+node /Users/francopetra/Projects/CarbonVote/carbon-vote/node_modules/.bin/ceramic "$@"

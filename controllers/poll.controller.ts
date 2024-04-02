@@ -1,14 +1,5 @@
 import axiosInstance from '../src/axiosInstance';
-
-export type PollRequestData = {
-    title: string;
-    description: string;
-    time_limit: number;
-    votingMethod: string;
-    options: OptionData[];
-    credentials: string[];
-    poap_events: number[];
-};
+import { PollRequestData } from '@/types/index'
 
 export type VoteRequestData = {
     option_id: string;
@@ -22,8 +13,9 @@ export type CheckVoteData = {
 };
 
 
-export type OptionData = {
-    option_description: string;
+export type CheckCredentialVotesData = {
+    id: string;
+    isEthHolding?: boolean;
 };
 
 export const fetchAllPolls = async () => {
@@ -44,4 +36,8 @@ export const castVote = async (voteData: VoteRequestData) => {
 
 export const fetchVote = async (checkData: CheckVoteData) => {
     return await axiosInstance.get(`/api/polls/checkvote`, { params: checkData });
+};
+
+export const fetchCredentialVotes = async (checkData: CheckCredentialVotesData) => {
+    return await axiosInstance.get(`/api/polls/checkcredentialvote`, { params: checkData });
 };

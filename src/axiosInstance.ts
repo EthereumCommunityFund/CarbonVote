@@ -44,10 +44,10 @@ axiosInstance.interceptors.response.use(
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          Router.push('/login');
+          Router.push('/');
           break;
         case 403:
-          Router.push('/login');
+          Router.push('/');
           break;
         // case 500:
 

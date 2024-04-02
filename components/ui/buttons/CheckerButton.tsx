@@ -15,7 +15,8 @@ const CheckerButton: React.FC<CheckerButtonProps> = ({ option, onInputChange, id
         type="text"
         value={option.name}
         onChange={onInputChange}
-        placeholder={`Write option #${idx}`}
+        placeholder={`Write option #${idx+1}`}
+        maxLength={60}
       />
     </div>
   );

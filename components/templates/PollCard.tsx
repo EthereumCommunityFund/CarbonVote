@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ClockIcon } from '../icons/clock';
-import { LockClosedIcon } from '../icons/lockclosed';
-import { LockOpenIcon } from '../icons/lockopen';
 import CountdownTimer from '../ui/CountDownTimer';
 import { Label } from '../ui/Label';
 import { useRouter } from 'next/router';
 import { useUserPassportContext } from '@/context/PassportContext';
+import styles from "styles/pollCard.module.css"
 
 interface IPollCard {
   id: string;
@@ -18,15 +16,12 @@ interface IPollCard {
   options: string[];
   polltype: any;
   pollMetadata: string;
-  votingMethod: string;
   poll: any;
   endTime: number;
 }
 
-export const PollCardTemplate = ({ id, title, topic, subTopic, description, options, votingMethod, polltype, pollMetadata, poll, startTime, endTime }: IPollCard) => {
-  console.log(endTime);
+export const PollCardTemplate = ({ id, title, topic, subTopic, description, options, polltype, pollMetadata, poll, startTime, endTime }: IPollCard) => {
   const router = useRouter();
-  const { signIn, isPassportConnected } = useUserPassportContext();
   const getEndDate = (time: string | bigint | number): Date => {
     if (typeof time === 'string') {
       return new Date(time);
@@ -48,16 +43,15 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
     return () => clearInterval(interval);
   }, [endTime]);
   const handleClickItem = () => {
-
     // Define the base path
     let path = '/poll'; // Default path for API polls
     // Update path if the voting method is 'ethholding' for contract polls
     console.log(polltype, 'poll type');
     const biginteth = BigInt(1);
-    if (votingMethod === 'EthHolding' || (polltype && polltype.toString() == '1')) {
+    /*if (votingMethod === 'EthHolding' || (polltype && polltype.toString() == '1')) {
       path = '/contract-poll';
-    }
-    const pollId = votingMethod === 'headCount' ? poll.id : id;
+    }*/
+    const pollId = id;
     // Navigate to the appropriate path with the poll ID
     router.push({
       pathname: path,
@@ -73,32 +67,30 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
   const shortDescription = cleanDescription.length > 200 ? cleanDescription.substring(0, 200) + '...' : cleanDescription;
 
   return (
-    <div className="bg-white rounded-lg p-3 hover:cursor-pointer w-full flex flex-col justify-between" onClick={handleClickItem}>
+    <div className={styles.poll_card} onClick={handleClickItem}>
+      <div className={styles.status_countdown_flex}>
+        <div className={`${isLive ? 'bg-[#44b678]' : 'bg-red-500'} bg-opacity-20 px-2.5 py-1 rounded-lg`}>
+          <Label className={`${isLive ? 'text-[#44b678]' : 'text-red-500'}`}>
+            {isLive ? 'Live' : 'Closed'}
+          </Label>
+        </div>
+        {/* <!-- Time Remaining (Shown only if Live) --> */}
+        {isLive && (
+          <div className={styles.countdown}>
+            <img src='/images/clock.svg' className={styles.countdown_icon} />
+            <CountdownTimer endTime={endTime} />
+          </div>
+        )}
+      </div>
       {/* <!-- Header with Title and Live/Closed Status --> */}
       <div className="flex justify-between">
         <Label className="text-xl font-bold">{title}
         </Label>
-        <div className={`${isLive ? 'bg-[#96ecbd]' : 'bg-[#F8F8F8]'} px-2.5 py-1 rounded-lg`}>
-          <Label className={`${isLive ? 'text-[#44b678]' : 'text-[#656565]'}`}>
-            {isLive ? 'Live' : 'Closed'}
-          </Label>
-        </div>
-      </div>
 
-      <span className="text-xs" style={{ color: votingMethod === 'EthHolding' ? "orange" : "blue" }}>{votingMethod === 'headCount' ? 'HEADCOUNTING' : votingMethod.toUpperCase()}</span>
+      </div>
 
       {/* <!-- Description --> */}
       <span dangerouslySetInnerHTML={{ __html: removeImageTags(shortDescription) }} />
-
-
-      {/* <!-- Time Remaining (Shown only if Live) --> */}
-      {isLive && (
-        <div className="flex items-center gap-3.5 mt-3 text-gray-500">
-          <ClockIcon />
-          <CountdownTimer endTime={endTime} />
-        </div>
-      )}
     </div>
-
   );
 };

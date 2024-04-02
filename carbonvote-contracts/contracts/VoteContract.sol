@@ -8,9 +8,9 @@ contract VotingContract {
         Protocol_Guild
     }
 
-    event VoteChanged(address voter, uint256 pollIndex, uint256 optionIndex);
-    event VoteRemoved(address voter, uint256 pollIndex, uint256 optionIndex);
-    event VoteCasted(address voter, uint256 pollIndex, uint256 optionIndex);
+    event VoteChanged(address indexed voter, uint256 indexed pollIndex, uint256 indexed optionIndex);
+    event VoteRemoved(address indexed voter, uint256 indexed pollIndex, uint256 indexed optionIndex);
+    event VoteCasted(address indexed voter, uint256 indexed pollIndex, uint256 indexed optionIndex);
 
     address[] public allowedVoters = [
     0xEB34BD135aFc3054667ca74C9d19fbCD7D05F79F,
@@ -174,7 +174,7 @@ contract VotingContract {
     0x9192bDC7117A9A0cD989e6363928a26C938fB230,
     0xDdEEe68EA512b7e1Eb62E8B130eA4f67f94d377c,
     0x920a14B6dc0f657aF6054757B0520f334b37408A,
-    0x71bE63f3384f5fb98995898A86B02Fb2426c5788];
+    0x2CE2D27fa4DaA7Eb559A74C3980dCAcA793871a7]; 
 
     struct Poll {
         string description;
@@ -187,6 +187,7 @@ contract VotingContract {
         mapping(address => uint256) voterChoice;
         mapping(address => bool) isOption;
         uint256 startTime;
+        uint256 endBlockNumber;
     }
 
     Poll[] public polls;
@@ -197,7 +198,8 @@ contract VotingContract {
         uint256 _duration,
         string[] memory _optionNames,
         PollType _pollType,
-        string memory _poll_metadata
+        string memory _poll_metadata,
+        uint256 _endBlockNumber
     ) public {
         // Add a new Poll to the polls array and get its reference
 
@@ -211,6 +213,7 @@ contract VotingContract {
         newPoll.poll_type = _pollType;
         newPoll.poll_metadata = _poll_metadata;
         newPoll.startTime = block.timestamp;
+        newPoll.endBlockNumber = _endBlockNumber;
 
         // Initialize the options array within the Poll
         for (uint256 i = 0; i < _optionNames.length; i++) {
@@ -287,7 +290,7 @@ contract VotingContract {
             polls[_pollIndex].isOption[msg.sender],
             "Caller is not a valid option for this poll"
         );
-        require(block.timestamp < polls[_pollIndex].endTime, "Poll has ended");
+        require(block.number <= polls[_pollIndex].endBlockNumber, "Poll has ended based on block number");
 
         // Check if the voter is changing their vote
         if (polls[_pollIndex].hasVoted[voter]) {
@@ -326,7 +329,8 @@ contract VotingContract {
             uint256 endTime,
             PollType pollType,
             string memory pollMetadata,
-            uint256 startTime
+            uint256 startTime,
+            uint256 endBlockNumber
         )
     {
         Poll storage poll = polls[_pollIndex];
@@ -337,7 +341,8 @@ contract VotingContract {
             poll.endTime,
             poll.poll_type,
             poll.poll_metadata,
-            poll.startTime
+            poll.startTime,
+            poll.endBlockNumber
         );
     }
 

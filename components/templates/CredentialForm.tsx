@@ -30,7 +30,9 @@ export const CredentialForm = ({
 
   const handleCredentialSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedCredentialKey = event.target.value;
+    console.log("🚀 ~ handleCredentialSelect ~ selectedCredentialKey:", selectedCredentialKey)
     const selectedText = event.target.options[event.target.selectedIndex].text;
+    console.log("🚀 ~ handleCredentialSelect ~ selectedText:", selectedText)
     updateCredentials(selectedCredentialKey);
     setSelectedCredentialText(selectedText);
   };
@@ -101,7 +103,7 @@ export const CredentialForm = ({
             onChange={handleCredentialSelect}
             disabled={!isProtocolGuildMemberRequired && !isZuPassRequired && !isGitcoinPassportRequired && !isPOAPsRequired}
           >
-            <option value="">Select an option</option>
+            <option value="">{selectedCredentialText}</option>
             <>
               <option value={CREDENTIALS.ZuConnectResident.id}>{CREDENTIALS.ZuConnectResident.name}</option>
               <option value={CREDENTIALS.DevConnect.id}>{CREDENTIALS.DevConnect.name}</option>

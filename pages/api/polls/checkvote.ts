@@ -8,7 +8,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         return;
     }
 
-    const { id: pollId, identifier: voter_identifier } = req.query;
+    const { id: pollId, identifier: voter_identifier, credential: vote_credential } = req.query;
 
     if (!pollId) {
         res.status(400).send('Poll ID is required');
@@ -29,9 +29,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
                 .select('option_id')
                 .eq('vote_hash', vote_hash)
                 .eq('poll_id', pollId)
+                .eq('vote_credential', vote_credential)
                 .single()
-            console.log(vote);
-            console.log(vote_hash);
+            console.log('vote', vote);
+            console.log('vote_hash', vote_hash);
             if (!vote) {
                 vote = { option_id: null };
             }
