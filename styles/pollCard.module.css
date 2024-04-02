@@ -1,0 +1,59 @@
+.credentials_flex {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #F2F2F2;
+  border-radius: 10px;
+  padding: 12px;
+  width: fit-content;
+}
+
+.credentials_flex div {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #797979;
+}
+
+.credentials_flex span {
+  font-size: 14px;
+  font-weight: bold;
+  color: #000;
+}
+
+.countdown {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+  color: #666666;
+  font-size: 14px;
+}
+
+.countdown_icon {
+  opacity: 0.5;
+}
+
+.status_countdown_flex {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.poll_card {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #E6E6E6;
+  border-radius: 10px;
+  padding: 15px;
+  cursor: pointer;
+}
+
+.poll_card,
+.poll_card * {
+  cursor: pointer;
+}

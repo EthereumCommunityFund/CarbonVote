@@ -11,6 +11,7 @@ import { ZupassHolderIcon } from "./zupassholder";
 import { PoapIcon } from "./poap";
 import { ProtocolGuildIcon } from "./protocolguild";
 import { GitCoinIcon } from './gitcoin';
+import { StakerIcon } from "./staker";
 
 export {
   ThumbUpIcon,
@@ -25,5 +26,6 @@ export {
   ZupassHolderIcon,
   PoapIcon,
   ProtocolGuildIcon,
-  GitCoinIcon
+  GitCoinIcon,
+  StakerIcon
 }

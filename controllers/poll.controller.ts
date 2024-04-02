@@ -13,6 +13,11 @@ export type CheckVoteData = {
 };
 
 
+export type CheckCredentialVotesData = {
+    id: string;
+    isEthHolding?: boolean;
+};
+
 export const fetchAllPolls = async () => {
     return await axiosInstance.get('/api/polls');
 };
@@ -31,4 +36,8 @@ export const castVote = async (voteData: VoteRequestData) => {
 
 export const fetchVote = async (checkData: CheckVoteData) => {
     return await axiosInstance.get(`/api/polls/checkvote`, { params: checkData });
+};
+
+export const fetchCredentialVotes = async (checkData: CheckCredentialVotesData) => {
+    return await axiosInstance.get(`/api/polls/checkcredentialvote`, { params: checkData });
 };

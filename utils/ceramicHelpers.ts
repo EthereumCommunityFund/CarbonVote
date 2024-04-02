@@ -1,4 +1,4 @@
-
+/*
 import { DID } from 'dids';
 import { getResolver } from 'key-did-resolver';
 import { Ed25519Provider } from 'key-did-provider-ed25519';
@@ -33,7 +33,6 @@ export const generateNullifier = (credential: string) => {
 export const checkNullifier = async (nullifier: any) => {
     const idx = new IDX({ ceramic });
 
-
     try {
         // Example: Checking if the nullifier exists in a specific stream
         const stream = await ceramic.loadStream(streamId);
@@ -53,6 +52,7 @@ export const checkNullifier = async (nullifier: any) => {
  * @param {Object} voteData - The data of the vote to store.
  * @param {String} nullifier - A unique identifier derived from the voter's credential to prevent double voting.
  */
+/*
 export const storeVote = async (voteData: any, nullifier: string, ethCount: number | undefined) => {
     try {
         // Create a DID instance with the Ed25519Provider
@@ -99,6 +99,6 @@ export const storeVote = async (voteData: any, nullifier: string, ethCount: numb
         throw new Error('Failed to store vote data in Ceramic.');
     }
 };
-
+*/
 
 

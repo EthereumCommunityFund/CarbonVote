@@ -1,2 +1,8 @@
-export const getProviderUrl = () => process.env.NODE_ENV === 'production' ? 'https://mainnet.infura.io/v3/01371fc4052946bd832c20ca12496243' : 'https://sepolia.infura.io/v3/01371fc4052946bd832c20ca12496243';
-// TODO: Test if mainnet link is correct
+export const getProviderUrl = () => {
+    if (process.env.NEXT_PUBLIC_ENVIRONMENT === 'production') {
+      return process.env.NEXT_PUBLIC_INFURA_URL_PRODUCTION;
+    } else {
+      return process.env.NEXT_PUBLIC_INFURA_URL_DEVELOPMENT;
+    }
+  };
+  

@@ -13,19 +13,16 @@ export interface Database {
         Row: {
           credential_detail: string | null
           credential_name: string
-          credential_type: string
           id: string
         }
         Insert: {
           credential_detail?: string | null
           credential_name: string
-          credential_type: string
           id?: string
         }
         Update: {
           credential_detail?: string | null
           credential_name?: string
-          credential_type?: string
           id?: string
         }
         Relationships: []

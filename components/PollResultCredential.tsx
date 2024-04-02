@@ -1,34 +1,47 @@
-
-
+import React from 'react';
 import Button from './ui/buttons/Button';
-
-import { Label } from './ui/Label';
-
 import { TbChevronDown } from 'react-icons/tb';
 import PieChartComponent from './ui/PieChart';
-import { HeadCountCredential, PollOptionType, PollTypes } from '@/types';
+import { PollTypes, VoteData } from '@/types';
 import { IconType } from 'react-icons';
+import styles from "@/styles/pollResult.module.css";
+import { CREDENTIALS } from '@/src/constants';
 
 interface IPollResultCredentialComponent {
   pollType: PollTypes,
-  credentialType: string,
+  credentialid: string,
+  credentialname: string,
   icon: IconType,
-  optionsData: PollOptionType[],
+  optionsData: VoteData[],
   isExpanded: boolean,
-  toggleExpanded: () => void;
+  toggleExpanded: () => void,
 }
 
-export const PollResultCredentialComponent: React.FC<IPollResultCredentialComponent> = ({ icon: Credential_Icon, pollType, credentialType, optionsData, isExpanded, toggleExpanded }) => {
+const PollResultCredentialComponent: React.FC<IPollResultCredentialComponent> = ({
+  icon: Credential_Icon,
+  pollType,
+  credentialid,
+  credentialname,
+  optionsData,
+  isExpanded,
+  toggleExpanded,
+}) => {
 
   return (
     <>
-      <Button variant="primary" className='w-full rounded-md flex justify-between' onClick={toggleExpanded}>
-        <Label className='flex gap-2.5 items-center text-base'><Credential_Icon />{credentialType}</Label>
+      <Button variant="primary" className={styles.dropdown} onClick={toggleExpanded}>
+        <div className={styles.cred_flex}><Credential_Icon /> {credentialname}</div>
         <TbChevronDown />
       </Button>
-      {isExpanded &&
-        <><PieChartComponent votes={optionsData} votingType={pollType} /></>
-      }
+      {isExpanded && (
+        <>
+          <PieChartComponent
+            voteData={optionsData}
+            votingType={`${pollType}`}
+            credentialFilter={credentialid}
+          />
+        </>
+      )}
     </>
   );
 };

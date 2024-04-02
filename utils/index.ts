@@ -1,4 +1,4 @@
-import { PollOptionType, Option } from "@/types";
+import { PollOptionType} from "@/types";
 
 /*export const calculateTimeRemaining = (endDate: string | bigint | number): string | null => {
   let endTime: Date | null = null;
@@ -105,6 +105,45 @@ export const convertToHoursAndMinutesToSeconds = (timeLimitString: string): numb
 
   return seconds;
 };
+
+export function isValidUuidV4  (uuid: string): boolean  {
+  const uuidV4Pattern =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidV4Pattern.test(uuid);
+};
+
+export function getImagePathByCredential(credential: string): string {
+  if (
+    credential.includes('ProtocolGuild on-chain') ||
+    credential.includes('Protocol Guild Member')
+  ) {
+    return '/images/guild.png';
+  }
+  if (
+    credential.includes('EthHolding on-chain') ||
+    credential.includes('Eth Holding')
+  ) {
+    return '/images/eth_logo.svg';
+  }
+  if (
+    credential.includes('ZuConnect Resident') ||
+    credential.includes('DevConnect') ||
+    credential.includes('Zuzalu Resident')
+  ) {
+    return '/images/zupass.svg';
+  }
+  if (credential.includes('Gitcoin Passport')) {
+    return '/images/gitcoin.svg';
+  }
+  if (credential.includes('POAP API')) {
+    return '/images/poaps.svg';
+  }
+  if (credential.includes('Solo Staker')) {
+    return '/images/solo_staker.svg';
+  }
+  return '';
+}
+
 
 /*export const convertOptionsToPollOptions = (options: Option[]): PollOptionType[] => {
   return options.map((option, index) => {

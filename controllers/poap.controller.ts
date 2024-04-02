@@ -11,3 +11,7 @@ export const getPoapEventDetails = async (eventId: number, address: string | nul
 export const searchPoaps = async (value: string) => {
     return await axiosInstance.get(`/api/poap/searchPoaps?searchText=${value}`);
 };
+
+export const getPoapOwnership = async (voter_identifier: string, eventId: string) => {
+    return await axiosInstance.get(`/api/poap/poapOwnership?voter_identifier=${encodeURIComponent(voter_identifier)}&eventId=${encodeURIComponent(eventId)}`);
+};
