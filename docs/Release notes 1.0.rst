@@ -12,3 +12,11 @@ Release notes 1.0 (Beta)
 | 3. Protocol guild members credential
 | 4. Ethereum POAPS credentials
 | For the details of these credentials, you could check the chapter 'Basic structure'
+
+Release notes 1.1 (Beta)
+=============================
+
+| The version 1.1 of Carbonvote mainly provide 3 new features and new UI.
+| We have added the 'Eth Solo Staker' credential.
+| We have added the off-chain signature verification method for EthHolding and Protocol Guild Membership credentials.
+| Now user can create a nested poll with multiple credentials to see opinions from different groups.

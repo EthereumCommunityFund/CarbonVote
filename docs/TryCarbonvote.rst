@@ -9,7 +9,7 @@ As a beta version, we encourage more users to test our product and give their op
 Links
 ------------
 
-- Product website: https://test.carbonvote.com
+- Product website: https://beta.carbonvote.com
 - GitHub repository: https://github.com/EthereumCommunityFund/CarbonVote
 - Product documentation: 
 
