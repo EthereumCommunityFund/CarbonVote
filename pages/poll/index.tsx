@@ -808,11 +808,9 @@ const PollPage = () => {
       });
       console.log(nestedCredentialTable, 'nestedcredentialtable');
       const timeleft = calculateTimeRemaining(data.endTime);
-      const startdate = new Date(data.startTime);
       if (data.end_block_number) {
         setEndBlockNumber(data.end_block_number);
       }
-      setstartDate(startdate);
       try {
         const response = await fetchCredentialVotes({ id: id as string });
         console.log(response.data);
