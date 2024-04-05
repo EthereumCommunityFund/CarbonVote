@@ -1460,7 +1460,7 @@ const PollPage = () => {
             </div>
           </div>
         );
-      case CREDENTIALS.ProtocolGuildMember.name:
+      /*case CREDENTIALS.ProtocolGuildMember.name:
       case 'ProtocolGuild on-chain':
         const isMember = userAvailableCredentialTable.some(
           (credentialItem) =>
@@ -1501,7 +1501,7 @@ const PollPage = () => {
               </div>
             </div>
           </div>
-        );
+        );*/
       case CREDENTIALS.GitcoinPassport.name:
         const hasScore = userAvailableCredentialTable.some(
           (credentialItem) =>

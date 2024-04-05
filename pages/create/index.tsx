@@ -102,7 +102,7 @@ const CreatePollPage = () => {
     setEthHolding(newValue);
     setPoapsEnabled(newValue);
     setZupassEnabled(newValue);
-    setProtocolGuildMemberEnabled(newValue);
+    //setProtocolGuildMemberEnabled(newValue);
     setGitcoinPassport(newValue);
     setEthSoloStaker(newValue);
   };
@@ -763,7 +763,7 @@ const CreatePollPage = () => {
                 </div>
               ) : null}
             </div>
-            <div className={styles.cred_container}>
+            {/*<div className={styles.cred_container}>
               <div className={styles.cred_container_header}>
                 <input
                   type="checkbox"
@@ -851,7 +851,7 @@ const CreatePollPage = () => {
                   </div>
                 </div>
               ) : null}
-            </div>
+            </div>*/}
             <div className={styles.cred_container}>
               <div className={styles.cred_container_header}>
                 <input
