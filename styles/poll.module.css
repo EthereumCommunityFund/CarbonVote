@@ -5,9 +5,10 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: #0000008a;
+    background: rgba(0 0 0 / 0.5);
     display: grid;
     place-items: center;
+    z-index: 100;
 }
 
 .voting_popup {

@@ -43,7 +43,7 @@ function getCredentialDetails(credential: VotingProcess): { imgSrc: string, text
 
 const ConfirmationPopup: React.FC<ConfirmationPopupProps> = ({ votingProcess, onClose, option_description }) => {
 
-    const getStatusIcon = (credentialId: string) => {
+    const StatusIcon = ({ credentialId }: { credentialId: string }) => {
         const process = votingProcess.find(voting => voting.credentialId === credentialId);
         if (process?.status === 'success') {
             return <img src='/images/check.svg' alt="Success" />;
@@ -54,7 +54,7 @@ const ConfirmationPopup: React.FC<ConfirmationPopupProps> = ({ votingProcess, on
         }
     };
 
-    const getConfirmationText = () => {
+    const ConfirmationText = () => {
         return votingProcess.map((process, index) => {
             if (process.status !== 'success') {
                 const { imgSrc: imagePath, text } = getCredentialDetails(process);
@@ -72,7 +72,7 @@ const ConfirmationPopup: React.FC<ConfirmationPopupProps> = ({ votingProcess, on
         }).filter(component => component !== null);
     };
 
-    const getConfirmedVotePrompt = () => {
+    const ConfirmedVotePrompt = () => {
         const allConfirmed = votingProcess.every(vote => vote.status === 'success');
         if (!allConfirmed) {
             return (
@@ -91,8 +91,10 @@ const ConfirmationPopup: React.FC<ConfirmationPopupProps> = ({ votingProcess, on
         }
     };
 
-    const getConfirmedButton = () => {
-        const allConfirmed = votingProcess.every(vote => vote.status !== 'pending');
+    const ConfirmedButton = () => {
+        const allConfirmed = votingProcess.every(vote => {
+            return vote.status !== 'pending'
+        })
         if (!allConfirmed) {
             return <button className={styles.vote_btn}><span>Confirming...</span></button>;
         } else {
@@ -102,20 +104,20 @@ const ConfirmationPopup: React.FC<ConfirmationPopupProps> = ({ votingProcess, on
 
     return (
         <div className={styles.confirmation_popup}>
-            {getConfirmationText()}
+            <ConfirmationText />
 
             <p className={styles.header_p}>You voted for</p>
             <p className={styles.choice}>{option_description}</p>
             <div className={styles.status_img}>
                 {votingProcess.map((process, index) => (
                     <React.Fragment key={index}>
-                        {getStatusIcon(process.credentialId)}
+                        <StatusIcon credentialId={process.credentialId} />
                         {index < votingProcess.length - 1 && (index % 2 === 0 ? <HiArrowRight /> : <HiPlus />)}
                     </React.Fragment>
                 ))}
             </div>
-            {getConfirmedVotePrompt()}
-            {getConfirmedButton()}
+            <ConfirmedVotePrompt />
+            <ConfirmedButton />
         </div>
     );
 };
