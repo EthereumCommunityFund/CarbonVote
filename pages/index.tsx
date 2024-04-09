@@ -194,6 +194,9 @@ export default function Home() {
           </div>
         )}
         <div className="flex flex-col gap-2.5 h-[250px]">
+          {/* <div className="flex flex-col">
+            <Select defaultText="View All" />
+          </div> */}
           {polls?.map((poll: Poll, index: number) => {
             return (
               <PollCardTemplate
