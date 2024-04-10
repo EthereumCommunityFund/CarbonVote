@@ -4,7 +4,7 @@ export const HomePageProvider = ({ children, props }: { children: React.ReactNod
   return (
     <div className='fixed w-full z-50'>
       <HeaderComponent />
-      <div className="relative overflow-y-auto bg-blue-50">
+      <div className="relative overflow-y-auto">
         <div className="h-[calc(100vh-64px)] mx-auto relative">
           {children}
         </div>

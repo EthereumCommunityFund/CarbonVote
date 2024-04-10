@@ -74,6 +74,7 @@ module.exports = {
       },
       fontFamily: {
         'share-tech-mono': ['"Share Tech Mono"', 'monospace'],
+        'quicksand': ['"Quicksand"', 'monospace']
       },
     },
   },

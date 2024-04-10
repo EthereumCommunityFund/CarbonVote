@@ -118,7 +118,7 @@ export default function Home() {
   };
   // TODO: Order
   const { data: polls, isLoading, error } = useQuery('polls', fetchPolls);
-
+  console.log(polls)
   const handleCreatePoll = () => {
     router.push(`/create`);
   };
@@ -153,9 +153,9 @@ export default function Home() {
 
   return (
     <div className={styles.body_bg}>
-      <div className="flex gap-3 pt-5 px-5 bg-gradient-to-r from-red-400 to-white rounded-lg justify-center">
-        <div className="flex flex-col gap-2.5 py-10 font-share-tech-monorounded-lg lg:w-2/3">
-          <Label className="text-[39px]">Carbonvote 2</Label>
+      <div className="flex gap-3 p-10 bg-gradient-to-r from-[#FF7373] to-[#FFE2E2] rounded-[20px] justify-center">
+        <div className="flex flex-col gap-2.5 py-10 font-share-tech-mono rounded-lg lg:w-2/3">
+          <Label className="text-[39px]">Carbonvote V 2.0</Label>
           <Label className="lg:text-[69px] md:text-[59px]">
             Empowering Consensus for a Sustainable Future.
           </Label>

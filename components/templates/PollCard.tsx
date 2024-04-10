@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import CountdownTimer from '../ui/CountDownTimer';
+import Credential from '../ui/Credential';
 import { Label } from '../ui/Label';
 import { useRouter } from 'next/router';
 import { useUserPassportContext } from '@/context/PassportContext';
@@ -18,6 +19,12 @@ interface IPollCard {
   pollMetadata: string;
   poll: any;
   endTime: number;
+}
+
+interface ICredential {
+  id: string;
+  credential_detail: string;
+  credential_name: string;
 }
 
 export const PollCardTemplate = ({ id, title, topic, subTopic, description, options, polltype, pollMetadata, poll, startTime, endTime }: IPollCard) => {
@@ -69,8 +76,8 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
   return (
     <div className={styles.poll_card} onClick={handleClickItem}>
       <div className={styles.status_countdown_flex}>
-        <div className={`${isLive ? 'bg-[#44b678]' : 'bg-red-500'} bg-opacity-20 px-2.5 py-1 rounded-lg`}>
-          <Label className={`${isLive ? 'text-[#44b678]' : 'text-red-500'}`}>
+        <div className={`${isLive ? 'bg-[#f84a4a33]' : 'bg-[#0000000d]'} bg-opacity-20 px-2.5 py-1 rounded-lg`}>
+          <Label className={`${isLive ? 'text-[#F84A4A]' : 'text-[#000000]'}`}>
             {isLive ? 'Live' : 'Closed'}
           </Label>
         </div>
@@ -91,6 +98,7 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
 
       {/* <!-- Description --> */}
       <span dangerouslySetInnerHTML={{ __html: removeImageTags(shortDescription) }} />
+      <Credential credentials={poll.credentials.map((item: ICredential) => item.credential_name)} />
     </div>
   );
 };
