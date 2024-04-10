@@ -25,12 +25,12 @@ export const HeaderComponent = () => {
           {isPassportConnected ? 'Zupass Connected' : 'Connect Passport'}
         </Button>
         <ConnectButton /> */}
-        {/* <Link href="/">
+        <Link href="/">
           <div className="flex gap-1.5 items-center relative">
             <Label className="text-base">Docs</Label>
             <ArrowUpRight width={20} height={20} />
           </div>
-        </Link> */}
+        </Link>
         <Link href="/">
           <div className="flex gap-1.5 items-center relative">
             <Label className="text-base">GitHub</Label>

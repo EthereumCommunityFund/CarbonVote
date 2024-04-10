@@ -2,7 +2,7 @@ import * as React from 'react';
 import { FingerprintIcon } from 'lucide-react';
 
 type CredentialProps = {
-	credentials: Array<string>,
+	credentials: Array<string | undefined>,
 }
 
 const Credential: React.FC<CredentialProps> = ({ credentials }) => {
@@ -12,7 +12,7 @@ const Credential: React.FC<CredentialProps> = ({ credentials }) => {
 		>
 			<FingerprintIcon width='19' height='20' opacity='0.5' />
 			<p className='text-sm'>
-				<span className='opacity-50'>Credentials&nbsp;/&nbsp;</span>
+				<span className='opacity-50 font-700'>Credentials&nbsp;/&nbsp;</span>
 				<span className='font-bold opacity-100'>
 					{
 						credentials?.length <= 3 ? credentials?.join(', ') : `${credentials?.slice(0, 3).join(', ')} + ${credentials?.length - 3}`

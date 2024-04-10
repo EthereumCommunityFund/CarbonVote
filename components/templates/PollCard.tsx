@@ -1,10 +1,14 @@
+'use client';
 import { useEffect, useState } from 'react';
 import CountdownTimer from '../ui/CountDownTimer';
 import Credential from '../ui/Credential';
+import { fetchPollById } from '@/controllers/poll.controller';
 import { Label } from '../ui/Label';
 import { useRouter } from 'next/router';
 import { useUserPassportContext } from '@/context/PassportContext';
 import styles from "styles/pollCard.module.css"
+import { CredentialTable } from '@/types';
+import { CREDENTIALS } from '@/src/constants';
 
 interface IPollCard {
   id: string;
@@ -29,6 +33,55 @@ interface ICredential {
 
 export const PollCardTemplate = ({ id, title, topic, subTopic, description, options, polltype, pollMetadata, poll, startTime, endTime }: IPollCard) => {
   const router = useRouter();
+  const [credentialTable, setNestedCredentialTable] = useState<CredentialTable[]>([]);
+  const fetchPollFromApi = async (pollId: string) => {
+    try {
+      let nestedCredentialTable: CredentialTable[] = [];
+      const response = await fetchPollById(pollId as string);
+      const data = await response.data;
+      let isZupass = data.credentials.some((credential: any) =>
+        [
+          CREDENTIALS.DevConnect.id,
+          CREDENTIALS.ZuConnectResident.id,
+          CREDENTIALS.ZuzaluResident.id,
+        ].includes(credential.id)
+      )
+
+      if (isZupass) {
+        nestedCredentialTable.push({
+          credential: 'Zupass',
+          id: '635a93d1-4d2c-47d9-82f4-9acd8ff68350'
+        })
+      }
+      data.credentials.forEach((cred: any) => {
+        Object.values(CREDENTIALS).forEach((credential) => {
+          if (cred.id === credential.id) {
+            let pushObject: CredentialTable = {
+              credential: credential.name,
+              id: cred.id,
+            };
+            nestedCredentialTable.push(pushObject);
+          }
+        });
+      });
+
+      setNestedCredentialTable(nestedCredentialTable.filter(
+        (credential: any) =>
+          ![
+            CREDENTIALS.DevConnect.id,
+            CREDENTIALS.ZuConnectResident.id,
+            CREDENTIALS.ZuzaluResident.id,
+          ].includes(credential.id)
+      ));
+    } catch (error) {
+      console.error('Error fetching poll from API:', error);
+    }
+  }
+
+  useEffect(() => {
+    fetchPollFromApi(id);
+  }, [])
+
   const getEndDate = (time: string | bigint | number): Date => {
     if (typeof time === 'string') {
       return new Date(time);
@@ -98,7 +151,7 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
 
       {/* <!-- Description --> */}
       <span dangerouslySetInnerHTML={{ __html: removeImageTags(shortDescription) }} />
-      <Credential credentials={poll.credentials.map((item: ICredential) => item.credential_name)} />
+      <Credential credentials={credentialTable.map((item: CredentialTable) => item.credential)} />
     </div>
   );
 };

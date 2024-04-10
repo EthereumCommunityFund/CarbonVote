@@ -27,9 +27,6 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         )}
       >
         <option selected>{defaultText}</option>
-        <option>Not All</option>
-        <option>Not All</option>
-        <option>Not All</option>
       </select >
     )
   }

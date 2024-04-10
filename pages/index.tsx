@@ -163,23 +163,22 @@ export default function Home() {
       </div>
       <div className="px-[273px] flex flex-col gap-[30px]">
         <div className={styles.filter_create_flex}>
-          {/* <div className={styles.filter_dropdowns}>
-            <select value={selectedType} onChange={e => handleTypeChange(e.target.value)}>
+          <div className={styles.filter_dropdowns}>
+            {/* <select value={selectedType} onChange={e => handleTypeChange(e.target.value)}>
               {filterTypes.map((type, index) => (
                 <option key={index} value={type}>
                   {type}
                 </option>
               ))}
-            </select>
-
-            <select value={selectedCategory} onChange={e => handleCategoryChange(e.target.value)}>
+            </select> */}
+            {/* <select value={selectedCategory} onChange={e => handleCategoryChange(e.target.value)}>
               {filterCategories.map((category, index) => (
                 <option key={index} value={category}>
                   {category}
                 </option>
               ))}
-            </select>
-          </div> */}
+            </select> */}
+          </div>
           <Button
             className="rounded-full"
             leftIcon={PlusCirceIcon}
