@@ -27,23 +27,29 @@ export const HeaderComponent = () => {
         <ConnectButton /> */}
         <Link href="/">
           <div className="flex gap-1.5 items-center relative">
-            <Label className="text-base">Docs</Label>
+            <Label className="text-base cursor-pointer">Docs</Label>
             <ArrowUpRight width={20} height={20} />
           </div>
         </Link>
-        <Link href="/">
+        <Link href="https://github.com/EthereumCommunityFund/CarbonVote" target='_'>
           <div className="flex gap-1.5 items-center relative">
-            <Label className="text-base">GitHub</Label>
+            <Label className="text-base cursor-pointer">GitHub</Label>
             <GithubIcon width={20} height={20} fill='black' />
           </div>
         </Link>
         <Link href="/">
           <div className="flex gap-1.5 items-center relative">
-            <Label className="text-base">Changelog</Label>
+            <Label className="text-base cursor-pointer">Changelog</Label>
             <ArrowUpRight width={20} height={20} />
           </div>
         </Link>
-        <Button className="outline-none h-10 items-center rounded-full" leftIcon={BoltIcon}>Sign In</Button>
+        <Button
+          className="outline-none h-10 items-center rounded-full"
+          leftIcon={BoltIcon}
+          onClick={signIn}
+        >
+          Sign In
+        </Button>
       </div>
     </div>
   );

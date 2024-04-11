@@ -25,8 +25,7 @@
   flex-direction: column;
   gap: 20px;
   padding: 50px;
-  height: 100%;
-  background: #fff;
+  height: 100vh;
   align-items: center;
   align-self: stretch;
 }

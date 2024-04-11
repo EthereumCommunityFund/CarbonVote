@@ -150,7 +150,7 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
       </div>
 
       {/* <!-- Description --> */}
-      <span dangerouslySetInnerHTML={{ __html: removeImageTags(shortDescription) }} />
+      {/* <span dangerouslySetInnerHTML={{ __html: removeImageTags(shortDescription) }} /> */}
       <Credential credentials={credentialTable.map((item: CredentialTable) => item.credential)} />
     </div>
   );
