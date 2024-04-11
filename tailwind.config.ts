@@ -66,6 +66,9 @@ module.exports = {
         itemBgHover: "#393C3C",
         inputField: "#EFEFEF",
         btnStrongerGreen: "#79916E",
+        'light-red': 'rgba(255, 110, 110, 0.05)',
+        'badge-live': 'rgba(248, 74, 74, 0.2)',
+        'badge-closed': 'rgba(0, 0, 0, 0.05)',
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -74,8 +77,10 @@ module.exports = {
       },
       fontFamily: {
         'share-tech-mono': ['"Share Tech Mono"', 'monospace'],
-        'quicksand': ['"Quicksand"', 'monospace']
       },
+      backgroundImage: {
+        'main-gradient': "linear-gradient(85.79deg, #FF7373 -5.67%, #FFE2E2 60.94%)"
+      }
     },
   },
   plugins: [],
