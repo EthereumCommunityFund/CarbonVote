@@ -153,15 +153,27 @@ export default function Home() {
 
   return (
     <div className={styles.body_bg}>
-      <div className="flex gap-3 pt-5 px-5 bg-gradient-to-r from-red-400 to-white rounded-lg justify-center">
-        <div className="flex flex-col gap-2.5 py-10 font-share-tech-monorounded-lg lg:w-2/3">
-          <Label className="text-[39px]">Carbonvote 2</Label>
-          <Label className="lg:text-[69px] md:text-[59px]">
+      <div className="flex p-10 bg-main-gradient rounded-[20px] font-share-tech-mono justify-center">
+        <div className="flex flex-col font-share-tech-monorounded-lg lg:w-2/3">
+          <Label className="sm:text-[39px] text-[24px]">Carbonvote 2</Label>
+          <Label className="text-[39px] sm:text-[49px]">
             Empowering Consensus for a Sustainable Future.
           </Label>
         </div>
       </div>
-      <div className="px-[273px] flex flex-col gap-[30px]">
+      <div className="w-full border-collapse rounded-[10px] border-[#FF6E6E] border-[1px] bg-light-red p-2">
+        <div className="flex gap-[10px] items-center">
+          <svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fillRule="evenodd" clipRule="evenodd" d="M18 10.5C18 12.6217 17.1571 14.6566 15.6569 16.1569C14.1566 17.6571 12.1217 18.5 10 18.5C7.87827 18.5 5.84344 17.6571 4.34315 16.1569C2.84285 14.6566 2 12.6217 2 10.5C2 8.37827 2.84285 6.34344 4.34315 4.84315C5.84344 3.34285 7.87827 2.5 10 2.5C12.1217 2.5 14.1566 3.34285 15.6569 4.84315C17.1571 6.34344 18 8.37827 18 10.5ZM11 14.5C11 14.7652 10.8946 15.0196 10.7071 15.2071C10.5196 15.3946 10.2652 15.5 10 15.5C9.73478 15.5 9.48043 15.3946 9.29289 15.2071C9.10536 15.0196 9 14.7652 9 14.5C9 14.2348 9.10536 13.9804 9.29289 13.7929C9.48043 13.6054 9.73478 13.5 10 13.5C10.2652 13.5 10.5196 13.6054 10.7071 13.7929C10.8946 13.9804 11 14.2348 11 14.5ZM10 5.5C9.73478 5.5 9.48043 5.60536 9.29289 5.79289C9.10536 5.98043 9 6.23478 9 6.5V10.5C9 10.7652 9.10536 11.0196 9.29289 11.2071C9.48043 11.3946 9.73478 11.5 10 11.5C10.2652 11.5 10.5196 11.3946 10.7071 11.2071C10.8946 11.0196 11 10.7652 11 10.5V6.5C11 6.23478 10.8946 5.98043 10.7071 5.79289C10.5196 5.60536 10.2652 5.5 10 5.5Z" fill="#F7494A" />
+          </svg>
+
+          <span className="font-bold text-[16px] text-[#FF6E6E]">Beta is on Sepolia</span>
+        </div>
+        <div className="text-[14px] text-[#FF6E6E] mt-[7px]">
+          During beta, the app will be using the Sepolia testnet. Please switch your network to Sepolia to test.
+        </div>
+      </div>
+      <div className="flex flex-col gap-[30px]">
         <div className={styles.filter_create_flex}>
           {/* <div className={styles.filter_dropdowns}>
             <select value={selectedType} onChange={e => handleTypeChange(e.target.value)}>
@@ -181,7 +193,7 @@ export default function Home() {
             </select>
           </div> */}
           <Button
-            className="rounded-full"
+            className="rounded-full w-full justify-center md:w-fit"
             leftIcon={PlusCirceIcon}
             onClick={handleCreatePoll}
           >

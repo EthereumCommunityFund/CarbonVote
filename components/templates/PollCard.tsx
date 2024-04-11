@@ -69,8 +69,8 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
   return (
     <div className={styles.poll_card} onClick={handleClickItem}>
       <div className={styles.status_countdown_flex}>
-        <div className={`${isLive ? 'bg-[#44b678]' : 'bg-red-500'} bg-opacity-20 px-2.5 py-1 rounded-lg`}>
-          <Label className={`${isLive ? 'text-[#44b678]' : 'text-red-500'}`}>
+        <div className={`${isLive ? 'bg-badge-live' : 'bg-badge-closed'} bg-opacity-20 px-2.5 py-1 rounded-lg`}>
+          <Label className={`${isLive ? 'text-[#F84A4A]' : 'text-[#000000]'}`}>
             {isLive ? 'Live' : 'Closed'}
           </Label>
         </div>
