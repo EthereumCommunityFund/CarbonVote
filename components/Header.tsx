@@ -43,13 +43,14 @@ export const HeaderComponent = () => {
             <ArrowUpRight width={20} height={20} />
           </div>
         </Link>
-        <Button
+        {/* <Button
           className="outline-none h-10 items-center rounded-full"
           leftIcon={BoltIcon}
           onClick={signIn}
         >
           Sign In
-        </Button>
+        </Button> */}
+        <ConnectButton />
       </div>
     </div>
   );
