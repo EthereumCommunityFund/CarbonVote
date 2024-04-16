@@ -32,6 +32,7 @@ import POAPEvents from '../../components/POAPEvents';
 import { createPoll } from '@/controllers/poll.controller';
 import { getProviderUrl } from '@/utils/getProviderUrl';
 import { getLatestBlockNumber } from '@/utils/getLatestBlockNumber';
+import Select from '@/components/ui/Select';
 
 interface ZupassOptionType {
   value: string;
@@ -473,9 +474,9 @@ const CreatePollPage = () => {
   };
 
   return (
-    <div className="flex gap-20 px-20 py-5 text-black w-800 justify-center overflow-y-auto">
-      <div className="flex flex-col gap-5 py-5">
-        <div>
+    <div className="flex gap-[20px] px-[10px] sm:px-[20px] pt-10 justify-center text-black overflow-y-auto">
+      <div className='w-full max-w-[800px]'>
+        <div className='w-full'>
           <Button
             className="rounded-full"
             leftIcon={FiArrowLeft}
@@ -499,8 +500,7 @@ const CreatePollPage = () => {
                 className={styles.select_dropdown}
               />
             </div>
-
-            <div className={styles.input_wrap_flex}>
+            <div className={styles.input_wrap_flex + " !gap-[10px]"}>
               <Label className={styles.input_header}>
                 Motion Description:{' '}
               </Label>
@@ -508,14 +508,13 @@ const CreatePollPage = () => {
                 value={motionDescription}
                 onChange={handleDescriptionChange}
               />
-              {/* Comment it cause it's not working after test
               <div className={styles.markdown_info}>
                 <img src="/images/markdown.svg" />
                 <span>Markdown Available</span>
-                </div>*/}
+              </div>
             </div>
-            <div className="flex flex-col gap-1">
-              <div className={styles.input_wrap_flex}>
+            <div className="flex flex-col gap-[10px]">
+              <div className={styles.input_wrap_flex + " !gap-[10px]"}>
                 <Label className={styles.input_header}>Options</Label>
                 <span className={styles.header_small}>
                   Minimum of 2 options
@@ -550,7 +549,7 @@ const CreatePollPage = () => {
                 </div>
               )}
             </div>
-            <div className={styles.input_wrap_flex}>
+            <div className={styles.input_wrap_flex + " !gap-[10px]"}>
               <Label className={styles.input_header}>End Date/Time</Label>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DateTimePicker
@@ -559,21 +558,28 @@ const CreatePollPage = () => {
                   className={styles.date}
                 />
               </LocalizationProvider>
+              <div className={styles.timezone}>
+                <span>Your timezone:</span>
+                <span>
+                  {timeZone} {timeZoneAbbr}
+                </span>
+              </div>
             </div>
           </div>
           {/* <Label>{`Your TimeZone: ${myTimeZone.timeZone} ${myTimeZone.timeZoneOffset}`} </Label> */}
 
-          <div className={styles.timezone}>
-            <span>Your timezone:</span>
-            <span>
-              {timeZone} {timeZoneAbbr}
-            </span>
-          </div>
+
         </div>
         <div className={styles.create_container}>
-          <Label className={styles.create_poll_header}>Voting Methods</Label>
+          <div className={styles.create_poll_header_container + " flex flex-col gap-[30px] !mb-[40px]"}>
+            <div>
+              <Label className={styles.create_poll_header}>Voting Methods</Label>
+            </div>
+            <div className=''>
+              <Label className={styles.cred_header}>Select Credentials</Label>
+            </div>
+          </div>
 
-          <Label className={styles.cred_header}>Select Credentials</Label>
           <div className={styles.voting_methods}>
             <button className={styles.select_all} onClick={toggleAll}>
               Select All
@@ -889,7 +895,7 @@ const CreatePollPage = () => {
                 </div>
               ) : null}
             </div>
-            <div className={styles.cred_container}>
+            <div className={styles.cred_container + " !mb-0"}>
               <div className={styles.cred_container_header}>
                 <input
                   type="checkbox"
@@ -936,9 +942,9 @@ const CreatePollPage = () => {
               <div className={styles.multiple_cred_info2}>
                 <img src="/images/nes.svg" alt="Nested Info" />
                 {selectedNumber === 2 &&
-                selectedEthHoldingOption.length === 1 &&
-                selectedEthHoldingOption[0] === 'on-chain' &&
-                selectedProtocolGuildOption === 'on-chain' ? (
+                  selectedEthHoldingOption.length === 1 &&
+                  selectedEthHoldingOption[0] === 'on-chain' &&
+                  selectedProtocolGuildOption === 'on-chain' ? (
                   <div>
                     <p>
                       <strong>
@@ -980,7 +986,7 @@ const CreatePollPage = () => {
           </Button>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 export default CreatePollPage;
