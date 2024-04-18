@@ -1,34 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
-import "easymde/dist/easymde.min.css";
+import dynamic from "next/dynamic"
+import { EditorConfig, OutputData } from "@editorjs/editorjs";
+import { useState } from "react";
+import { options, useLoadData } from "./Editor";
 
-interface TextEditorProps {
-  value: string;
-  onChange: (value: string) => void;
-}
+const Editor = dynamic<{
+  editorRef: any
+  children?: any
+  data: OutputData | null
+  options: EditorConfig
+}>(
+  () =>
+    import("./Editor/editor").then((mod) => mod.EditorContainer),
+  { ssr: false }
+);
 
-// Import SimpleMdeReact dynamically with no SSR
-const SimpleMdeReactWithNoSSR = dynamic(() => import('react-simplemde-editor'), { ssr: false });
+export default function TextEditor() {
 
-const TextEditor: React.FC<TextEditorProps> = ({ value, onChange }) => {
-  const [height, setHeight] = useState<number>(400);
-  const [isClient, setIsClient] = useState<boolean>(false);
+  const [editor, setEditor] = useState(null);
+  const { data } = useLoadData()
 
-  useEffect(() => {
-    setIsClient(true);
-    // if (!editorRef.current) return;
-  }, [])
   return (
-    <>
-      {isClient &&
-        // <div ref={editorRef} className="relative" style={{ height: `${height}px` }} onMouseMove={handleMouseMove}>
-        <div style={{ maxHeight: "400px", overflowY: "auto" ,width: "100%"}}>
-        <SimpleMdeReactWithNoSSR value={value} onChange={onChange} />
-      </div>
-        // </div> 
-      }
-    </>
-  );
-};
-
-export default TextEditor;
+    <Editor editorRef={setEditor} options={options} data={data}></Editor>
+  )
+}
