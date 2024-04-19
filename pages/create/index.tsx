@@ -32,6 +32,7 @@ import POAPEvents from '../../components/POAPEvents';
 import { createPoll } from '@/controllers/poll.controller';
 import { getProviderUrl } from '@/utils/getProviderUrl';
 import { getLatestBlockNumber } from '@/utils/getLatestBlockNumber';
+import Select from '@/components/ui/Select';
 
 interface ZupassOptionType {
   value: string;
@@ -52,7 +53,8 @@ const CreatePollPage = () => {
   const contractAbi = VotingContract.abi;
   const router = useRouter();
   const [motionTitle, setMotionTitle] = useState<string>();
-  const [motionDescription, setMotionDescription] = useState<string>('');
+  // Need to figure this out while using EditorJS.
+  // const [motionDescription, setMotionDescription] = useState<string>('');
   const [gitcoinScore, setGitcoinScore] = useState<string>('10');
   const [POAPNumber, setPOAPNumber] = useState<string>('5');
   const { isConnected } = useAccount();
@@ -163,7 +165,8 @@ const CreatePollPage = () => {
 
   const createNewPoll = async () => {
     setIsLoading(true);
-    if (!motionTitle || !motionDescription || !endDateTime) {
+    // if (!motionTitle || !motionDescription || !endDateTime) {
+    if (!motionTitle || !endDateTime) {
       toast({
         title: 'Error',
         description: 'All fields are required',
@@ -217,7 +220,7 @@ const CreatePollPage = () => {
     const optionNames = options.map((option) => option.name);
     const pollMetadata = 'arbitrary data';
     console.log('Title:', motionTitle);
-    console.log('Description:', motionDescription);
+    // console.log('Description:', motionDescription);
     console.log('Duration (seconds):', durationInSeconds);
     console.log('Option Names:', optionNames);
     console.log('Poll Metadata:', pollMetadata);
@@ -308,7 +311,8 @@ const CreatePollPage = () => {
       }
       const pollData = {
         title: motionTitle,
-        description: motionDescription,
+        // description: motionDescription,
+        description: '',
         time_limit: durationInSeconds,
         options: options.map((option, index) => ({
           option_description: option.name,
@@ -369,7 +373,8 @@ const CreatePollPage = () => {
           start_block_number + Math.round(estimatedBlocks);
         const tx = await contract.createPoll(
           motionTitle,
-          motionDescription,
+          // motionDescription,
+          '',
           durationInSeconds,
           optionNames,
           pollType,
@@ -418,9 +423,10 @@ const CreatePollPage = () => {
   const handleTitleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setMotionTitle(event.target.value);
   };
-  const handleDescriptionChange = (value: string) => {
-    setMotionDescription(value);
-  };
+  // Need to be updated with EditorJS's onChange function.
+  // const handleDescriptionChange = (value: string) => {
+  //   setMotionDescription(value);
+  // };
   const handleGitcoinScoreChange = (event: ChangeEvent<HTMLInputElement>) => {
     setGitcoinScore(event.target.value);
   };
@@ -473,9 +479,9 @@ const CreatePollPage = () => {
   };
 
   return (
-    <div className="flex gap-20 px-20 py-5 text-black w-800 justify-center overflow-y-auto">
-      <div className="flex flex-col gap-5 py-5">
-        <div>
+    <div className="flex gap-[20px] px-[10px] sm:px-[20px] pt-10 justify-center text-black overflow-y-auto">
+      <div className="w-full max-w-[800px]">
+        <div className="w-full">
           <Button
             className="rounded-full"
             leftIcon={FiArrowLeft}
@@ -499,23 +505,18 @@ const CreatePollPage = () => {
                 className={styles.select_dropdown}
               />
             </div>
-
-            <div className={styles.input_wrap_flex}>
+            <div className={styles.input_wrap_flex + ' !gap-[10px]'}>
               <Label className={styles.input_header}>
                 Motion Description:{' '}
               </Label>
-              <TextEditor
-                value={motionDescription}
-                onChange={handleDescriptionChange}
-              />
-              {/* Comment it cause it's not working after test
+              <TextEditor />
               <div className={styles.markdown_info}>
                 <img src="/images/markdown.svg" />
                 <span>Markdown Available</span>
-                </div>*/}
+              </div>
             </div>
-            <div className="flex flex-col gap-1">
-              <div className={styles.input_wrap_flex}>
+            <div className="flex flex-col gap-[10px]">
+              <div className={styles.input_wrap_flex + ' !gap-[10px]'}>
                 <Label className={styles.input_header}>Options</Label>
                 <span className={styles.header_small}>
                   Minimum of 2 options
@@ -550,7 +551,7 @@ const CreatePollPage = () => {
                 </div>
               )}
             </div>
-            <div className={styles.input_wrap_flex}>
+            <div className={styles.input_wrap_flex + ' !gap-[10px]'}>
               <Label className={styles.input_header}>End Date/Time</Label>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DateTimePicker
@@ -559,21 +560,33 @@ const CreatePollPage = () => {
                   className={styles.date}
                 />
               </LocalizationProvider>
+              <div className={styles.timezone}>
+                <span>Your timezone:</span>
+                <span>
+                  {timeZone} {timeZoneAbbr}
+                </span>
+              </div>
             </div>
           </div>
           {/* <Label>{`Your TimeZone: ${myTimeZone.timeZone} ${myTimeZone.timeZoneOffset}`} </Label> */}
-
-          <div className={styles.timezone}>
-            <span>Your timezone:</span>
-            <span>
-              {timeZone} {timeZoneAbbr}
-            </span>
-          </div>
         </div>
         <div className={styles.create_container}>
-          <Label className={styles.create_poll_header}>Voting Methods</Label>
+          <div
+            className={
+              styles.create_poll_header_container +
+              ' flex flex-col gap-[30px] !mb-[40px]'
+            }
+          >
+            <div>
+              <Label className={styles.create_poll_header}>
+                Voting Methods
+              </Label>
+            </div>
+            <div className="">
+              <Label className={styles.cred_header}>Select Credentials</Label>
+            </div>
+          </div>
 
-          <Label className={styles.cred_header}>Select Credentials</Label>
           <div className={styles.voting_methods}>
             <button className={styles.select_all} onClick={toggleAll}>
               Select All
@@ -889,7 +902,7 @@ const CreatePollPage = () => {
                 </div>
               ) : null}
             </div>
-            <div className={styles.cred_container}>
+            <div className={styles.cred_container + ' !mb-0'}>
               <div className={styles.cred_container_header}>
                 <input
                   type="checkbox"

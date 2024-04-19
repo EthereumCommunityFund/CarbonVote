@@ -6,7 +6,7 @@ import { fetchPollById } from '@/controllers/poll.controller';
 import { Label } from '../ui/Label';
 import { useRouter } from 'next/router';
 import { useUserPassportContext } from '@/context/PassportContext';
-import styles from "styles/pollCard.module.css"
+import styles from 'styles/pollCard.module.css';
 import { CredentialTable } from '@/types';
 import { CREDENTIALS } from '@/src/constants';
 
@@ -31,9 +31,23 @@ interface ICredential {
   credential_name: string;
 }
 
-export const PollCardTemplate = ({ id, title, topic, subTopic, description, options, polltype, pollMetadata, poll, startTime, endTime }: IPollCard) => {
+export const PollCardTemplate = ({
+  id,
+  title,
+  topic,
+  subTopic,
+  description,
+  options,
+  polltype,
+  pollMetadata,
+  poll,
+  startTime,
+  endTime,
+}: IPollCard) => {
   const router = useRouter();
-  const [credentialTable, setNestedCredentialTable] = useState<CredentialTable[]>([]);
+  const [credentialTable, setNestedCredentialTable] = useState<
+    CredentialTable[]
+  >([]);
   const fetchPollFromApi = async (pollId: string) => {
     try {
       let nestedCredentialTable: CredentialTable[] = [];
@@ -45,13 +59,13 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
           CREDENTIALS.ZuConnectResident.id,
           CREDENTIALS.ZuzaluResident.id,
         ].includes(credential.id)
-      )
+      );
 
       if (isZupass) {
         nestedCredentialTable.push({
           credential: 'Zupass',
-          id: '635a93d1-4d2c-47d9-82f4-9acd8ff68350'
-        })
+          id: '635a93d1-4d2c-47d9-82f4-9acd8ff68350',
+        });
       }
       data.credentials.forEach((cred: any) => {
         Object.values(CREDENTIALS).forEach((credential) => {
@@ -65,22 +79,24 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
         });
       });
 
-      setNestedCredentialTable(nestedCredentialTable.filter(
-        (credential: any) =>
-          ![
-            CREDENTIALS.DevConnect.id,
-            CREDENTIALS.ZuConnectResident.id,
-            CREDENTIALS.ZuzaluResident.id,
-          ].includes(credential.id)
-      ));
+      setNestedCredentialTable(
+        nestedCredentialTable.filter(
+          (credential: any) =>
+            ![
+              CREDENTIALS.DevConnect.id,
+              CREDENTIALS.ZuConnectResident.id,
+              CREDENTIALS.ZuzaluResident.id,
+            ].includes(credential.id)
+        )
+      );
     } catch (error) {
       console.error('Error fetching poll from API:', error);
     }
-  }
+  };
 
   useEffect(() => {
     fetchPollFromApi(id);
-  }, [])
+  }, []);
 
   const getEndDate = (time: string | bigint | number): Date => {
     if (typeof time === 'string') {
@@ -124,12 +140,17 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
   }
   const cleanDescription = removeImageTags(description);
 
-  const shortDescription = cleanDescription.length > 200 ? cleanDescription.substring(0, 200) + '...' : cleanDescription;
+  const shortDescription =
+    cleanDescription.length > 200
+      ? cleanDescription.substring(0, 200) + '...'
+      : cleanDescription;
 
   return (
     <div className={styles.poll_card} onClick={handleClickItem}>
       <div className={styles.status_countdown_flex}>
-        <div className={`${isLive ? 'bg-[#f84a4a33]' : 'bg-[#0000000d]'} bg-opacity-20 px-2.5 py-1 rounded-lg`}>
+        <div
+          className={`${isLive ? 'bg-[#f84a4a33]' : 'bg-[#0000000d]'} bg-opacity-20 px-2.5 py-1 rounded-lg`}
+        >
           <Label className={`${isLive ? 'text-[#F84A4A]' : 'text-[#000000]'}`}>
             {isLive ? 'Live' : 'Closed'}
           </Label>
@@ -137,21 +158,23 @@ export const PollCardTemplate = ({ id, title, topic, subTopic, description, opti
         {/* <!-- Time Remaining (Shown only if Live) --> */}
         {isLive && (
           <div className={styles.countdown}>
-            <img src='/images/clock.svg' className={styles.countdown_icon} />
+            <img src="/images/clock.svg" className={styles.countdown_icon} />
             <CountdownTimer endTime={endTime} />
           </div>
         )}
       </div>
       {/* <!-- Header with Title and Live/Closed Status --> */}
       <div className="flex justify-between">
-        <Label className="text-xl font-bold">{title}
-        </Label>
-
+        <Label className="text-xl font-bold">{title}</Label>
       </div>
 
       {/* <!-- Description --> */}
       {/* <span dangerouslySetInnerHTML={{ __html: removeImageTags(shortDescription) }} /> */}
-      <Credential credentials={credentialTable.map((item: CredentialTable) => item.credential)} />
+      <Credential
+        credentials={credentialTable.map(
+          (item: CredentialTable) => item.credential
+        )}
+      />
     </div>
   );
 };

@@ -20,4 +20,3 @@ export default function ToggleSwitchButton(props: IProps) {
     </div>
   );
 }
-

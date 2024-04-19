@@ -22,9 +22,7 @@ const OptionButton: React.FC<OptionButtonProps> = ({
   optionAddress,
 }) => {
   const handleVote = () => {
-
-      onVote(id as string);
-
+    onVote(id as string);
   };
 
   return (

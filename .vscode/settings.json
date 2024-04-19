@@ -1,4 +1,4 @@
 {
-    "editor.formatOnSave": true,
-    "notebook.formatOnSave.enabled": true
+  "editor.formatOnSave": true,
+  "notebook.formatOnSave.enabled": true
 }

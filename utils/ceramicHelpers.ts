@@ -100,5 +100,3 @@ export const storeVote = async (voteData: any, nullifier: string, ethCount: numb
     }
 };
 */
-
-

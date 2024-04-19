@@ -1,10 +1,10 @@
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/router";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 import { HiOutlineMenuAlt1 } from 'react-icons/hi';
 
-import { navBarRoutes } from "@/constant/routes";
+import { navBarRoutes } from '@/constant/routes';
 
 export const NavigationBar = () => {
   const router = useRouter();
@@ -13,7 +13,7 @@ export const NavigationBar = () => {
 
   const handleNavBarShow = () => {
     setNavBarOpen(!navBarOpen);
-  }
+  };
   return (
     <>
       {/* Mobile menu button */}
@@ -28,13 +28,15 @@ export const NavigationBar = () => {
       </div>
       {/* Overlay that can close the dashboard menu */}
       <div
-        className={`fixed inset-0 bg-black/10 z-10 ${navBarOpen ? "block" : "hidden"
-          }`}
+        className={`fixed inset-0 bg-black/10 z-10 ${
+          navBarOpen ? 'block' : 'hidden'
+        }`}
         onClick={handleNavBarShow}
       ></div>
       <nav
-        className={`dashboard-menu min-w-[260px] fixed flex flex-col h-screen bg-grayBackground py-10 px-6 transition-transform duration-300 ${navBarOpen && "open"
-          }`}
+        className={`dashboard-menu min-w-[260px] fixed flex flex-col h-screen bg-grayBackground py-10 px-6 transition-transform duration-300 ${
+          navBarOpen && 'open'
+        }`}
       >
         <div className="flex-1 flex flex-col">
           <div className="mt-12 flex-1">
@@ -42,8 +44,11 @@ export const NavigationBar = () => {
               {routes.map((route, index) => (
                 <li
                   key={index}
-                  className={`flex items-center text-sm transition duration-200 space-x-2 py-2 font-semibold px-3 hover:bg-white/20 rounded-3xl ${router.pathname === route.path ? "bg-white/20" : "opacity-60"
-                    }`}
+                  className={`flex items-center text-sm transition duration-200 space-x-2 py-2 font-semibold px-3 hover:bg-white/20 rounded-3xl ${
+                    router.pathname === route.path
+                      ? 'bg-white/20'
+                      : 'opacity-60'
+                  }`}
                 >
                   <Link href={route.path} className="w-full ">
                     {route.name}
@@ -53,7 +58,7 @@ export const NavigationBar = () => {
             </ul>
           </div>
         </div>
-      </nav >
+      </nav>
     </>
-  )
-}
+  );
+};

@@ -89,9 +89,12 @@
 body {
   /* color: #000; */
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(to bottom,
+  background: linear-gradient(
+      to bottom,
       transparent,
-      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
   font-family: 'Inter';
 }
 
@@ -131,4 +134,55 @@ body {
   border-bottom: 7px solid #e2e7e9;
   border-left: 7px solid #ccd1d3;
   animation: spinner 1.1s linear infinite;
+}
+
+.ce-block__content {
+  margin-left: 68px;
+}
+
+.ce-toolbar__content {
+  margin-left: 68px;
+}
+
+.ce-toolbar__actions {
+  right: 100% !important;
+}
+.ce-toolbar--opened > div {
+  margin-top: 0px;
+}
+
+.ce-toolbar__plus {
+  margin-left: 10px;
+  order: 2;
+}
+
+@media only screen and (max-width: 650px) {
+  .ce-toolbar--opened > div {
+    margin-top: -26px;
+  }
+  .ce-toolbar__plus {
+    background-color: unset;
+    border: unset;
+    box-shadow: unset;
+    border-radius: unset;
+    width: 24px;
+    height: 24px;
+  }
+
+  .ce-toolbar__settings-btn {
+    background-color: unset;
+    border: unset;
+    box-shadow: unset;
+    border-radius: unset;
+    width: 24px;
+    height: 24px;
+  }
+
+  .cdx-block {
+    padding: 0px;
+  }
+
+  .ce-block {
+    margin-bottom: 12px;
+  }
 }

@@ -42,7 +42,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        type='button'
+        type="button"
         disabled={disabled}
         className={cn(
           'inline-flex items-center font-medium',
@@ -53,7 +53,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           [
             size === 'base' && ['px-3 py-1.5', 'text-sm'],
             size === 'sm' && ['px-2 py-1', 'text-xs md:text-sm'],
-            size === 'lg' && ['px-4 py-2', 'text-xl font-sans font-semibold md:text-lg'],
+            size === 'lg' && [
+              'px-4 py-2',
+              'text-xl font-sans font-semibold md:text-lg',
+            ],
           ],
           //#endregion  //*======== Size ===========
           //#region  //*=========== Variants ===========
@@ -67,7 +70,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           //#endregion  //*======== Variants ===========
           'disabled:cursor-not-allowed',
           isLoading &&
-          'relative text-transparent transition-none hover:text-transparent disabled:cursor-wait',
+            'relative text-transparent transition-none hover:text-transparent disabled:cursor-wait',
           className
         )}
         {...rest}
@@ -83,7 +86,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
               }
             )}
           >
-            <ImSpinner2 className='animate-spin' />
+            <ImSpinner2 className="animate-spin" />
           </div>
         )}
         {LeftIcon && (
@@ -95,7 +98,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             ])}
           >
             <LeftIcon
-              size='1em'
+              size="1em"
               className={cn(
                 [
                   size === 'base' && 'md:text-md text-md',
@@ -117,7 +120,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             ])}
           >
             <RightIcon
-              size='1.25em'
+              size="1.25em"
               className={cn(
                 [
                   size === 'base' && 'text-md md:text-md',

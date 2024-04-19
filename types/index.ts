@@ -1,10 +1,10 @@
-import { IconType } from "react-icons";
+import { IconType } from 'react-icons';
 
 export type OptionType = {
   name: string;
   color?: string;
   index: number;
-}
+};
 
 export interface PollStatusType {
   closed: boolean;
@@ -22,7 +22,7 @@ export type CredentialType = {
   id: string;
   credential_name: string;
   credential_detail: string;
-}
+};
 
 export interface AllAggregatedDataType {
   id: string;
@@ -40,7 +40,7 @@ export type PollOptionType = {
   votersData?: any;
   address?: string;
   option_index?: number;
-}
+};
 
 export type PollType = {
   id: string;
@@ -51,36 +51,36 @@ export type PollType = {
   time_limit: number;
   title: string;
   voting_method: string;
-}
+};
 
 export type Event = {
-  id: number
-  fancy_id: string
-  name: string
-  description: string
-  location_type: string
-  city: string
-  country: string
-  channel: string
-  platform: string
-  event_url: string
-  image_url: string
-  animation_url: string
-  year: number
-  start_date: string
-  end_date: string
-  expiry_date: string
-  timezone: string
-  from_admin: boolean
-  virtual_event: boolean
-  event_template_id: string
-  private_event: boolean
-}
+  id: number;
+  fancy_id: string;
+  name: string;
+  description: string;
+  location_type: string;
+  city: string;
+  country: string;
+  channel: string;
+  platform: string;
+  event_url: string;
+  image_url: string;
+  animation_url: string;
+  year: number;
+  start_date: string;
+  end_date: string;
+  expiry_date: string;
+  timezone: string;
+  from_admin: boolean;
+  virtual_event: boolean;
+  event_template_id: string;
+  private_event: boolean;
+};
 
 export type PillInputs = {
-  event: Event,
+  event: Event;
   onRemove: (id: number) => void;
-}
+};
 
 export interface Poll {
   id: string;
@@ -121,7 +121,6 @@ export interface CheckPOAPOwnershipInput {
   voter_identifier: string;
 }
 
-
 export interface VerifySignatureInput {
   poll_id: string;
   option_id: string;
@@ -134,12 +133,12 @@ export interface VoteData {
   votes: number;
   credential: string;
   description: string;
-  voters_account?: string[];  
+  voters_account?: string[];
 }
 
 export interface VoterData {
   address: string;
-  balance: string; 
+  balance: string;
 }
 
 export interface CredentialInfo {
@@ -149,8 +148,8 @@ export interface CredentialInfo {
 
 export interface PollResultComponentType {
   pollType: PollTypes;
-  optionsData: VoteData[]; 
-  credentialTable: CredentialTable[];  
+  optionsData: VoteData[];
+  credentialTable: CredentialTable[];
 }
 
 export interface CredentialTable {
@@ -163,7 +162,7 @@ export interface CredentialTable {
   poap_events?: string[];
   poap_number?: string;
   endblock_number?: number;
-  subCredentials?: CredentialTable[]; 
+  subCredentials?: CredentialTable[];
 }
 
 export interface SelectedOptionData {

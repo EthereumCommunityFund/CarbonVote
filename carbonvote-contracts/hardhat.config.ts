@@ -1,7 +1,7 @@
 import { HardhatUserConfig } from 'hardhat/config';
 import '@nomicfoundation/hardhat-toolbox';
 import { getProviderUrl } from '../utils/getProviderUrl';
-import { ethers, run, network } from "hardhat";
+import { ethers, run, network } from 'hardhat';
 
 const config: HardhatUserConfig = {
   solidity: '0.8.20',
