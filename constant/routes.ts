@@ -1,6 +1,6 @@
-interface Route{
-  name: string,
-  path: string,
+interface Route {
+  name: string;
+  path: string;
 }
 
 export const navBarRoutes: Route[] = [
@@ -10,6 +10,6 @@ export const navBarRoutes: Route[] = [
   },
   {
     name: 'MyPolls',
-    path: '/mypolls'
-  }
-]
+    path: '/mypolls',
+  },
+];

@@ -1,4 +1,4 @@
-import { PollOptionType} from "@/types";
+import { PollOptionType } from '@/types';
 
 /*export const calculateTimeRemaining = (endDate: string | bigint | number): string | null => {
   let endTime: Date | null = null;
@@ -31,7 +31,9 @@ import { PollOptionType} from "@/types";
 
   return `${days} days ${hours} hours ${minutes} mins and ${seconds} seconds remaining`;
 };*/
-export const calculateTimeRemaining = (endDate: number | BigInt): string | null => {
+export const calculateTimeRemaining = (
+  endDate: number | BigInt
+): string | null => {
   let endTime: Date;
   if (typeof endDate === 'bigint') {
     endTime = new Date(Number(endDate));
@@ -39,13 +41,18 @@ export const calculateTimeRemaining = (endDate: number | BigInt): string | null 
     endTime = new Date(endDate as number);
   }
 
-
   if (!endTime) {
     return null;
   }
   const now = new Date();
-  const utcNow = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
-    now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds());
+  const utcNow = new Date(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+    now.getUTCHours(),
+    now.getUTCMinutes(),
+    now.getUTCSeconds()
+  );
 
   const distance = endTime.getTime() - now.getTime();
   if (distance < 0) {
@@ -53,7 +60,9 @@ export const calculateTimeRemaining = (endDate: number | BigInt): string | null 
   }
 
   const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const hours = Math.floor(
+    (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+  );
   const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
@@ -64,28 +73,37 @@ export const convertToMinutes = (timeString: any) => {
   const timeParts = timeString.match(/(\d+)([hm])/g) || [];
 
   let totalMinutes = 0;
-  timeParts.forEach((part: { match: (arg0: RegExp) => string[]; includes: (arg0: string) => any }) => {
-    const value = parseInt(part.match(/\d+/)[0]);
-    if (part.includes('h')) {
-      totalMinutes += value * 60;
-    } else if (part.includes('m')) {
-      totalMinutes += value;
+  timeParts.forEach(
+    (part: {
+      match: (arg0: RegExp) => string[];
+      includes: (arg0: string) => any;
+    }) => {
+      const value = parseInt(part.match(/\d+/)[0]);
+      if (part.includes('h')) {
+        totalMinutes += value * 60;
+      } else if (part.includes('m')) {
+        totalMinutes += value;
+      }
     }
-  });
+  );
 
   return totalMinutes;
 };
 
-export const convertToHoursAndMinutesToSeconds = (timeLimitString: string): number => {
+export const convertToHoursAndMinutesToSeconds = (
+  timeLimitString: string
+): number => {
   const SECONDS_IN_MINUTE = 60;
   const MINUTES_IN_HOUR = 60;
   const HOURS_IN_DAY = 24;
   const DAYS_IN_WEEK = 7;
 
-  const timeParts = timeLimitString.match(/(\d+)(w|week|weeks|d|day|days|h|hour|hours|m|min|minute|minutes)/g);
+  const timeParts = timeLimitString.match(
+    /(\d+)(w|week|weeks|d|day|days|h|hour|hours|m|min|minute|minutes)/g
+  );
 
   if (!timeParts) {
-    throw new Error("Invalid time format");
+    throw new Error('Invalid time format');
   }
 
   let seconds = 0;
@@ -93,12 +111,30 @@ export const convertToHoursAndMinutesToSeconds = (timeLimitString: string): numb
     const value = parseInt(part, 10);
 
     if (part.includes('w') || part.includes('week') || part.includes('weeks')) {
-      seconds += value * DAYS_IN_WEEK * HOURS_IN_DAY * MINUTES_IN_HOUR * SECONDS_IN_MINUTE;
-    } else if (part.includes('d') || part.includes('day') || part.includes('days')) {
+      seconds +=
+        value *
+        DAYS_IN_WEEK *
+        HOURS_IN_DAY *
+        MINUTES_IN_HOUR *
+        SECONDS_IN_MINUTE;
+    } else if (
+      part.includes('d') ||
+      part.includes('day') ||
+      part.includes('days')
+    ) {
       seconds += value * HOURS_IN_DAY * MINUTES_IN_HOUR * SECONDS_IN_MINUTE;
-    } else if (part.includes('h') || part.includes('hour') || part.includes('hours')) {
+    } else if (
+      part.includes('h') ||
+      part.includes('hour') ||
+      part.includes('hours')
+    ) {
       seconds += value * MINUTES_IN_HOUR * SECONDS_IN_MINUTE;
-    } else if (part.includes('m') || part.includes('min') || part.includes('minute') || part.includes('minutes')) {
+    } else if (
+      part.includes('m') ||
+      part.includes('min') ||
+      part.includes('minute') ||
+      part.includes('minutes')
+    ) {
       seconds += value * SECONDS_IN_MINUTE;
     }
   });
@@ -106,11 +142,11 @@ export const convertToHoursAndMinutesToSeconds = (timeLimitString: string): numb
   return seconds;
 };
 
-export function isValidUuidV4  (uuid: string): boolean  {
+export function isValidUuidV4(uuid: string): boolean {
   const uuidV4Pattern =
     /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidV4Pattern.test(uuid);
-};
+}
 
 export function getImagePathByCredential(credential: string): string {
   if (
@@ -143,7 +179,6 @@ export function getImagePathByCredential(credential: string): string {
   }
   return '';
 }
-
 
 /*export const convertOptionsToPollOptions = (options: Option[]): PollOptionType[] => {
   return options.map((option, index) => {

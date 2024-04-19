@@ -7,9 +7,7 @@
     "hostname": "127.0.0.1",
     "port": 7007,
     "cors_allowed_origins": [],
-    "admin_dids": [
-      "did:key:z6MkuaAZQAb1kAK8pweisQJZrmVAGFWErVe8hQzgqrmPXHff"
-    ]
+    "admin_dids": ["did:key:z6MkuaAZQAb1kAK8pweisQJZrmVAGFWErVe8hQzgqrmPXHff"]
   },
   "network": {
     "id": "InMemory",

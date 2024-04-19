@@ -3,9 +3,7 @@
   "http-api": {
     "hostname": "127.0.0.1",
     "port": 7007,
-    "admin-dids": [
-      "did:key:z6MkuaAZQAb1kAK8pweisQJZrmVAGFWErVe8hQzgqrmPXHff"
-    ]
+    "admin-dids": ["did:key:z6MkuaAZQAb1kAK8pweisQJZrmVAGFWErVe8hQzgqrmPXHff"]
   },
   "ipfs": {
     "mode": "bundled"

@@ -4,20 +4,22 @@ import { TbChevronDown } from 'react-icons/tb';
 import PieChartComponent from './ui/PieChart';
 import { PollTypes, VoteData } from '@/types';
 import { IconType } from 'react-icons';
-import styles from "@/styles/pollResult.module.css";
+import styles from '@/styles/pollResult.module.css';
 import { CREDENTIALS } from '@/src/constants';
 
 interface IPollResultCredentialComponent {
-  pollType: PollTypes,
-  credentialid: string,
-  credentialname: string,
-  icon: IconType,
-  optionsData: VoteData[],
-  isExpanded: boolean,
-  toggleExpanded: () => void,
+  pollType: PollTypes;
+  credentialid: string;
+  credentialname: string;
+  icon: IconType;
+  optionsData: VoteData[];
+  isExpanded: boolean;
+  toggleExpanded: () => void;
 }
 
-const PollResultCredentialComponent: React.FC<IPollResultCredentialComponent> = ({
+const PollResultCredentialComponent: React.FC<
+  IPollResultCredentialComponent
+> = ({
   icon: Credential_Icon,
   pollType,
   credentialid,
@@ -26,11 +28,16 @@ const PollResultCredentialComponent: React.FC<IPollResultCredentialComponent> = 
   isExpanded,
   toggleExpanded,
 }) => {
-
   return (
     <>
-      <Button variant="primary" className={styles.dropdown} onClick={toggleExpanded}>
-        <div className={styles.cred_flex}><Credential_Icon /> {credentialname}</div>
+      <Button
+        variant="primary"
+        className={styles.dropdown}
+        onClick={toggleExpanded}
+      >
+        <div className={styles.cred_flex}>
+          <Credential_Icon /> {credentialname}
+        </div>
         <TbChevronDown />
       </Button>
       {isExpanded && (

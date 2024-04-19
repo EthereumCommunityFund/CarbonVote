@@ -480,8 +480,8 @@ const CreatePollPage = () => {
 
   return (
     <div className="flex gap-[20px] px-[10px] sm:px-[20px] pt-10 justify-center text-black overflow-y-auto">
-      <div className='w-full max-w-[800px]'>
-        <div className='w-full'>
+      <div className="w-full max-w-[800px]">
+        <div className="w-full">
           <Button
             className="rounded-full"
             leftIcon={FiArrowLeft}
@@ -505,7 +505,7 @@ const CreatePollPage = () => {
                 className={styles.select_dropdown}
               />
             </div>
-            <div className={styles.input_wrap_flex + " !gap-[10px]"}>
+            <div className={styles.input_wrap_flex + ' !gap-[10px]'}>
               <Label className={styles.input_header}>
                 Motion Description:{' '}
               </Label>
@@ -516,7 +516,7 @@ const CreatePollPage = () => {
               </div>
             </div>
             <div className="flex flex-col gap-[10px]">
-              <div className={styles.input_wrap_flex + " !gap-[10px]"}>
+              <div className={styles.input_wrap_flex + ' !gap-[10px]'}>
                 <Label className={styles.input_header}>Options</Label>
                 <span className={styles.header_small}>
                   Minimum of 2 options
@@ -551,7 +551,7 @@ const CreatePollPage = () => {
                 </div>
               )}
             </div>
-            <div className={styles.input_wrap_flex + " !gap-[10px]"}>
+            <div className={styles.input_wrap_flex + ' !gap-[10px]'}>
               <Label className={styles.input_header}>End Date/Time</Label>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DateTimePicker
@@ -569,15 +569,20 @@ const CreatePollPage = () => {
             </div>
           </div>
           {/* <Label>{`Your TimeZone: ${myTimeZone.timeZone} ${myTimeZone.timeZoneOffset}`} </Label> */}
-
-
         </div>
         <div className={styles.create_container}>
-          <div className={styles.create_poll_header_container + " flex flex-col gap-[30px] !mb-[40px]"}>
+          <div
+            className={
+              styles.create_poll_header_container +
+              ' flex flex-col gap-[30px] !mb-[40px]'
+            }
+          >
             <div>
-              <Label className={styles.create_poll_header}>Voting Methods</Label>
+              <Label className={styles.create_poll_header}>
+                Voting Methods
+              </Label>
             </div>
-            <div className=''>
+            <div className="">
               <Label className={styles.cred_header}>Select Credentials</Label>
             </div>
           </div>
@@ -897,7 +902,7 @@ const CreatePollPage = () => {
                 </div>
               ) : null}
             </div>
-            <div className={styles.cred_container + " !mb-0"}>
+            <div className={styles.cred_container + ' !mb-0'}>
               <div className={styles.cred_container_header}>
                 <input
                   type="checkbox"
@@ -944,9 +949,9 @@ const CreatePollPage = () => {
               <div className={styles.multiple_cred_info2}>
                 <img src="/images/nes.svg" alt="Nested Info" />
                 {selectedNumber === 2 &&
-                  selectedEthHoldingOption.length === 1 &&
-                  selectedEthHoldingOption[0] === 'on-chain' &&
-                  selectedProtocolGuildOption === 'on-chain' ? (
+                selectedEthHoldingOption.length === 1 &&
+                selectedEthHoldingOption[0] === 'on-chain' &&
+                selectedProtocolGuildOption === 'on-chain' ? (
                   <div>
                     <p>
                       <strong>
@@ -988,7 +993,7 @@ const CreatePollPage = () => {
           </Button>
         </div>
       </div>
-    </div >
+    </div>
   );
 };
 export default CreatePollPage;

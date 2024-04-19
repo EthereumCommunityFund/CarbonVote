@@ -1,10 +1,16 @@
 import React from 'react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartOptions } from "chart.js";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  ChartOptions,
+} from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import { PollOptionType, PollTypes, VoteData } from '@/types';
 import { CREDENTIALS } from '@/src/constants';
 import { Label } from './Label';
-import styles from "@/styles/pollResult.module.css"
+import styles from '@/styles/pollResult.module.css';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface IPieChartComponent {
@@ -13,24 +19,36 @@ interface IPieChartComponent {
   credentialFilter: string;
 }
 
-const PieChartComponent: React.FC<IPieChartComponent> = ({ voteData, votingType, credentialFilter }) => {
+const PieChartComponent: React.FC<IPieChartComponent> = ({
+  voteData,
+  votingType,
+  credentialFilter,
+}) => {
   if (!Array.isArray(voteData)) {
     return <div>No data available</div>;
   }
 
-  let filteredData: VoteData[] = []
+  let filteredData: VoteData[] = [];
   let totalVotes = 0;
-  const zupassIds = [CREDENTIALS.DevConnect.id, CREDENTIALS.ZuConnectResident.id, CREDENTIALS.ZuzaluResident.id];
-  
+  const zupassIds = [
+    CREDENTIALS.DevConnect.id,
+    CREDENTIALS.ZuConnectResident.id,
+    CREDENTIALS.ZuzaluResident.id,
+  ];
+
   if (credentialFilter === 'All') {
     filteredData = voteData;
-  }else {
-    filteredData = voteData.filter(data => data.credential === credentialFilter);
+  } else {
+    filteredData = voteData.filter(
+      (data) => data.credential === credentialFilter
+    );
   }
   totalVotes = filteredData.reduce((acc, cur) => acc + cur.votes, 0);
-  
-  const labels = filteredData.map(data => data.description || 'No description');
-  const votes = filteredData.map(data => data.votes);
+
+  const labels = filteredData.map(
+    (data) => data.description || 'No description'
+  );
+  const votes = filteredData.map((data) => data.votes);
 
   const backgroundColor: string[] = ['#88F2D5', '#E3F29C', '#EA66A4'];
 
@@ -64,7 +82,7 @@ const PieChartComponent: React.FC<IPieChartComponent> = ({ voteData, votingType,
 
   return (
     <>
-      <div className='flex flex-col'>
+      <div className="flex flex-col">
         <div>Total Votes: {totalVotes}</div>
       </div>
       <div className={styles.pie}>

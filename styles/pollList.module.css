@@ -14,8 +14,8 @@
 .filter_dropdowns select {
   padding: 10px;
   border-radius: 10px;
-  background: #EEEEEE;
-  color: #4D4D4D;
+  background: #eeeeee;
+  color: #4d4d4d;
   font-weight: 500;
 }
 
@@ -34,7 +34,7 @@
     padding-right: 10px;
     padding-top: 27px;
     max-width: unset;
-  }  
+  }
 }
 
 @media only screen and (max-width: 768px) {

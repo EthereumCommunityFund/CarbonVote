@@ -133,13 +133,13 @@ export const ContractPollResultComponent: React.FC<
                           </a>
                         ) : (
                           <a
-                          href={`https://etherscan.io/address/${voterInfo.address}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ textDecoration: 'none' }}
-                        >
+                            href={`https://etherscan.io/address/${voterInfo.address}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ textDecoration: 'none' }}
+                          >
                             {`${voterInfo.address.substring(0, 6)}...${voterInfo.address.substring(voterInfo.address.length - 4)} : ${voterInfo.balance.substring(0, 4)} Eth`}
-                            </a>
+                          </a>
                         ))}
                     </td>
                   );

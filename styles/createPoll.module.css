@@ -166,7 +166,7 @@
   background-color: #e7e7e7;
 }
 
-.radio_toolbar input[type='radio']:focus+label {
+.radio_toolbar input[type='radio']:focus + label {
   border: 2px dashed #444;
 }
 
@@ -308,7 +308,7 @@
 .desc_p {
   color: #000;
   font-variant-numeric: lining-nums tabular-nums;
-  font-family: "Inter";
+  font-family: 'Inter';
   font-size: 13px;
   font-style: normal;
   font-weight: 400;
@@ -483,7 +483,7 @@
   margin-right: 8px;
 }
 
-.radio_flex input:checked+.radio_visual {
+.radio_flex input:checked + .radio_visual {
   background-color: #030303;
 }
 

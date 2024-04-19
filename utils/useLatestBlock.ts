@@ -20,7 +20,10 @@ import { getProviderUrl } from '@/utils/getProviderUrl';
   }, [isEthHoldingPoll]);
   return blockNumber;
 };*/
-export const useLatestBlock = (isEthHoldingPoll: boolean, refreshCount: number): number | null => {
+export const useLatestBlock = (
+  isEthHoldingPoll: boolean,
+  refreshCount: number
+): number | null => {
   const [blockNumber, setBlockNumber] = useState<number | null>(null);
 
   useEffect(() => {
@@ -43,5 +46,3 @@ export const useLatestBlock = (isEthHoldingPoll: boolean, refreshCount: number):
 
   return blockNumber;
 };
-
-

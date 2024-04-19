@@ -4,20 +4,12 @@ import { IconType } from 'react-icons';
 import { cn } from '@/lib/utils';
 
 type SelectProps = {
-  leftIcon?: IconType,
-  defaultText?: string,
-} & React.ComponentPropsWithRef<'select'>
+  leftIcon?: IconType;
+  defaultText?: string;
+} & React.ComponentPropsWithRef<'select'>;
 
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  (
-    {
-      children,
-      leftIcon,
-      defaultText,
-      ...rest
-    },
-    ref
-  ) => {
+  ({ children, leftIcon, defaultText, ...rest }, ref) => {
     return (
       <select
         className={cn(
@@ -27,9 +19,9 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         )}
       >
         <option selected>{defaultText}</option>
-      </select >
-    )
+      </select>
+    );
   }
-)
+);
 
 export default Select;

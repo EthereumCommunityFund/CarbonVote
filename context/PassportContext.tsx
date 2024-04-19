@@ -1,5 +1,11 @@
-import { createContext, ReactNode, useState, useContext, useEffect } from 'react';
-import { SemaphoreIdentityPCDPackage } from "@pcd/semaphore-identity-pcd";
+import {
+  createContext,
+  ReactNode,
+  useState,
+  useContext,
+  useEffect,
+} from 'react';
+import { SemaphoreIdentityPCDPackage } from '@pcd/semaphore-identity-pcd';
 import { useZupassPopupMessages } from '@pcd/passport-interface/src/PassportPopup';
 import { EdDSATicketFieldsToReveal } from '@pcd/zk-eddsa-event-ticket-pcd';
 import { toast } from '@/components/ui/use-toast';
@@ -7,14 +13,14 @@ import { useRouter } from 'next/router';
 import {
   ZKEdDSAEventTicketPCDPackage,
   ZKEdDSAEventTicketPCDArgs,
-} from "@pcd/zk-eddsa-event-ticket-pcd";
-import { SemaphoreGroupPCDPackage } from "@pcd/semaphore-group-pcd";
-import { generateSnarkMessageHash } from "@pcd/util";
+} from '@pcd/zk-eddsa-event-ticket-pcd';
+import { SemaphoreGroupPCDPackage } from '@pcd/semaphore-group-pcd';
+import { generateSnarkMessageHash } from '@pcd/util';
 import { verifyProof } from '../controllers/auth.controller';
 import { useZuAuth, supportedEvents } from 'zuauth';
-import { ArgumentTypeName } from "@pcd/pcd-types";
-import { EdDSATicketPCDPackage } from "@pcd/eddsa-ticket-pcd";
-import { ArgsOf, PCDPackage } from "@pcd/pcd-types";
+import { ArgumentTypeName } from '@pcd/pcd-types';
+import { EdDSATicketPCDPackage } from '@pcd/eddsa-ticket-pcd';
+import { ArgsOf, PCDPackage } from '@pcd/pcd-types';
 
 type UserPassportContextData = {
   signIn: () => void;
@@ -31,12 +37,12 @@ type InputParams = {
   sig: string;
   nonce: string;
   return_sso_url: string;
-}
+};
 enum PCDRequestType {
-  Get = "Get",
-  GetWithoutProving = "GetWithoutProving",
-  Add = "Add",
-  ProveAndAdd = "ProveAndAdd"
+  Get = 'Get',
+  GetWithoutProving = 'GetWithoutProving',
+  Add = 'Add',
+  ProveAndAdd = 'ProveAndAdd',
 }
 type UserPassportProviderProps = {
   children: ReactNode;
@@ -53,28 +59,29 @@ interface PCDRequest {
   returnUrl: string;
   type: PCDRequestType;
 }
-interface PCDGetRequest<T extends PCDPackage = PCDPackage>
-  extends PCDRequest {
+interface PCDGetRequest<T extends PCDPackage = PCDPackage> extends PCDRequest {
   type: PCDRequestType.Get;
-  pcdType: T["name"];
+  pcdType: T['name'];
   args: ArgsOf<T>;
   options?: ProveOptions;
 }
 
 // export const UserPassportContext = createContext({} as UserPassportContextData);
 export const UserPassportContext = createContext<UserPassportContextData>({
-  signIn: () => { },
+  signIn: () => {},
   isAuthenticated: false,
   isPassportConnected: false,
-  signOut: () => { },
-  verifyZuconnectticket: () => { },
-  devconnectVerify: () => { },
-  zuzaluVerify: () => { },
+  signOut: () => {},
+  verifyZuconnectticket: () => {},
+  devconnectVerify: () => {},
+  zuzaluVerify: () => {},
   pcd: null,
 });
 const PCD_STORAGE_KEY = 'userPCD';
 
-export function UserPassportContextProvider({ children }: UserPassportProviderProps) {
+export function UserPassportContextProvider({
+  children,
+}: UserPassportProviderProps) {
   const router = useRouter();
   const { authenticate } = useZuAuth();
 
@@ -84,7 +91,9 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
   const [pcd, setPcd] = useState<string | null>(null);
   //const [eventpcd, setEventPcd] = useState<string | null>(null);
   //const [mode, setMode] = useState<'ticket|sign-in'>('sign-in');
-  const [mode, setMode] = useState<'zuconnect' | 'sign-in' | 'devconnect'|'zuzalu'>('sign-in');
+  const [mode, setMode] = useState<
+    'zuconnect' | 'sign-in' | 'devconnect' | 'zuzalu'
+  >('sign-in');
   const processPcd = (pcdStr: string) => {
     console.log(pcdStr);
     const pcd = JSON.parse(pcdStr);
@@ -102,36 +111,34 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
             '91312aa1-5f74-4264-bdeb-f4a3ddb8670c',
             '54863995-10c4-46e4-9342-75e48b68d307',
             '797de414-2aec-4ef8-8655-09df7e2b6cc6',
-            'a6109324-7ca0-4198-9583-77962d1b9d53'
+            'a6109324-7ca0-4198-9583-77962d1b9d53',
           ];
           if (zuconnectEventIds.includes(_pcd.claim.partialTicket.eventId)) {
-            localStorage.setItem('zuconnectNullifier', _pcd.claim.externalNullifier);
+            localStorage.setItem(
+              'zuconnectNullifier',
+              _pcd.claim.externalNullifier
+            );
           }
-        }
-        catch (error) {
+        } catch (error) {
           console.error('Error processing PCD string:', error);
         }
-      }
-      else if (pcdStr && mode === 'devconnect') {
+      } else if (pcdStr && mode === 'devconnect') {
         try {
           let _pcd = processPcd(pcdStr);
           console.log(_pcd, 'devconnect event pcd');
           localStorage.setItem('devconnectNullifier', _pcd.claim.nullifierHash);
-        }
-        catch (error) {
+        } catch (error) {
           console.error('Error processing devconnect PCD string:', error);
         }
-      }else if (pcdStr && mode === 'zuzalu') {
+      } else if (pcdStr && mode === 'zuzalu') {
         try {
           let _pcd = processPcd(pcdStr);
           console.log(_pcd, 'zuzalu event pcd');
           localStorage.setItem('zuzaluNullifier', _pcd.claim.nullifierHash);
-        }
-        catch (error) {
+        } catch (error) {
           console.error('Error processing zuzalu PCD string:', error);
         }
-      }
-      else if (pcdStr && mode === 'sign-in') {
+      } else if (pcdStr && mode === 'sign-in') {
         try {
           let _pcd = processPcd(pcdStr);
           await verifyProof(_pcd);
@@ -140,7 +147,10 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
           console.log('pcdStr', pcdStr);
           //const eventId = eventpcd.claim.partialTicket.eventId;
           //console.log(eventId, 'event Id');
-          const generateSignature = async (account: string, message: string) => {
+          const generateSignature = async (
+            account: string,
+            message: string
+          ) => {
             const response = await fetch('/api/auth/generate_signature', {
               method: 'POST',
               headers: {
@@ -160,7 +170,10 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
             return data.data.signed_message;
           };
 
-          const signature = await generateSignature(userId as string, userId as string);
+          const signature = await generateSignature(
+            userId as string,
+            userId as string
+          );
           const message = userId as string;
           if (signature) {
             localStorage.setItem('signature', signature);
@@ -191,7 +204,11 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
 
   function openZupassPopup(popupUrl: string, proofUrl: string) {
     const url = `${popupUrl}?proofUrl=${encodeURIComponent(proofUrl)}`;
-    const popup = window.open(url, "_blank", "width=450,height=600,top=100,popup");
+    const popup = window.open(
+      url,
+      '_blank',
+      'width=450,height=600,top=100,popup'
+    );
     if (popup) {
       const checkPopupClosed = setInterval(() => {
         if (popup.closed) {
@@ -201,7 +218,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
         }
       }, 1000);
     } else {
-      console.error("Popup was blocked by the browser");
+      console.error('Popup was blocked by the browser');
       toast({
         title: 'Error',
         description: 'Popup was blocked by the browser',
@@ -211,7 +228,11 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
   }
 
   function openZupassTicketPopup(proofUrl: string) {
-    const popup = window.open(proofUrl, "_blank", "width=450,height=600,top=100,popup");
+    const popup = window.open(
+      proofUrl,
+      '_blank',
+      'width=450,height=600,top=100,popup'
+    );
     if (popup) {
       const checkPopupClosed = setInterval(() => {
         if (popup.closed) {
@@ -221,7 +242,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
         }
       }, 1000);
     } else {
-      console.error("Popup was blocked by the browser");
+      console.error('Popup was blocked by the browser');
       toast({
         title: 'Error',
         description: 'Popup was blocked by the browser',
@@ -233,7 +254,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
   function constructZupassPcdGetRequestUrl<T extends PCDPackage>(
     zupassClientUrl: string,
     returnUrl: string,
-    pcdType: T["name"],
+    pcdType: T['name'],
     args: ArgsOf<T>,
     options?: ProveOptions
   ) {
@@ -242,12 +263,17 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
       returnUrl: returnUrl,
       args: args,
       pcdType,
-      options
+      options,
     };
     const encReq = encodeURIComponent(JSON.stringify(req));
     return `${zupassClientUrl}#/prove?request=${encReq}`;
   }
-  const zuconnecteventids =['91312aa1-5f74-4264-bdeb-f4a3ddb8670c','54863995-10c4-46e4-9342-75e48b68d307','797de414-2aec-4ef8-8655-09df7e2b6cc6','a6109324-7ca0-4198-9583-77962d1b9d53']
+  const zuconnecteventids = [
+    '91312aa1-5f74-4264-bdeb-f4a3ddb8670c',
+    '54863995-10c4-46e4-9342-75e48b68d307',
+    '797de414-2aec-4ef8-8655-09df7e2b6cc6',
+    'a6109324-7ca0-4198-9583-77962d1b9d53',
+  ];
   function openZKEdDSAEventTicketPopup(
     fieldsToReveal: EdDSATicketFieldsToReveal,
     watermark: bigint,
@@ -263,46 +289,46 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
         validatorParams: {
           eventIds: validEventIds,
           productIds: validProductIds,
-          notFoundMessage: "No eligible PCDs found"
-        }
+          notFoundMessage: 'No eligible PCDs found',
+        },
       },
       identity: {
         argumentType: ArgumentTypeName.PCD,
         pcdType: SemaphoreIdentityPCDPackage.name,
         value: undefined,
-        userProvided: true
+        userProvided: true,
       },
       validEventIds: {
         argumentType: ArgumentTypeName.StringArray,
         // FIXME: instead of validEventIds we should use current requited credetials
         value: validEventIds.length != 0 ? validEventIds : zuconnecteventids,
-        userProvided: false
+        userProvided: false,
       },
       fieldsToReveal: {
         argumentType: ArgumentTypeName.ToggleList,
         value: fieldsToReveal,
-        userProvided: false
+        userProvided: false,
       },
       watermark: {
         argumentType: ArgumentTypeName.BigInt,
         value: watermark.toString(),
-        userProvided: false
+        userProvided: false,
       },
       externalNullifier: {
         argumentType: ArgumentTypeName.BigInt,
         value: watermark.toString(),
-        userProvided: false
-      }
+        userProvided: false,
+      },
     };
 
-    const popupUrl = window.location.origin + "/popup";
+    const popupUrl = window.location.origin + '/popup';
 
     const proofUrl = constructZupassPcdGetRequestUrl<
       typeof ZKEdDSAEventTicketPCDPackage
     >('https://zupass.org', popupUrl, ZKEdDSAEventTicketPCDPackage.name, args, {
       genericProveScreen: true,
-      title: "Sign-In with Zupass",
-      description: "**Select a valid ticket to hop into the zuzaverse.**"
+      title: 'Sign-In with Zupass',
+      description: '**Select a valid ticket to hop into the zuzaverse.**',
     });
 
     openZupassTicketPopup(proofUrl);
@@ -344,11 +370,11 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
         signal: {
           argumentType: ArgumentTypeName.BigInt,
           userProvided: false,
-          value: signal ?? "1",
+          value: signal ?? '1',
         },
       },
       {
-        title: "Anon Voting Auth",
+        title: 'Anon Voting Auth',
         description: originalSiteName,
       }
     );
@@ -393,7 +419,6 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
       };
       window.addEventListener('popupClosed', onPopupClosed);
     });
-
   };
   const verifyZuconnectticket = () => {
     console.log('verify start');
@@ -405,7 +430,7 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
           revealAttendeeEmail: true,
           revealEventId: true,
           revealProductId: true,
-          revealAttendeeSemaphoreId: true
+          revealAttendeeSemaphoreId: true,
         },
         BigInt(bigIntNonce),
         supportedEvents,
@@ -415,14 +440,13 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
         if (localStorage.getItem('zuconnectNullifier')) {
           resolve('success');
         } else {
-          reject(new Error("Verification failed"));
+          reject(new Error('Verification failed'));
         }
       });
-    })
+    });
   };
 
   const devconnectVerify = () => {
-
     setMode('devconnect');
     console.log('devconnect verify start');
     return new Promise<void>((resolve, reject) => {
@@ -461,7 +485,6 @@ export function UserPassportContextProvider({ children }: UserPassportProviderPr
       };
       window.addEventListener('popupClosed', onPopupClosed);
     });
-
   };
   const signOut = () => {
     // Clear the PCD from local storage and state

@@ -1,5 +1,3 @@
 export const ProtocolGuildIcon = () => {
-  return (
-    <>⛓️🛡️</>
-  )
-}
+  return <>⛓️🛡️</>;
+};

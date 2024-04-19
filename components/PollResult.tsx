@@ -1,4 +1,4 @@
-import { useState,useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import styles from '@/styles/pollResult.module.css';
 import { CREDENTIALS } from '@/src/constants';
 import { PollResultComponentType, CredentialTable, VoteData } from '@/types';
@@ -215,7 +215,8 @@ export const PollResultComponent = ({
                   ))}
                 </select>
               </div>
-              {selectedZupassCredential === 'all' || selectedZupassCredential === ''  ? (
+              {selectedZupassCredential === 'all' ||
+              selectedZupassCredential === '' ? (
                 <PieChartComponent
                   voteData={mergedZupassVoteData}
                   votingType={`${pollType}`}

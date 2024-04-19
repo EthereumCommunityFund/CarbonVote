@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Label } from '@radix-ui/react-label';
 import ToggleSwitchButton from '../ui/buttons/ToggleSwitchButton';
 import POAPEvents from '../POAPEvents';
-import { useFormStore } from "@/zustand/create";
-import { CREDENTIALS } from '@/src/constants'
+import { useFormStore } from '@/zustand/create';
+import { CREDENTIALS } from '@/src/constants';
 
 type CredentialFormProps = {
   selectedCredentials: string[];
@@ -16,23 +16,31 @@ export const CredentialForm = ({
 }: CredentialFormProps) => {
   const [isPOAPapiRequired, setIsPOAPapiRequired] = useState(false);
   const [isPOAPsRequired, setIsPOAPsRequired] = useState(false);
-  const [isProtocolGuildMemberRequired, setIsProtocolGuildMemberRequired] = useState(false);
+  const [isProtocolGuildMemberRequired, setIsProtocolGuildMemberRequired] =
+    useState(false);
   const [isZuPassRequired, setIsZuPassRequired] = useState(false);
-  const [isGitcoinPassportRequired, setIsGitcoinPassportRequired] = useState(false);
-  const [selectedCredentialText, setSelectedCredentialText] = useState("Select Credential");
+  const [isGitcoinPassportRequired, setIsGitcoinPassportRequired] =
+    useState(false);
+  const [selectedCredentialText, setSelectedCredentialText] =
+    useState('Select Credential');
 
-  const resetEvents = useFormStore((state) => state.resetEvents)
+  const resetEvents = useFormStore((state) => state.resetEvents);
 
   const updateCredentials = (credentialUUID: string) => {
     onCredentialsChange([credentialUUID]);
     console.log(credentialUUID, 'credential selected');
   };
 
-  const handleCredentialSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleCredentialSelect = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     const selectedCredentialKey = event.target.value;
-    console.log("🚀 ~ handleCredentialSelect ~ selectedCredentialKey:", selectedCredentialKey)
+    console.log(
+      '🚀 ~ handleCredentialSelect ~ selectedCredentialKey:',
+      selectedCredentialKey
+    );
     const selectedText = event.target.options[event.target.selectedIndex].text;
-    console.log("🚀 ~ handleCredentialSelect ~ selectedText:", selectedText)
+    console.log('🚀 ~ handleCredentialSelect ~ selectedText:', selectedText);
     updateCredentials(selectedCredentialKey);
     setSelectedCredentialText(selectedText);
   };
@@ -45,7 +53,7 @@ export const CredentialForm = ({
     setIsProtocolGuildMemberRequired(false);
     updateCredentials(CREDENTIALS.POAPSVerification.id);
     resetEvents();
-  }
+  };
 
   const handlePOAPapiSelect = () => {
     setIsPOAPapiRequired(!isPOAPapiRequired);
@@ -55,7 +63,7 @@ export const CredentialForm = ({
     setIsProtocolGuildMemberRequired(false);
     // TODO: There;s no POAP api credentials
     updateCredentials('');
-  }
+  };
   const handleGitCoinSelect = () => {
     setIsGitcoinPassportRequired(!isGitcoinPassportRequired);
     setIsPOAPapiRequired(false);
@@ -64,7 +72,7 @@ export const CredentialForm = ({
     setIsProtocolGuildMemberRequired(false);
     updateCredentials(CREDENTIALS.GitcoinPassport.id);
     resetEvents();
-  }
+  };
 
   const handleProtocolGuildMemberSelect = () => {
     setIsGitcoinPassportRequired(false);
@@ -74,7 +82,7 @@ export const CredentialForm = ({
     setIsProtocolGuildMemberRequired(!isProtocolGuildMemberRequired);
     updateCredentials(CREDENTIALS.ProtocolGuildMember.id);
     resetEvents();
-  }
+  };
 
   const handleZuPassSelect = () => {
     setIsGitcoinPassportRequired(false);
@@ -84,7 +92,7 @@ export const CredentialForm = ({
     setIsProtocolGuildMemberRequired(false);
     updateCredentials(CREDENTIALS.ZuConnectResident.id);
     resetEvents();
-  }
+  };
 
   const CredentialSelector = () => {
     if (isPOAPsRequired) {
@@ -92,7 +100,8 @@ export const CredentialForm = ({
         <div className="flex flex-col gap-2">
           <Label className="text-2xl font-semibold">Select Event</Label>
           <POAPEvents />
-        </div>)
+        </div>
+      );
     } else if (isZuPassRequired) {
       return (
         <div className="flex flex-col gap-2">
@@ -101,18 +110,27 @@ export const CredentialForm = ({
             title="Credentials"
             value={selectedCredentialText}
             onChange={handleCredentialSelect}
-            disabled={!isProtocolGuildMemberRequired && !isZuPassRequired && !isGitcoinPassportRequired && !isPOAPsRequired}
+            disabled={
+              !isProtocolGuildMemberRequired &&
+              !isZuPassRequired &&
+              !isGitcoinPassportRequired &&
+              !isPOAPsRequired
+            }
           >
             <option value="">{selectedCredentialText}</option>
             <>
-              <option value={CREDENTIALS.ZuConnectResident.id}>{CREDENTIALS.ZuConnectResident.name}</option>
-              <option value={CREDENTIALS.DevConnect.id}>{CREDENTIALS.DevConnect.name}</option>
+              <option value={CREDENTIALS.ZuConnectResident.id}>
+                {CREDENTIALS.ZuConnectResident.name}
+              </option>
+              <option value={CREDENTIALS.DevConnect.id}>
+                {CREDENTIALS.DevConnect.name}
+              </option>
             </>
           </select>
         </div>
-      )
+      );
     }
-  }
+  };
 
   return (
     <div className="flex flex-col gap-8 py-2.5">
@@ -123,8 +141,12 @@ export const CredentialForm = ({
             checked={isPOAPsRequired}
             onClick={handlePOAPSelect}
           />
-          <Label className="text-lg">Ethereum POAPS Checking - Onchain verification</Label>
-          <Label className="text-lg">(The test version stores only 2 events)</Label>
+          <Label className="text-lg">
+            Ethereum POAPS Checking - Onchain verification
+          </Label>
+          <Label className="text-lg">
+            (The test version stores only 2 events)
+          </Label>
         </div>
       </div>
 
@@ -135,7 +157,9 @@ export const CredentialForm = ({
             checked={isPOAPapiRequired}
             onClick={handlePOAPapiSelect}
           />
-          <Label className="text-lg">Ethereum POAPs - Offchain verification</Label>
+          <Label className="text-lg">
+            Ethereum POAPs - Offchain verification
+          </Label>
         </div>
       </div>
 

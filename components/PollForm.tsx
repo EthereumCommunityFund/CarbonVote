@@ -1,17 +1,22 @@
-import { useState } from "react"
-import { Input } from "./ui/Input"
-import { Label } from "./ui/Label"
-import TextEditor from "./ui/TextEditor"
-import ToggleSwitchButton from "./ui/buttons/ToggleSwitchButton"
+import { useState } from 'react';
+import { Input } from './ui/Input';
+import { Label } from './ui/Label';
+import TextEditor from './ui/TextEditor';
+import ToggleSwitchButton from './ui/buttons/ToggleSwitchButton';
 
 export const PollForm = () => {
-  const [headCountVotingMethod, setHeadCountVotingMethod] = useState<'Ethereum event attendees only' | 'Gitcoin passport holders only' | 'Protocol Guild Member and Gitcoin and RPGF'>('Ethereum event attendees only');
+  const [headCountVotingMethod, setHeadCountVotingMethod] = useState<
+    | 'Ethereum event attendees only'
+    | 'Gitcoin passport holders only'
+    | 'Protocol Guild Member and Gitcoin and RPGF'
+  >('Ethereum event attendees only');
   const [isZuPassRquired, setIsZuPassRequired] = useState<boolean>(false);
-  const [isGitCoinPassRquired, setIsGitCoinPassRequired] = useState<boolean>(false);
+  const [isGitCoinPassRquired, setIsGitCoinPassRequired] =
+    useState<boolean>(false);
 
   const handleHeadCountVotingMethodSelect = (e: any) => {
     setHeadCountVotingMethod(e.target.value);
-  }
+  };
 
   const handleIsZuPassRequired = () => {
     setIsZuPassRequired((prev) => !prev);
@@ -46,31 +51,42 @@ export const PollForm = () => {
           className="flex w-full text-white outline-none rounded-lg py-2.5 pr-3 pl-2.5 bg-inputField gap-2.5 items-center border border-white/10 border-opacity-10"
           title="HeadCountVoting"
         >
-          <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="Ethereum event attendees only">
+          <option
+            className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+            value="Ethereum event attendees only"
+          >
             {`Ethereum event attendees only`}
           </option>
-          <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="Gitcoin passport holders only">
+          <option
+            className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+            value="Gitcoin passport holders only"
+          >
             {`Gitcoin passport holders only`}
           </option>
-          <option className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" value="Protocol Guild Member and Gitcoin and RPGF">
+          <option
+            className="bg-componentPrimary origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+            value="Protocol Guild Member and Gitcoin and RPGF"
+          >
             {`Protocol Guild Member and Gitcoin and RPGF`}
           </option>
         </select>
-      </div> :
-      <></>
+      </div>{' '}
+      :<></>
       <div className="flex flex-col gap-3.5 px-5 text-white/80">
         <Label className="text-xl font-bold">Access Rules</Label>
         <div className="flex gap-8 items-center">
-          <ToggleSwitchButton checked={isZuPassRquired} onClick={handleIsZuPassRequired} />
+          <ToggleSwitchButton
+            checked={isZuPassRquired}
+            onClick={handleIsZuPassRequired}
+          />
           <Label className="text-lg">Require ZuPass</Label>
-          {
-            isZuPassRquired ?
-              <></> :
-              <></>
-          }
+          {isZuPassRquired ? <></> : <></>}
         </div>
         <div className="flex gap-8 items-center">
-          <ToggleSwitchButton checked={isGitCoinPassRquired} onClick={handleIsGitCoinPassRequired} />
+          <ToggleSwitchButton
+            checked={isGitCoinPassRquired}
+            onClick={handleIsGitCoinPassRequired}
+          />
           <Label className="text-lg">Require Gitcoin Passport</Label>
         </div>
       </div>
@@ -79,11 +95,14 @@ export const PollForm = () => {
         <div>
           <Label className="text-xl">On-Chain Signals</Label>
           <div className="flex gap-8 items-center">
-            <ToggleSwitchButton checked={isGitCoinPassRquired} onClick={handleIsGitCoinPassRequired} />
+            <ToggleSwitchButton
+              checked={isGitCoinPassRquired}
+              onClick={handleIsGitCoinPassRequired}
+            />
             <Label className="text-lg">Require Gitcoin Passport</Label>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

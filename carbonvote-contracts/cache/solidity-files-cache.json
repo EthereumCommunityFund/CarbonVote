@@ -22,22 +22,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "./VotingOption.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.0"
-      ],
-      "artifacts": [
-        "VotingContract"
-      ]
+      "imports": ["./VotingOption.sol"],
+      "versionPragmas": ["^0.8.0"],
+      "artifacts": ["VotingContract"]
     },
     "/home/ivan/Projects/CarbonVote/carbonvote-contracts/contracts/VotingOption.sol": {
       "lastModificationDate": 1712631786779,
@@ -60,22 +52,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "./VoteContract.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.0"
-      ],
-      "artifacts": [
-        "VotingOption"
-      ]
+      "imports": ["./VoteContract.sol"],
+      "versionPragmas": ["^0.8.0"],
+      "artifacts": ["VotingOption"]
     }
   }
 }

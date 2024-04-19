@@ -2,11 +2,14 @@ import * as Progress from '@radix-ui/react-progress';
 import { Label } from './ui/Label';
 
 interface IOptionVotingCountProgress {
-  description: string
-  votes: number
+  description: string;
+  votes: number;
 }
 
-export default function OptionVotingCountProgress({ description, votes }: IOptionVotingCountProgress) {
+export default function OptionVotingCountProgress({
+  description,
+  votes,
+}: IOptionVotingCountProgress) {
   return (
     <Progress.Root
       className="relative overflow-hidden bg-[#F84A4A46] rounded-full w-[300px] py-3 items-center"
@@ -17,8 +20,8 @@ export default function OptionVotingCountProgress({ description, votes }: IOptio
       }}
       value={votes}
     >
-      <div className='flex justify-between text-black'>
-        <Label className='pl-3'>{description}</Label>
+      <div className="flex justify-between text-black">
+        <Label className="pl-3">{description}</Label>
         <Label></Label>
         <Label style={{ marginRight: '10px' }}>{votes}</Label>
       </div>
@@ -27,5 +30,5 @@ export default function OptionVotingCountProgress({ description, votes }: IOptio
         style={{ transform: `translateX(-${100 - votes}%)` }}
       />
     </Progress.Root>
-  )
+  );
 }

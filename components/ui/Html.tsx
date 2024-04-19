@@ -3,7 +3,10 @@ interface HTMLStringProps {
   height?: string;
 }
 
-export default function HtmlString({ htmlString, height }: HTMLStringProps): JSX.Element {
+export default function HtmlString({
+  htmlString,
+  height,
+}: HTMLStringProps): JSX.Element {
   const removeStyleAttribute = (html: string) => {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const elementsWithStyle = doc.querySelectorAll('*[style]');
@@ -17,6 +20,9 @@ export default function HtmlString({ htmlString, height }: HTMLStringProps): JSX
   const sanitizedHTML = removeStyleAttribute(htmlString);
 
   return (
-    <div className={`overflow-y-auto text-white md:w-full`} dangerouslySetInnerHTML={{ __html: sanitizedHTML }} />
+    <div
+      className={`overflow-y-auto text-white md:w-full`}
+      dangerouslySetInnerHTML={{ __html: sanitizedHTML }}
+    />
   );
 }
