@@ -1,4 +1,4 @@
-import { EditorConfig } from "@editorjs/editorjs"
+import { API, BlockMutationEvent, EditorConfig } from "@editorjs/editorjs"
 
 // Editor options
 export const options: EditorConfig = {
@@ -8,6 +8,5 @@ export const options: EditorConfig = {
     onReady: () => {
     },
 
-    onChange: () => {
-    },
+    onChange: (api: API, event: BlockMutationEvent | BlockMutationEvent[]) => { },
 }

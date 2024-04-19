@@ -5,14 +5,9 @@ import TextEditor from "./ui/TextEditor"
 import ToggleSwitchButton from "./ui/buttons/ToggleSwitchButton"
 
 export const PollForm = () => {
-  const [pollDescription, setPollDescription] = useState<string>('');
   const [headCountVotingMethod, setHeadCountVotingMethod] = useState<'Ethereum event attendees only' | 'Gitcoin passport holders only' | 'Protocol Guild Member and Gitcoin and RPGF'>('Ethereum event attendees only');
   const [isZuPassRquired, setIsZuPassRequired] = useState<boolean>(false);
   const [isGitCoinPassRquired, setIsGitCoinPassRequired] = useState<boolean>(false);
-
-  const handlePollDescriptionChange = (value: string) => {
-    setPollDescription(value);
-  };
 
   const handleHeadCountVotingMethodSelect = (e: any) => {
     setHeadCountVotingMethod(e.target.value);
@@ -39,10 +34,7 @@ export const PollForm = () => {
         <div className="py-2.5 gap-5">
           <div className="flex flex-col gap-3.5">
             <Label className="text-lg">Motion Description</Label>
-            <TextEditor
-              value={pollDescription}
-              onChange={handlePollDescriptionChange}
-            />
+            <TextEditor />
           </div>
         </div>
       </div>

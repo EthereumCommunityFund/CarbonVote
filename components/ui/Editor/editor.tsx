@@ -17,33 +17,20 @@ export const useEditor = (
 
     // initialize
     useEffect(() => {
-        // create instance
         const editor = new EditorJS({
-            /**
-             * Id of Element that should contain the Editor
-             */
             holder: "editor-js",
 
-            /**
-             * Available Tools list.
-             * Pass Tool's class or Settings object for each Tool you want to use
-             */
             tools: toolsList,
 
-            /**
-             * Previously saved data that should be rendered
-             */
             data: data || {},
 
             initialBlock: "paragraph",
 
-            // Override editor options
             ...editorOptions,
         })
 
         setEditor(editor)
 
-        // cleanup
         return () => {
             editor.isReady
                 .then(() => {
@@ -54,12 +41,10 @@ export const useEditor = (
         }
     }, [toolsList])
 
-    // set reference
     useEffect(() => {
         if (!editorInstance) {
             return
         }
-        // Send instance to the parent
         if (editorRef) {
             editorRef(editorInstance)
         }

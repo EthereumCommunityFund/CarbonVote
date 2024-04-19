@@ -1,13 +1,13 @@
-import Header from "@editorjs/header"
-import Paragraph from "@editorjs/paragraph"
-import Embed from "@editorjs/embed"
-import LinkTool from "@editorjs/link"
-import Quote from "@editorjs/quote"
-import CheckList from "@editorjs/checklist"
-import Delimiter from "@editorjs/delimiter"
-import InlineCode from "@editorjs/inline-code"
-import SimpleImage from "@editorjs/simple-image"
 import { ToolConstructable, ToolSettings } from "@editorjs/editorjs"
+const Header = require("@editorjs/header") as any;
+const Paragraph = require("@editorjs/paragraph") as any;
+const Embed = require("@editorjs/embed") as any;
+const LinkTool = require("@editorjs/link") as any;
+const Quote = require("@editorjs/quote") as any;
+const CheckList = require("@editorjs/checklist") as any;
+const Delimiter = require("@editorjs/delimiter") as any;
+const InlineCode = require("@editorjs/inline-code") as any;
+const SimpleImage = require("@editorjs/simple-image") as any;
 
 export const tools: { [toolName: string]: ToolConstructable | ToolSettings<any> } = {
     header: {

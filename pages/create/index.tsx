@@ -53,7 +53,8 @@ const CreatePollPage = () => {
   const contractAbi = VotingContract.abi;
   const router = useRouter();
   const [motionTitle, setMotionTitle] = useState<string>();
-  const [motionDescription, setMotionDescription] = useState<string>('');
+  // Need to figure this out while using EditorJS.
+  // const [motionDescription, setMotionDescription] = useState<string>('');
   const [gitcoinScore, setGitcoinScore] = useState<string>('10');
   const [POAPNumber, setPOAPNumber] = useState<string>('5');
   const { isConnected } = useAccount();
@@ -164,7 +165,8 @@ const CreatePollPage = () => {
 
   const createNewPoll = async () => {
     setIsLoading(true);
-    if (!motionTitle || !motionDescription || !endDateTime) {
+    // if (!motionTitle || !motionDescription || !endDateTime) {
+    if (!motionTitle || !endDateTime) {
       toast({
         title: 'Error',
         description: 'All fields are required',
@@ -218,7 +220,7 @@ const CreatePollPage = () => {
     const optionNames = options.map((option) => option.name);
     const pollMetadata = 'arbitrary data';
     console.log('Title:', motionTitle);
-    console.log('Description:', motionDescription);
+    // console.log('Description:', motionDescription);
     console.log('Duration (seconds):', durationInSeconds);
     console.log('Option Names:', optionNames);
     console.log('Poll Metadata:', pollMetadata);
@@ -309,7 +311,8 @@ const CreatePollPage = () => {
       }
       const pollData = {
         title: motionTitle,
-        description: motionDescription,
+        // description: motionDescription,
+        description: '',
         time_limit: durationInSeconds,
         options: options.map((option, index) => ({
           option_description: option.name,
@@ -370,7 +373,8 @@ const CreatePollPage = () => {
           start_block_number + Math.round(estimatedBlocks);
         const tx = await contract.createPoll(
           motionTitle,
-          motionDescription,
+          // motionDescription,
+          '',
           durationInSeconds,
           optionNames,
           pollType,
@@ -419,9 +423,10 @@ const CreatePollPage = () => {
   const handleTitleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setMotionTitle(event.target.value);
   };
-  const handleDescriptionChange = (value: string) => {
-    setMotionDescription(value);
-  };
+  // Need to be updated with EditorJS's onChange function.
+  // const handleDescriptionChange = (value: string) => {
+  //   setMotionDescription(value);
+  // };
   const handleGitcoinScoreChange = (event: ChangeEvent<HTMLInputElement>) => {
     setGitcoinScore(event.target.value);
   };
@@ -504,10 +509,7 @@ const CreatePollPage = () => {
               <Label className={styles.input_header}>
                 Motion Description:{' '}
               </Label>
-              <TextEditor
-                value={motionDescription}
-                onChange={handleDescriptionChange}
-              />
+              <TextEditor />
               <div className={styles.markdown_info}>
                 <img src="/images/markdown.svg" />
                 <span>Markdown Available</span>
