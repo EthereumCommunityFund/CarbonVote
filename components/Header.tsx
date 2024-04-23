@@ -8,10 +8,13 @@ import { ArrowUpRight, GithubIcon } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import HeaderDropdown from './ui/HeaderDropdown';
 import { useState } from 'react';
+import SigninDropdown from './ui/SigninDropdown';
 
 export const HeaderComponent = () => {
   const { signIn, isPassportConnected } = useUserPassportContext();
   const [open, setOpen] = useState(false);
+  const [showSigninMenu, setShowSigninMenu] = useState(false);
+  const [walletConnected, setWalletConnected] = useState(false);
 
   return (
     <div className="bg-white flex w-full h-16 justify-between items-center pr-5 pl-5 pt-2.5 pb-2.5 border-b rounded-b-3xl border-b-[#0000001a]">
@@ -64,14 +67,25 @@ export const HeaderComponent = () => {
           </svg>
         </Button>
         <HeaderDropdown open={open} setOpen={setOpen}></HeaderDropdown>
-        {/* <Button
-          className="outline-none h-10 items-center rounded-full"
-          leftIcon={BoltIcon}
-          onClick={signIn}
-        >
-          Sign In
-        </Button> */}
-        <ConnectButton />
+        <div className='h-[40px]'>
+          <Button
+            className={"outline-none h-10 items-center rounded-full justify-center w-fit" + (walletConnected ? " p-0" : "")}
+            leftIcon={walletConnected ? undefined : BoltIcon}
+            onClick={() => setShowSigninMenu(!showSigninMenu)}
+          >
+            {
+              walletConnected ? <div className='flex w-full px-1 items-center gap-[4px]'>
+                {/* Image should be changed with avatar image of the account. */}
+                <Image src="/images/zupass_login.svg" width={32} height={32} alt="avatar" className='rounded-full border border-collapse border-[#0000001A]' />
+                <div className='mr-[4px]'>
+                  Connected
+                </div>
+              </div> : "Sign in"
+            }
+          </Button>
+          <SigninDropdown showMenu={showSigninMenu} setShowMenu={setShowSigninMenu} setWalletConnected={setWalletConnected} />
+        </div>
+        {/* <ConnectButton /> */}
       </div>
     </div>
   );
