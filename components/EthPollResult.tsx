@@ -101,7 +101,7 @@ export const ContractPollResultComponent: React.FC<
     return (
       <div style={{ overflowX: 'auto' }}>
         <table
-          style={{ width: '100%', tableLayout: 'fixed', textAlign: 'center' }}
+          style={{ width: '100%', tableLayout: 'fixed', textAlign: 'center', boxSizing: 'border-box', padding: '10px' }}
         >
           <thead>
             <tr>

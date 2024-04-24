@@ -1611,11 +1611,11 @@ const PollPage = () => {
   );
 
   return (
-    <div className="flex flex-col md:flex-row gap-20 px-20 pt-5 text-black w-full justify-center">
-      <div className="flex flex-col gap-2.5 max-w-[1000px] w-full">
+    <div className="flex flex-col md:flex-row gap-8 px-[10px] pt-[10px] md:pt-[40px] md:px-[33px] text-black w-full justify-center">
+      <div className="flex flex-col gap-2.5 max-w-[800px] w-full">
         <div>
           <Button
-            className="rounded-full"
+            className="rounded-full bg-transparent border-none shadow-none"
             leftIcon={ArrowLeftIcon}
             onClick={handleBack}
           >
@@ -1623,12 +1623,12 @@ const PollPage = () => {
           </Button>
         </div>
 
-        <div className="bg-white flex flex-col gap-7.5 rounded-xl border border-black border-opacity-10">
+        <div className="bg-white flex flex-col gap-[30px] rounded-xl border border-black border-opacity-10 p-[10px] md:p-0">
           <div className="flex flex-col p-5 gap-5 border-b border-black border-opacity-10">
             <div className="flex gap-3.5">
               {pollIsLive ? (
-                <div className="px-2.5 py-0.5 bg-[#44b678] bg-opacity-20 rounded-lg">
-                  <Label className="text-[#44b678] text-md font-bold">
+                <div className="px-2.5 py-0.5 bg-[#F84A4A33] bg-opacity-20 rounded-lg">
+                  <Label className="text-[#F84A4A] text-md font-bold">
                     Live
                   </Label>
                 </div>
@@ -1650,37 +1650,36 @@ const PollPage = () => {
             </div>
 
             <div className="flex flex-col gap-1">
-              <Label className="text-black uppercase opacity-50 text-base">
+              <Label className="text-black uppercase opacity-50 text-base font-extrabold">
                 Motion:
               </Label>
-              <Label className="text-2xl">{poll?.title || poll?.name}</Label>
+              <Label className="text-2xl font-bold">{poll?.title || poll?.name}</Label>
             </div>
           </div>
 
-          <div className="flex flex-col p-5 gap-2.5">
+          <div className="flex flex-col gap-2.5 p-0 md:px-5">
             <Label className="text-sm uppercase text-black opacity-50 font-extrabold">
               Description:
             </Label>
             <span dangerouslySetInnerHTML={{ __html: poll?.description }} />
           </div>
-        </div>
-
-        <div className={styles.voting_container}>
-          {pollIsLive ? (
-            <>
-              {/*<div className={styles.user_voted}>
+          <div className='p-0 md:px-[10px]'>
+            <div className={styles.voting_container}>
+              {pollIsLive ? (
+                <>
+                  {/*<div className={styles.user_voted}>
                 <img src='/images/checkmark_white.svg' />
                 <span>You Have Voted</span>
           </div>*/}
-              <Label className={styles.container_header}>Vote on Poll</Label>
-              <div className={styles.nested_poll_header}>
-                <h4>
-                  This is a nested poll. You can vote with multiple credentials.
-                </h4>
-                <p>Votes will be segmented by credentials</p>
-              </div>
-              <div className={styles.options_container}>
-                {/* <div className={styles.gated_poll_disabled}>
+                  <Label className={styles.container_header}>Vote on Poll</Label>
+                  <div className={styles.nested_poll_header}>
+                    <h4>
+                      This is a nested poll. You can vote with multiple credentials.
+                    </h4>
+                    <p>Votes will be segmented by credentials</p>
+                  </div>
+                  <div className={styles.options_container}>
+                    {/* <div className={styles.gated_poll_disabled}>
                   <div className={styles.gated_content}>
                     <div>
                       <img src="/images/locked.svg" alt="" />
@@ -1689,225 +1688,236 @@ const PollPage = () => {
                     <p>You do not have the available credentials</p>
                   </div>
                   </div>*/}
-                {options?.map((option) => (
-                  <OptionButton
-                    key={option.id}
-                    id={option.id}
-                    optionName={option.option_description}
-                    onVote={() =>
-                      handleOptionSelect(
-                        option.id,
-                        option.option_index,
-                        option.option_description
-                      )
-                    }
-                    optionAddress={undefined}
-                  />
-                ))}
-              </div>
-              {isContractPoll && (
-                <div className={styles.eth_holding_container}>
-                  <div>
-                    <img src="/images/eth_logo.svg" />
-                    <h4>
-                      Ether Holding Credential{' '}
-                      <span>
-                        requires a <strong>zero-value transaction</strong> from
-                        your wallet.
-                      </span>
-                    </h4>
+                    {options?.map((option) => (
+                      <OptionButton
+                        key={option.id}
+                        id={option.id}
+                        optionName={option.option_description}
+                        onVote={() =>
+                          handleOptionSelect(
+                            option.id,
+                            option.option_index,
+                            option.option_description
+                          )
+                        }
+                        optionAddress={undefined}
+                      />
+                    ))}
                   </div>
-                  <p>
-                    Optionally, you can manually send a zero-value transaction
-                    by pasting the address directly from your wallet.
-                  </p>
-                  <div>
-                    <div className="w-full flex flex-col gap-2.5">
-                      <button onClick={handleAddressToggleExpanded}>
-                        {isAddressExpanded
-                          ? 'Hide Addresses'
-                          : 'Show Addresses'}
-                      </button>
+                  {isContractPoll && (
+                    <div className={styles.eth_holding_container}>
+                      <div>
+                        <img src="/images/eth_logo.svg" />
+                        <h4>
+                          Ether Holding Credential{' '}
+                          <span>
+                            requires a <strong>zero-value transaction</strong> from
+                            your wallet.
+                          </span>
+                        </h4>
+                      </div>
+                      <p>
+                        Optionally, you can manually send a zero-value transaction
+                        by pasting the address directly from your wallet.
+                      </p>
+                      <div>
+                        <div className="w-full flex flex-col gap-2.5">
+                          <button onClick={handleAddressToggleExpanded}>
+                            {isAddressExpanded
+                              ? 'Hide Addresses'
+                              : 'Show Addresses'}
+                          </button>
 
-                      {isAddressExpanded && (
-                        <div className="w-full flex flex-col gap-2">
-                          {options.map((option, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center justify-between w-full"
-                              style={{ paddingLeft: '10px' }}
-                            >
-                              <p
-                                className="font-bold"
-                                style={{ marginRight: 'auto' }}
-                              >
-                                {option.option_description}
-                              </p>
-                              <p style={{ width: '50%', textAlign: 'center' }}>
-                                {option.address}
-                              </p>
-                              <button
-                                onClick={() =>
-                                  copyToClipboard(option.address as string)
-                                }
-                                style={{ marginLeft: 'auto' }}
-                              >
-                                Copy
-                              </button>
+                          {isAddressExpanded && (
+                            <div className="w-full flex flex-col gap-2">
+                              {options.map((option, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center justify-between w-full"
+                                  style={{ paddingLeft: '10px' }}
+                                >
+                                  <p
+                                    className="font-bold"
+                                    style={{ marginRight: 'auto' }}
+                                  >
+                                    {option.option_description}
+                                  </p>
+                                  <p style={{ width: '50%', textAlign: 'center' }}>
+                                    {option.address}
+                                  </p>
+                                  <button
+                                    onClick={() =>
+                                      copyToClipboard(option.address as string)
+                                    }
+                                    style={{ marginLeft: 'auto' }}
+                                  >
+                                    Copy
+                                  </button>
+                                </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className={styles.poll_finished}>
-              <h3>Poll finished</h3>
-              <div></div>
-            </div>
-          )}
-        </div>
-        {isPopupOpen && (
-          <div>
-            <div className={styles.voting_popup_bg}>
-              <div ref={popupRef} className={styles.voting_popup}>
-                <h4>Your Available Credentials</h4>
-                <p className={styles.header_p}>You are selecting</p>
-                <p className={styles.choice}>
-                  {selectedOptionData
-                    ? selectedOptionData.option_description
-                    : ''}
-                </p>
-                <div className={styles.v_pop_content}>
-                  <p>Select the credentials you want to vote with</p>
-                  <div className={styles.v_pop_list}>
-                    {credentialTable.map((credential) => {
-                      const credentialDetail =
-                        userAvailableCredentialTable.find(
-                          (availCred) => availCred.id === credential.id
-                        );
-
-                      const currentSelectedOptionName =
-                        selectedOptionData?.option_description;
-
-                      const isAvailable =
-                        credentialDetail &&
-                        (!credentialDetail.votedOption ||
-                          credentialDetail.votedOptionName !==
-                            currentSelectedOptionName);
-
-                      const imagePath = getImagePathByCredential(
-                        credential.credential as string
-                      );
-
-                      return (
-                        <div
-                          key={credential.id}
-                          className={styles.radios_flex_col}
-                        >
-                          <label
-                            className={`${styles.choice_option} ${!isAvailable ? styles.disabled : ''}`}
-                          >
-                            <div>
-                              {imagePath && (
-                                <img
-                                  src={imagePath}
-                                  alt="Credential"
-                                  className="image-class-name"
-                                />
-                              )}
-                              <span>
-                                {credential.credential}
-                                {credentialDetail &&
-                                  credentialDetail.votedOptionName &&
-                                  ` (Voted: ${credentialDetail.votedOptionName})`}
-                              </span>
-                            </div>
-                            {isAvailable ? (
-                              <input
-                                type="checkbox"
-                                name="credentials"
-                                value={credential.id}
-                                checked={voteTable.includes(credential.id)}
-                                onChange={handleVotesRadioChange}
-                                className={styles.hidden_radio}
-                              />
-                            ) : (
-                              <div className={styles.unavailableCover} />
-                            )}
-                          </label>
-                          {!isAvailable && (
-                            <div className={styles.overlay}></div>
                           )}
                         </div>
-                      );
-                    })}
-                  </div>
-                  <div
-                    className={styles.select_all}
-                    onClick={handleSelectAllClick}
-                  >
-                    Select All
-                  </div>
-                  <button
-                    className={styles.vote_btn}
-                    onClick={() => {
-                      if (selectedOptionData && voteTable.length > 0) {
-                        setIsPopupOpen(false);
-                        setShowConfirmationPopup(true);
-                        if (selectedOptionData) {
-                          handleVote(
-                            selectedOptionData.optionId,
-                            voteTable,
-                            selectedOptionData.optionIndex
+                      </div>
+                    </div>
+                  )}
+                  {isEthHoldingPoll && (
+                    <ContractPollResultComponent
+                      allAggregatedData={contractPollResult}
+                      currentBlock={latestBlockNumber as number}
+                      endBlock={endBlockNumber as number}
+                      onRefresh={refreshLatestBlock}
+                    />
+                  )}
+                </>
+              ) : (
+                <div className={styles.poll_finished}>
+                  <h3>Poll finished</h3>
+                  <div></div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {isPopupOpen && (
+            <div>
+              <div className={styles.voting_popup_bg}>
+                <div ref={popupRef} className={styles.voting_popup}>
+                  <h4>Your Available Credentials</h4>
+                  <p className={styles.header_p}>You are selecting</p>
+                  <p className={styles.choice}>
+                    {selectedOptionData
+                      ? selectedOptionData.option_description
+                      : ''}
+                  </p>
+                  <div className={styles.v_pop_content}>
+                    <p>Select the credentials you want to vote with</p>
+                    <div className={styles.v_pop_list}>
+                      {credentialTable.map((credential) => {
+                        const credentialDetail =
+                          userAvailableCredentialTable.find(
+                            (availCred) => availCred.id === credential.id
                           );
+
+                        const currentSelectedOptionName =
+                          selectedOptionData?.option_description;
+
+                        const isAvailable =
+                          credentialDetail &&
+                          (!credentialDetail.votedOption ||
+                            credentialDetail.votedOptionName !==
+                            currentSelectedOptionName);
+
+                        const imagePath = getImagePathByCredential(
+                          credential.credential as string
+                        );
+
+                        return (
+                          <div
+                            key={credential.id}
+                            className={styles.radios_flex_col}
+                          >
+                            <label
+                              className={`${styles.choice_option} ${!isAvailable ? styles.disabled : ''}`}
+                            >
+                              <div>
+                                {imagePath && (
+                                  <img
+                                    src={imagePath}
+                                    alt="Credential"
+                                    className="image-class-name"
+                                  />
+                                )}
+                                <span>
+                                  {credential.credential}
+                                  {credentialDetail &&
+                                    credentialDetail.votedOptionName &&
+                                    ` (Voted: ${credentialDetail.votedOptionName})`}
+                                </span>
+                              </div>
+                              {isAvailable ? (
+                                <input
+                                  type="checkbox"
+                                  name="credentials"
+                                  value={credential.id}
+                                  checked={voteTable.includes(credential.id)}
+                                  onChange={handleVotesRadioChange}
+                                  className={styles.hidden_radio}
+                                />
+                              ) : (
+                                <div className={styles.unavailableCover} />
+                              )}
+                            </label>
+                            {!isAvailable && (
+                              <div className={styles.overlay}></div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div
+                      className={styles.select_all}
+                      onClick={handleSelectAllClick}
+                    >
+                      Select All
+                    </div>
+                    <button
+                      className={styles.vote_btn}
+                      onClick={() => {
+                        if (selectedOptionData && voteTable.length > 0) {
+                          setIsPopupOpen(false);
+                          setShowConfirmationPopup(true);
+                          if (selectedOptionData) {
+                            handleVote(
+                              selectedOptionData.optionId,
+                              voteTable,
+                              selectedOptionData.optionIndex
+                            );
+                          }
+                        } else {
+                          toast({
+                            title: 'Error',
+                            description:
+                              "Please check the credentials card, you haven't choosed any available credential.",
+                            variant: 'destructive',
+                          });
                         }
-                      } else {
-                        toast({
-                          title: 'Error',
-                          description:
-                            "Please check the credentials card, you haven't choosed any available credential.",
-                          variant: 'destructive',
-                        });
-                      }
-                    }}
-                  >
-                    <HiArrowRight />
-                    <span>Vote</span>
-                  </button>
+                      }}
+                    >
+                      <HiArrowRight />
+                      <span>Vote</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+          )}
+          {showConfirmationPopup && (
+            <ConfirmationPopup
+              votingProcess={votingProcess}
+              onClose={handleConfirmationPopupClose}
+              option_description={
+                selectedOptionData?.option_description as string
+              }
+            />
+          )}
+          <div className='gap-[25px] flex flex-col p-0 md:p-[10px] md:pb-[20px]'>
+            <div>
+              <div className='border-t-[6px] border-dotted'></div>
+            </div>
+            <PollResultComponent
+              pollType={PollTypes.HEAD_COUNT}
+              optionsData={pollResult as VoteData[]}
+              credentialTable={credentialTable}
+            />
           </div>
-        )}
-        {showConfirmationPopup && (
-          <ConfirmationPopup
-            votingProcess={votingProcess}
-            onClose={handleConfirmationPopupClose}
-            option_description={
-              selectedOptionData?.option_description as string
-            }
-          />
-        )}
-        {isEthHoldingPoll && (
-          <ContractPollResultComponent
-            allAggregatedData={contractPollResult}
-            currentBlock={latestBlockNumber as number}
-            endBlock={endBlockNumber as number}
-            onRefresh={refreshLatestBlock}
-          />
-        )}
-        <PollResultComponent
-          pollType={PollTypes.HEAD_COUNT}
-          optionsData={pollResult as VoteData[]}
-          credentialTable={credentialTable}
-        />
+        </div>
+
+
+
       </div>
 
-      <div className="flex flex-col pb-4 gap-5 w-96">
+      <div className="flex flex-col pb-4 gap-5 min-w-[325px]">
         <div className="bg-white rounded-lg border border-black border-opacity-10">
           <div className="w-full px-5 py-2.5">
             <Label className="text-lg font-semibold">Details</Label>
@@ -1989,122 +1999,122 @@ const PollPage = () => {
                 CREDENTIALS.ZuzaluResident.id,
               ].includes(credential.id)
             ) && (
-              <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
-                <div className="flex justify-between">
-                  <Label className="text-sm text-black font-bold">
-                    <div className="flex items-center gap-2">
-                      <img
-                        src="/images/zupass.svg"
-                        alt="Credential"
-                        className="image-class-name"
-                      />
-                      <span className="opacity-60">Zupass</span>
-                    </div>
-                  </Label>
-                  {zupasspoll ? (
-                    <div className={styles.avail_cred}>
-                      ZuPass
-                      <CheckCircleIconWhite
-                        className={styles.avail_cred_icon}
-                      />
-                    </div>
-                  ) : (
-                    <LockIcon className="w-7 h-7 text-black opacity-25" />
-                  )}
-                </div>
-                <button
-                  className="flex gap-1.5 text-sm text-black opacity-60 font-medium"
-                  onClick={() => {
-                    const isExpanded = expandedIds.includes('Zupass');
-                    setExpandedIds(
-                      isExpanded
-                        ? expandedIds.filter((id) => id !== 'Zupass')
-                        : [...expandedIds, 'Zupass']
-                    );
-                  }}
-                >
-                  {expandedIds.includes('Zupass')
-                    ? 'Hide Details'
-                    : 'Show Details'}
-                  <ChevronDownIcon className="w-5 h-5" />
-                </button>
-                {expandedIds.includes('Zupass') &&
-                  (isPassportConnected ? (
-                    credentialTable
-                      .filter((credential) =>
-                        [
-                          CREDENTIALS.DevConnect.id,
-                          CREDENTIALS.ZuConnectResident.id,
-                          CREDENTIALS.ZuzaluResident.id,
-                        ].includes(credential.id)
-                      )
-                      .map((credential) => {
-                        const votedOption = userAvailableCredentialTable.find(
-                          (credentialItem) =>
-                            credentialItem.id === credential.id &&
-                            credentialItem.votedOptionName
-                        );
+                <div className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg">
+                  <div className="flex justify-between">
+                    <Label className="text-sm text-black font-bold">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src="/images/zupass.svg"
+                          alt="Credential"
+                          className="image-class-name"
+                        />
+                        <span className="opacity-60">Zupass</span>
+                      </div>
+                    </Label>
+                    {zupasspoll ? (
+                      <div className={styles.avail_cred}>
+                        ZuPass
+                        <CheckCircleIconWhite
+                          className={styles.avail_cred_icon}
+                        />
+                      </div>
+                    ) : (
+                      <LockIcon className="w-7 h-7 text-black opacity-25" />
+                    )}
+                  </div>
+                  <button
+                    className="flex gap-1.5 text-sm text-black opacity-60 font-medium"
+                    onClick={() => {
+                      const isExpanded = expandedIds.includes('Zupass');
+                      setExpandedIds(
+                        isExpanded
+                          ? expandedIds.filter((id) => id !== 'Zupass')
+                          : [...expandedIds, 'Zupass']
+                      );
+                    }}
+                  >
+                    {expandedIds.includes('Zupass')
+                      ? 'Hide Details'
+                      : 'Show Details'}
+                    <ChevronDownIcon className="w-5 h-5" />
+                  </button>
+                  {expandedIds.includes('Zupass') &&
+                    (isPassportConnected ? (
+                      credentialTable
+                        .filter((credential) =>
+                          [
+                            CREDENTIALS.DevConnect.id,
+                            CREDENTIALS.ZuConnectResident.id,
+                            CREDENTIALS.ZuzaluResident.id,
+                          ].includes(credential.id)
+                        )
+                        .map((credential) => {
+                          const votedOption = userAvailableCredentialTable.find(
+                            (credentialItem) =>
+                              credentialItem.id === credential.id &&
+                              credentialItem.votedOptionName
+                          );
 
-                        return (
-                          <div
-                            key={credential.id}
-                            className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg"
-                          >
-                            {userAvailableCredentialTable.some(
-                              (credentialItem) =>
-                                credentialItem.id === credential.id
-                            ) ? (
-                              <>
-                                <CheckCircleIcon className="w-7 h-7" />
-                                <span className="text-black opacity-75">
-                                  {credential.credential}
-                                </span>
-                                {votedOption && (
-                                  <span className="text-sm">
-                                    Voted: {votedOption.votedOptionName}
+                          return (
+                            <div
+                              key={credential.id}
+                              className="flex flex-col p-2.5 gap-2.5 bg-black bg-opacity-5 rounded-lg"
+                            >
+                              {userAvailableCredentialTable.some(
+                                (credentialItem) =>
+                                  credentialItem.id === credential.id
+                              ) ? (
+                                <>
+                                  <CheckCircleIcon className="w-7 h-7" />
+                                  <span className="text-black opacity-75">
+                                    {credential.credential}
                                   </span>
-                                )}
-                              </>
-                            ) : (
-                              <>
-                                <LockIcon className="w-7 h-7 text-black opacity-25" />
-                                <span className="text-black opacity-75">
-                                  {credential.credential}
-                                </span>
-                                <button
-                                  className="mt-2 py-2 px-4 bg-blue-500 text-white rounded-lg focus:outline-none"
-                                  onClick={() => {
-                                    handleZupassConnect(credential.id);
-                                  }}
-                                >
-                                  Connect {credential.credential}
-                                </button>
-                              </>
-                            )}
+                                  {votedOption && (
+                                    <span className="text-sm">
+                                      Voted: {votedOption.votedOptionName}
+                                    </span>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  <LockIcon className="w-7 h-7 text-black opacity-25" />
+                                  <span className="text-black opacity-75">
+                                    {credential.credential}
+                                  </span>
+                                  <button
+                                    className="mt-2 py-2 px-4 bg-blue-500 text-white rounded-lg focus:outline-none"
+                                    onClick={() => {
+                                      handleZupassConnect(credential.id);
+                                    }}
+                                  >
+                                    Connect {credential.credential}
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          );
+                        })
+                    ) : (
+                      <Button className={styles.cred_btn} onClick={signIn}>
+                        {isPassportConnected ? (
+                          <div className={styles.zupass_logged}>
+                            <div className={styles.zuconnect}>
+                              <span>ZuConnect Resident</span>
+                              <img src="/images/check.svg" />
+                            </div>
+                            <span>OR</span>
+                            <div className={styles.zuzalu}>Zuzalu Resident</div>
                           </div>
-                        );
-                      })
-                  ) : (
-                    <Button className={styles.cred_btn} onClick={signIn}>
-                      {isPassportConnected ? (
-                        <div className={styles.zupass_logged}>
-                          <div className={styles.zuconnect}>
-                            <span>ZuConnect Resident</span>
-                            <img src="/images/check.svg" />
+                        ) : (
+                          <div className={styles.zupass_not_logged}>
+                            <img src="/images/zupass_login.svg" />
+                            <span>Zupass Login</span>
                           </div>
-                          <span>OR</span>
-                          <div className={styles.zuzalu}>Zuzalu Resident</div>
-                        </div>
-                      ) : (
-                        <div className={styles.zupass_not_logged}>
-                          <img src="/images/zupass_login.svg" />
-                          <span>Zupass Login</span>
-                        </div>
-                      )}
-                    </Button>
-                  ))}
-              </div>
-            )}
+                        )}
+                      </Button>
+                    ))}
+                </div>
+              )}
             {credentialTable
               .filter(
                 (credential) =>
