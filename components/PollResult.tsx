@@ -153,15 +153,13 @@ export const PollResultComponent = ({
 
   const normalCredentials = credentialTable.filter(
     (credential) =>
-      !zupassIds.includes(credential.id) &&
-      credential.id !== CREDENTIALS.EthHoldingOffchain.id &&
-      credential.credential !== 'EthHolding on-chain'
+      !zupassIds.includes(credential.id)
   );
 
   return (
-    <div className={styles.results_container}>
-      <div className="flex justify-between mb-6">
-        <Label className={styles.results_header}>Final Poll Results</Label>
+    <div className={styles.results_container + " !bg-transparent !p-[10px]"}>
+      <div className="flex justify-between items-center">
+        <Label className={styles.results_header}>Poll Results</Label>
         <Button
           variant="primary"
           className="rounded-md"
