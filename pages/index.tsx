@@ -1,9 +1,16 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
-
-const inter = Inter({ subsets: ['latin'] })
+import Image from "next/image";
+import { Inter } from "next/font/google";
+import { useEffect } from "react";
+const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      window.location.href = "https://beta.carbonvote.com";
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
   return (
     <main
       className={`gradient-background flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
@@ -18,9 +25,13 @@ export default function Home() {
           priority
         />
         <div className="m-10 bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t lg:static lg:h-auto lg:w-auto lg:bg-none">
-          V 2.0 coming soon...
+          Version 2.0 is now available in beta. You will be redirected in 3
+          seconds.
         </div>
       </div>
+      <footer className="text-center text-sm text-gray-600 py-4 w-full">
+        Made with ❤️ and ☕️ by Zuzalu & ECF Network Builders
+      </footer>
     </main>
-  )
+  );
 }
