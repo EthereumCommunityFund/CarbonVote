@@ -1,6 +1,6 @@
 'use client';
 require('dotenv').config();
-import { useState } from "react"
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery } from 'react-query';
 import { fetchAllPolls as fetchAllPollsFromAPI } from '@/controllers/poll.controller';
@@ -14,7 +14,7 @@ import { ethers } from 'ethers';
 import VotingContract from './../carbonvote-contracts/deployment/contracts/VoteContract.sol/VotingContract.json';
 import { getProviderUrl } from '@/utils/getProviderUrl';
 import { CONTRACT_ADDRESS } from '@/src/constants';
-import styles from "styles/pollList.module.css"
+import styles from 'styles/pollList.module.css';
 interface Poll {
   name: string;
   title: string;
@@ -53,7 +53,6 @@ export default function Home() {
   const contractAbi = VotingContract.abi;
   //const contractAddress = contract_addresses.VotingContract;
 
-
   const fetchPollsFromContract = async () => {
     const providerUrl = getProviderUrl();
     const provider = new ethers.JsonRpcProvider(providerUrl);
@@ -86,8 +85,16 @@ export default function Home() {
     });
     return polls;
   };
+  const priorityIds = [
+    '47f4d4e7-5085-4b02-8d4f-6ca38e6c6260',
+    'e2b4ede8-6709-4ce2-afbc-4695bba363ef',
+    'bddfe2e1-4656-4945-a46e-71e5eb109e1c',
+    '77aa9230-9f44-4509-a521-56ae56a06503',
+    'de056be4-4afd-4d11-920c-74aed8b48bd8',
+  ];
 
   const fetchPolls = async () => {
+    const now = new Date();
     const pollsFromContract = await fetchPollsFromContract();
     const { data: pollsFromAPI } = await fetchAllPollsFromAPI();
     const indexesFromAPI = pollsFromAPI.flatMap(
@@ -97,6 +104,42 @@ export default function Home() {
       (index: number | null) => index === null
     );
 
+    const getEndDate = (time: string | bigint | number): Date => {
+      if (typeof time === 'string') {
+        return new Date(time);
+      } else if (typeof time === 'bigint') {
+        return new Date(Number(time) * 1000);
+      } else {
+        return new Date(time);
+      }
+    };
+
+    const sortPolls = (a: Poll, b: Poll) => {
+      const indexA = priorityIds.indexOf(a.id);
+      const indexB = priorityIds.indexOf(b.id);
+
+      if (indexA !== -1 && indexB === -1) {
+        return -1;
+      } else if (indexA === -1 && indexB !== -1) {
+        return 1;
+      } else if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+
+      const endDateA = getEndDate(a.endTime).getTime();
+      const endDateB = getEndDate(b.endTime).getTime();
+      const aIsPast = endDateA < now.getTime();
+      const bIsPast = endDateB < now.getTime();
+
+      if (aIsPast && !bIsPast) {
+        return 1;
+      } else if (!aIsPast && bIsPast) {
+        return -1;
+      } else {
+        return endDateB - endDateA;
+      }
+    };
+
     if (!allNull) {
       const indexesFromAPIAsString = indexesFromAPI.map(
         (index: number) => index?.toString() || ''
@@ -105,17 +148,12 @@ export default function Home() {
         (poll: Poll) => !indexesFromAPIAsString.includes(poll.id)
       );
 
-      return [...filteredPollsFromContract, ...pollsFromAPI].sort(
-        (a: Poll, b: Poll) => {
-          return b.startTime - a.startTime;
-        }
-      );
+      return [...filteredPollsFromContract, ...pollsFromAPI].sort(sortPolls);
     } else {
-      return pollsFromAPI.sort((a: Poll, b: Poll) => {
-        return b.startTime - a.startTime;
-      });
+      return pollsFromAPI.sort(sortPolls);
     }
   };
+
   // TODO: Order
   const { data: polls, isLoading, error } = useQuery('polls', fetchPolls);
 
@@ -138,7 +176,7 @@ export default function Home() {
   };
 
   const filterItems = (type: string, category: string) => {
-    const filtered = data.filter(item => {
+    const filtered = data.filter((item) => {
       if (type !== 'View All' && category !== 'View All') {
         return item.type === type && item.category === category;
       } else if (type !== 'View All') {
@@ -215,6 +253,6 @@ export default function Home() {
           })}
         </div>
       </div>
-    </div >
+    </div>
   );
 }
