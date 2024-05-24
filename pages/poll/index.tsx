@@ -2089,6 +2089,7 @@ const PollPage = () => {
                     CREDENTIALS.DevConnect.id,
                     CREDENTIALS.ZuConnectResident.id,
                     CREDENTIALS.ZuzaluResident.id,
+                    CREDENTIALS.ProtocolGuildMember.id,
                   ].includes(credential.id)
               )
               .map((credential) => {
