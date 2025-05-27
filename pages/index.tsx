@@ -4,13 +4,13 @@ import { useEffect } from "react";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
-  useEffect(() => {
+  /*useEffect(() => {
     const timer = setTimeout(() => {
       window.location.href = "https://beta.carbonvote.com";
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, []);*/
   return (
     <main
       className={`gradient-background flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
@@ -25,8 +25,7 @@ export default function Home() {
           priority
         />
         <div className="m-10 bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t lg:static lg:h-auto lg:w-auto lg:bg-none">
-          Version 2.0 is now available in beta. You will be redirected in 3
-          seconds.
+          Upgrading. Follow @carbonvote_ on X for updates
         </div>
       </div>
       <footer className="text-center text-sm text-gray-600 py-4 w-full">
