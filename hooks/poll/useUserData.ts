@@ -114,8 +114,9 @@ export function useUserData({
         };
         const scoreResponse = await fetchScore(fetchScoreData);
         const scoreData = scoreResponse.data;
-        setScore(scoreData.score);
-        return scoreData.score;
+        const scoreNumber = Number(parseFloat(scoreData.score).toFixed(4)) || 0;
+        setScore(scoreNumber);
+        return scoreNumber;
       } catch (error) {
         console.error('Error fetching Gitcoin score:', error);
         return undefined;

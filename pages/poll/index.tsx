@@ -217,9 +217,6 @@ const PollPage = () => {
       optionIndex: number | undefined,
       option_description: string
     ) => {
-      if (!hasAvailableCredential) {
-        return;
-      }
       setSelectedOptionData({
         optionId,
         optionIndex,
@@ -227,7 +224,7 @@ const PollPage = () => {
       });
       setIsPopupOpen(true);
     },
-    [hasAvailableCredential]
+    []
   );
 
   useEffect(() => {
@@ -314,7 +311,7 @@ const PollPage = () => {
     refreshEthData();
     refreshPollResults();
     checkCredentials();
-  }, [refreshPollResults, checkCredentials]);
+  }, [refreshEthData, refreshPollResults, checkCredentials]);
 
   // Generate OG image URL with timestamp for Twitter cache busting
   const ogImageUrl = useMemo(() => {
@@ -472,6 +469,8 @@ const PollPage = () => {
           onClose={handlePopupClose}
           poll={poll ?? null}
           account={account}
+          checkCredentials={checkCredentials}
+          isCredentialsLoading={isUserDataLoading}
         />
 
         <VoteProcessPopup

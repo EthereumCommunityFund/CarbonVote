@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import Image from 'next/image';
 import { HiArrowRight } from 'react-icons/hi';
@@ -8,6 +8,8 @@ import { cn } from '@/styles/cn';
 import Modal from '@/components/ui/Modal';
 import { VoteCheckIcon, XIcon } from '@/components/icons';
 import Button from '@/components/ui/buttons/Button';
+import Spinner from '@/components/ui/Spinner';
+import ConnectButton from '../credential/ConnectButton';
 
 interface CredentialItemProps {
   credential: CredentialTable;
@@ -31,7 +33,7 @@ const CredentialItem: React.FC<CredentialItemProps> = ({
       <div
         onClick={() => isAvailable && onSelectCredential(credential.id)}
         className={cn(
-          'flex items-center justify-between w-full p-[10px] rounded-[10px] gap-[10px] border border-black/10',
+          'flex items-center justify-between w-full h-[28px] px-[4px] gap-[10px] rounded-[4px]',
           'bg-transparent hover:bg-[rgba(0,0,0,0.1)]',
           !isAvailable ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
         )}
@@ -49,12 +51,15 @@ const CredentialItem: React.FC<CredentialItemProps> = ({
         </div>
         <div
           className={cn(
-            'w-[30px] h-[30px] flex items-center justify-center rounded-[5px]',
+            'w-[20px] h-[20px] flex items-center justify-center rounded-full',
             isSelected ? 'bg-black' : 'bg-[#F5F5F5]'
           )}
         >
           <div className={isSelected ? '' : 'opacity-10'}>
-            <VoteCheckIcon color={isSelected ? 'white' : 'black'} />
+            <VoteCheckIcon
+              color={isSelected ? 'white' : 'black'}
+              className="w-[12px] h-[12px]"
+            />
           </div>
         </div>
       </div>
@@ -82,6 +87,8 @@ interface VotingPopupProps {
   onClose: () => void;
   poll: Poll | null;
   account?: string;
+  checkCredentials?: () => Promise<void>;
+  isCredentialsLoading?: boolean;
 }
 
 const VotingPopup: React.FC<VotingPopupProps> = ({
@@ -98,8 +105,11 @@ const VotingPopup: React.FC<VotingPopupProps> = ({
   onClose,
   poll,
   account,
+  checkCredentials,
+  isCredentialsLoading,
 }) => {
   const currentSelectedOptionName = selectedOptionData?.option_description;
+  const [internalLoading, setInternalLoading] = useState(false);
 
   const isVoteActive = !!selectedOptionData && voteTable.length > 0;
 
@@ -162,12 +172,18 @@ const VotingPopup: React.FC<VotingPopupProps> = ({
     voteTable,
   ]);
 
+  useEffect(() => {
+    if (account && checkCredentials && userAvailableCredentials.length === 0) {
+      checkCredentials();
+    }
+  }, [account, checkCredentials, userAvailableCredentials.length]);
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       closeOnOutsideClick={false}
-      contentClassName="p-0 gap-0"
+      contentClassName="p-0 gap-0 w-[380px] max-w-[calc(85vw)] md:w-[550px]"
     >
       <div className="flex justify-between items-start p-[14px] border-b border-black/10">
         <div className="flex flex-col gap-[5px]">
@@ -176,7 +192,7 @@ const VotingPopup: React.FC<VotingPopupProps> = ({
           </p>
           <p className="text-[13px] font-[500] leading-[20px] text-black/60">
             You are voting:{' '}
-            <span className="text-[14px] font-[400] leading-[1.6] text-black">
+            <span className="text-[14px] font-[600] leading-[1.6] text-black">
               {selectedOptionData ? selectedOptionData.option_description : ''}
             </span>
           </p>
@@ -189,53 +205,74 @@ const VotingPopup: React.FC<VotingPopupProps> = ({
         </button>
       </div>
 
-      <div className="p-[20px] flex flex-col items-center gap-[20px]">
-        <p className="w-full text-[14px] leading-[1.6] text-black/80">
-          Select the credentials you want to vote with:
-        </p>
+      <div className="p-[14px] md:p-[20px] flex flex-col items-center gap-[14px] md:gap-[20px]">
+        {!account || isCredentialsLoading ? (
+          <>
+            <p className="w-full text-[16px] leading-[1.4] text-black/50 text-left">
+              Need to have an ethereum address
+            </p>
+            <div className="w-full flex justify-center">
+              <ConnectButton
+                className="h-[40px]"
+                isLoading={isCredentialsLoading}
+                label={
+                  isCredentialsLoading
+                    ? 'Checking credentials...'
+                    : 'Connect Wallet'
+                }
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            {/* <p className="w-full text-[14px] leading-[1.6] text-black/80">
+              Select the credentials you want to vote with:
+            </p> */}
 
-        <div className="w-full flex flex-col justify-end p-[10px] gap-[10px] rounded-[10px] border border-black/10">
-          <div className="flex flex-col gap-[10px]">
-            {credentialTable.map((credential) => {
-              const credentialDetail = getCredentialDetail(credential.id);
-              const isAvailable = isCredentialAvailable(credential);
-              const isSelected = voteTable.includes(credential.id);
+            <div className="w-full flex flex-col justify-end p-[10px] gap-[10px] rounded-[10px] border border-black/10">
+              <div className="flex flex-col gap-[10px]">
+                {credentialTable.map((credential) => {
+                  const credentialDetail = getCredentialDetail(credential.id);
+                  const isAvailable = isCredentialAvailable(credential);
+                  const isSelected = voteTable.includes(credential.id);
 
-              return (
-                <CredentialItem
-                  key={credential.id}
-                  credential={credential}
-                  credentialDetail={credentialDetail}
-                  isAvailable={isAvailable}
-                  isSelected={isSelected}
-                  onSelectCredential={handleCredentialSelect}
-                />
-              );
-            })}
-          </div>
-          <div className="w-full">
-            <Button
-              className="w-full rounded-[10px] border border-black/10 bg-transparent hover:bg-[#e5e5e5] px-[10px] py-[4px] cursor-pointer text-[13px] font-[600] leading-[1.7] text-black justify-center"
-              onClick={handleSelectAllClick}
-            >
-              Select All Available
-            </Button>
-          </div>
-        </div>
+                  return (
+                    <CredentialItem
+                      key={credential.id}
+                      credential={credential}
+                      credentialDetail={credentialDetail}
+                      isAvailable={isAvailable}
+                      isSelected={isSelected}
+                      onSelectCredential={handleCredentialSelect}
+                    />
+                  );
+                })}
+              </div>
+              {/* <div className="w-full">
+                <Button
+                  className="w-full rounded-[10px] border border-black/10 bg-transparent hover:bg-[#e5e5e5] px-[10px] py-[4px] cursor-pointer text-[13px] font-[600] leading-[1.7] text-black justify-center"
+                  onClick={handleSelectAllClick}
+                >
+                  Select All Available
+                </Button>
+              </div> */}
+            </div>
 
-        <div className="w-full">
-          <Button
-            className={cn(
-              'bg-[rgba(0,0,0,0.05)] hover:bg-[#e5e5e5] text-black font-[700] p-[10px] gap-[10px] text-[16px] leading-[1.2] rounded-full w-full',
-              isVoteActive ? '' : 'opacity-70 cursor-not-allowed'
-            )}
-            onClick={handleVoteClick}
-            disabled={!isVoteActive}
-          >
-            <HiArrowRight />
-            <span>Vote</span>
-          </Button>
-        </div>
+            <div className="w-full">
+              <Button
+                className={cn(
+                  'bg-[rgba(0,0,0,0.05)] hover:bg-[#e5e5e5] text-black font-[700] p-[10px] gap-[10px] text-[16px] leading-[1.2] rounded-full w-full',
+                  isVoteActive ? '' : 'opacity-70 cursor-not-allowed'
+                )}
+                onClick={handleVoteClick}
+                disabled={!isVoteActive}
+              >
+                {/* <HiArrowRight /> */}
+                <span>Confirm Vote</span>
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     </Modal>
   );

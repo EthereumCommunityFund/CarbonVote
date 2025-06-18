@@ -5,9 +5,11 @@ import { useConnectModal } from '@rainbow-me/rainbowkit';
 
 interface IButtonProps {
   onClick: () => void;
-  label: string;
   icon?: React.ReactNode;
+  label: string;
   className?: string;
+  isLoading?: boolean;
+  loadingContent?: React.ReactNode | string;
 }
 
 export const CommonButton = ({
@@ -15,6 +17,8 @@ export const CommonButton = ({
   onClick,
   className = '',
   icon,
+  isLoading,
+  loadingContent,
 }: IButtonProps) => (
   <Button
     className={cn(
@@ -22,22 +26,46 @@ export const CommonButton = ({
       className
     )}
     onClick={onClick}
+    disabled={isLoading}
   >
-    {icon}
-    <span className="text-[14px] font-[500] leading-[1.4] text-black">
-      {label}
-    </span>
+    {isLoading && loadingContent ? (
+      <div className="absolute inset-0 flex items-center justify-center">
+        {loadingContent}
+      </div>
+    ) : (
+      <div className="flex gap-[10px] items-center">
+        {icon}
+        <span className="text-[14px] font-[500] leading-[1.4] text-black">
+          {label}
+        </span>
+      </div>
+    )}
   </Button>
 );
 
-const ConnectButton = () => {
+interface IConnectButtonProps {
+  label?: string;
+  className?: string;
+  isLoading?: boolean;
+  loadingContent?: React.ReactNode | string;
+}
+
+const ConnectButton = ({
+  label = 'Connect Wallet',
+  className = '',
+  isLoading,
+  loadingContent,
+}: IConnectButtonProps) => {
   const { openConnectModal } = useConnectModal();
 
   return (
     <CommonButton
-      label="Connect Wallet"
+      label={label}
       onClick={openConnectModal!}
       icon={<CardHolderIcon width={20} height={20} />}
+      className={className}
+      isLoading={isLoading}
+      loadingContent={loadingContent}
     />
   );
 };

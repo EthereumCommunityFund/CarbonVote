@@ -1,7 +1,6 @@
 import React from 'react';
 import { Label } from '@/components/ui/Label';
 import OptionButton from '@/components/ui/buttons/OptionButton';
-import { LockIcon } from '@/components/icons/lock';
 import Image from 'next/image';
 import { copyToClipboard } from '@/utils/pollUtils';
 import { PollOptionType, SelectedOptionData } from '@/types';
@@ -86,7 +85,7 @@ const PollVotingArea: React.FC<PollVotingAreaProps> = ({
       <Label className="text-[20px] font-[700] leading-[1.6]">
         Vote on Poll
       </Label>
-      <div className={hasAvailableCredential ? 'block' : 'hidden'}>
+      <div>
         <p className="text-[16px] font-[600] leading-[1.6] text-black/70">
           This is a nested poll. You can vote with multiple credentials.
         </p>
@@ -94,11 +93,7 @@ const PollVotingArea: React.FC<PollVotingAreaProps> = ({
           Votes will be segmented by credentials
         </p>
       </div>
-      <div
-        className={`relative flex flex-col gap-[10px] ${
-          hasAvailableCredential ? 'opacity-100' : 'opacity-50'
-        }`}
-      >
+      <div className="flex flex-col gap-[10px]">
         {options && options.length > 0 ? (
           options.map((option, index) => (
             <OptionButton
@@ -122,19 +117,6 @@ const PollVotingArea: React.FC<PollVotingAreaProps> = ({
             No options available
           </div>
         )}
-        {!hasAvailableCredential && options && options.length > 0 ? (
-          <div className="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center gap-[10px] cursor-not-allowed">
-            <div className="flex items-center gap-[10px]">
-              <LockIcon className="w-[30px] h-[30px] text-black" />
-              <h3 className="text-[16px] font-[700] leading-[1.2]">
-                You Cannot Vote
-              </h3>
-            </div>
-            <p className="text-[14px] font-[600] leading-[1.4]">
-              You do not have the available credentials
-            </p>
-          </div>
-        ) : null}
       </div>
 
       {/* ETHHolding V1 */}
