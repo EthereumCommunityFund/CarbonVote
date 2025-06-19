@@ -1,0 +1,47 @@
+.filter_create_flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.filter_dropdowns {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.filter_dropdowns select {
+  padding: 10px;
+  border-radius: 10px;
+  background: #eeeeee;
+  color: #4d4d4d;
+  font-weight: 500;
+}
+
+.body_bg {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  max-width: 64%;
+  padding: 50px;
+  height: 100%;
+}
+
+@media only screen and (max-width: 425px) {
+  .body_bg {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 27px;
+    max-width: unset;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .body_bg {
+    max-width: unset;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 27px;
+  }
+}
