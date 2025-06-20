@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { ArrowLeftIcon } from '@/components/icons';
 import Button from '@/components/ui/buttons/Button';
 import CountdownTimer from '@/components/ui/CountDownTimer';
@@ -1526,7 +1526,7 @@ const PollPage = () => {
         <div>
           <Button
             className="rounded-full bg-transparent border-none shadow-none"
-            leftIcon={ArrowLeftIcon}
+            leftIcon={<ArrowLeftIcon />}
             onClick={handleBack}
           >
             Back

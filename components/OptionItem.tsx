@@ -1,8 +1,9 @@
 import React from 'react';
 import CheckerButton from '@/components/ui/buttons/CheckerButton';
+import { OptionType } from '@/types';
 
 interface OptionItemProps {
-  option: string;
+  option: OptionType;
   index: number;
   onInputChange: (index: number, event: React.ChangeEvent<HTMLInputElement>) => void;
   onRemove: (index: number) => void;

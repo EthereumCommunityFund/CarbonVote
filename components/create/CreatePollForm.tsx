@@ -1,5 +1,6 @@
 'use client';
-import React, { useMemo } from 'react';
+
+import React, { useMemo, useState, useEffect } from 'react';
 import { FiArrowLeft, FiX, FiPlus, FiArrowDown } from 'react-icons/fi';
 
 import CheckBox from '@/components/ui/CheckBox';
@@ -119,7 +120,7 @@ export const CreatePollForm: React.FC = () => {
       <div className="w-full">
         <Button
           className="rounded-full mb-[10px] sm:mb-[10px] md:mb-[20px]"
-          leftIcon={FiArrowLeft}
+          leftIcon={<FiArrowLeft />}
           onClick={handleBack}
         >
           Back
@@ -929,7 +930,7 @@ export const CreatePollForm: React.FC = () => {
         <Button
           type="button"
           className="bg-black/10 rounded-[20px] py-[10px] w-full flex items-center gap-[10px] justify-center font-['Inter'] font-semibold text-[16px] opacity-70"
-          leftIcon={FiX}
+          leftIcon={<FiX />}
           onClick={handleBack}
         >
           Discard
@@ -937,7 +938,7 @@ export const CreatePollForm: React.FC = () => {
         <Button
           onClick={handleSubmit(onSubmit)}
           className="bg-black/10 rounded-[20px] py-[10px] w-full flex items-center gap-[10px] justify-center font-['Inter'] font-semibold text-[16px] opacity-70"
-          leftIcon={PlusCircle}
+          leftIcon={<PlusCircle />}
           isLoading={isLoading}
         >
           Create Poll

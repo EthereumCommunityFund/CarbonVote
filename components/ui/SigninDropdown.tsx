@@ -42,7 +42,7 @@ export default function SigninDropdown() {
           'outline-none h-10 items-center rounded-full justify-center w-fit' +
           (isConnected ? ' p-0' : '')
         }
-        leftIcon={isConnected ? undefined : BoltIcon}
+        leftIcon={isConnected ? undefined : <BoltIcon />}
         onClick={handleClick}
         aria-controls={open ? 'signin-menu' : undefined}
         aria-haspopup="true"
