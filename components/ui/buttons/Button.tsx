@@ -69,7 +69,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           </div>
         )}
 
-        <div className={cn('flex items-center', isLoading && 'invisible')}>
+        <div
+          className={cn(
+            'flex items-center gap-[10px]',
+            isLoading && 'invisible'
+          )}
+        >
           {leftIcon && (
             <span className={cn('mr-2', classNames?.leftIcon)}>{leftIcon}</span>
           )}
