@@ -284,8 +284,7 @@ export function useUserData({
           switch (credential.id) {
             case CREDENTIALS.EthHoldingOffchain.id:
               credentialName = CREDENTIALS.EthHoldingOffchain.name;
-              const userEth = await getEthHoldings();
-              if (userEth > 0) {
+              if (accountWagmi && isConnected) {
                 isAvailable = true;
               }
               break;
@@ -419,9 +418,9 @@ export function useUserData({
     [
       accountWagmi,
       credentialTable,
-      getEthHoldings,
-      poll,
+      isConnected,
       fetchGitcoinScore,
+      poll,
       fetchPoapOwnership,
       updateCredentialWithVoteStatus,
       checkEthOnChainVoteStatus,
