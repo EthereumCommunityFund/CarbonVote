@@ -217,6 +217,7 @@ const PollPage = () => {
       optionIndex: number | undefined,
       option_description: string
     ) => {
+      setVoteTable([]);
       setSelectedOptionData({
         optionId,
         optionIndex,
