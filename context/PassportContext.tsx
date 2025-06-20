@@ -325,7 +325,7 @@ export function UserPassportContextProvider({
 
     const proofUrl = constructZupassPcdGetRequestUrl<
       typeof ZKEdDSAEventTicketPCDPackage
-    >('https://zupass.org', popupUrl, ZKEdDSAEventTicketPCDPackage.name, args, {
+    >('https://zupass.org', popupUrl, ZKEdDSAEventTicketPCDPackage.name, args as any, {
       genericProveScreen: true,
       title: 'Sign-In with Zupass',
       description: '**Select a valid ticket to hop into the zuzaverse.**',

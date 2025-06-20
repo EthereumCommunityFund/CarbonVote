@@ -1,11 +1,11 @@
 import { Popover, Button, TextField } from '@mui/material';
-import { styled } from '@mui/system';
+import { styled } from '@mui/material';
 import {
   Link as LinkIcon,
   ListBullets,
   ListNumbers,
   Quotes,
-  TextBolder,
+  TextBolderIcon as TextBolder,
   TextHOne,
   TextHThree,
   TextHTwo,
