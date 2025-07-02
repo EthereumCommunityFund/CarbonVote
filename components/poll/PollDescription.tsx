@@ -83,7 +83,7 @@ const PollDescription: React.FC<PollDescriptionProps> = ({
         )}
       </div>
 
-      <div className="pt-[20px] px-[10px] flex gap-[5px] flex-wrap items-center border-t border-black/10">
+      <div className="mt-[10px] pt-[20px] px-[10px] flex gap-[5px] flex-wrap items-center border-t border-black/10">
         <span className="text-[14px] text-black/70 font-[500] leading-[1.4]">
           Tags:
         </span>
