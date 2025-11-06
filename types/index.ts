@@ -1,0 +1,238 @@
+import type { IconType } from 'react-icons';
+
+export type OptionType = {
+  name: string;
+  color?: string;
+  index: number;
+};
+
+export interface PollStatusType {
+  closed: boolean;
+  remainingTime?: RemainingTime;
+}
+
+export interface RemainingTime {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
+
+export type CredentialType = {
+  id: string;
+  credential_name: string;
+  credential_detail: string;
+};
+
+export interface AllAggregatedDataType {
+  id: string;
+  aggregatedData: PollOptionType[];
+}
+
+export type PollOptionType = {
+  id: string;
+  pollId: string;
+  totalWeight?: number;
+  votes?: number;
+  option_description: string;
+  votersCount?: number;
+  totalEth?: string;
+  votersData?: any;
+  address?: string;
+  option_index?: number;
+};
+
+export type PollType = {
+  id: string;
+  created_at: string;
+  credentials: CredentialType[];
+  description: string;
+  options: OptionType[];
+  time_limit: number;
+  title: string;
+  voting_method: string;
+  whitelisted_addresses?: string;
+};
+
+export type Event = {
+  id: number;
+  fancy_id: string;
+  name: string;
+  description: string;
+  location_type: string;
+  city: string;
+  country: string;
+  channel: string;
+  platform: string;
+  event_url: string;
+  image_url: string;
+  animation_url: string;
+  year: number;
+  start_date: string;
+  end_date: string;
+  expiry_date: string;
+  timezone: string;
+  from_admin: boolean;
+  virtual_event: boolean;
+  event_template_id: string;
+  private_event: boolean;
+};
+
+export type PillInputs = {
+  event: Event;
+  onRemove: (id: number) => void;
+};
+
+export interface Poll {
+  id: string;
+  name: string;
+  title: string;
+  startTime: number;
+  endTime: number;
+  isLive: boolean;
+  creator: string;
+  topic: string;
+  subTopic: string;
+  description: string;
+  options: string[];
+  pollMetadata: string;
+  poap_events: number[];
+  block_number: number;
+  contractpoll_index: number[];
+  gitcoin_score: number;
+  poap_number: string;
+  ipfs_link: string;
+  whitelisted_addresses?: string;
+  created_at: string;
+  start_block_number: number;
+  end_block_number: number;
+  categories: string[];
+  tags: string[];
+  white_list: string[];
+}
+
+export interface ProcessVoteInput {
+  vote_hash: string;
+  poll_id: string;
+  option_id: string;
+  weight?: string;
+  vote_credential: string;
+  voter_identifier?: string;
+}
+
+interface PollData {
+  poap_events: string[];
+}
+
+export interface CheckPOAPOwnershipInput {
+  pollData: PollData;
+  voter_identifier: string;
+}
+
+export interface VerifySignatureInput {
+  poll_id: string;
+  option_id: string;
+  voter_identifier: string;
+  signature: string;
+}
+
+export interface VoteData {
+  id: string;
+  votes: number;
+  credential: string;
+  description: string;
+  voters_account?: string[];
+}
+
+export interface VoterData {
+  address: string;
+  balance: string;
+}
+
+export interface CredentialInfo {
+  type: string;
+  icon: IconType;
+}
+
+export interface PollResultComponentType {
+  pollType: PollTypes;
+  optionsData: VoteData[];
+  credentialTable: CredentialTable[];
+  isLoading?: boolean;
+}
+
+export interface CredentialTable {
+  credential?: string;
+  id: string;
+  identifier?: string;
+  votedOption?: string;
+  votedOptionName?: string;
+  gitscore?: number;
+  poap_events?: string[];
+  poap_number?: string;
+  endblock_number?: number;
+  subCredentials?: CredentialTable[];
+}
+
+export interface SelectedOptionData {
+  optionId: string;
+  optionIndex: number | undefined;
+  option_description: string;
+}
+
+export interface VotingProcess {
+  credentialId: string;
+  status: string;
+  contractpoll?: string;
+}
+export enum PollTypes {
+  ETH_HOLDING,
+  HEAD_COUNT,
+}
+
+export enum HeadCountCredential {
+  ZUPASS = 'Zupass Holder Results',
+  POAP = 'POAP Holder Results',
+  PROTOCOL = 'Protocol Guild Member Results',
+  GITCOIN = 'Gitcoin Passport Results',
+}
+
+export type OptionData = {
+  option_description: string;
+};
+
+export type PollRequestData = {
+  title: string;
+  description: string;
+  time_limit: number;
+  options: OptionData[];
+  credentials: string[];
+  poap_events: number[];
+  whitelisted_addresses?: string;
+};
+
+export interface FramePollData {
+  time_limit: number;
+  created_at: string;
+  title: string;
+  description: string;
+  options: PollOption[];
+  credentials: Credential[];
+  poap_events: number[];
+  gitcoin_score?: number;
+  poap_number?: number;
+  whitelisted_addresses?: string;
+}
+
+export interface Credential {
+  id: string;
+  credential_name: string;
+  credential_detail: string;
+}
+
+export interface PollOption {
+  id: string;
+  option_description: string;
+  poll_id: string;
+  votes?: any[];
+}
