@@ -25,7 +25,7 @@ export default function Home() {
           priority
         />
         <div className="m-10 bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t lg:static lg:h-auto lg:w-auto lg:bg-none">
-          Upgrading. Follow @carbonvote_ on X for updates
+          Taking you to Carbonvote 2...
         </div>
       </div>
       <footer className="text-center text-sm text-gray-600 py-4 w-full">
