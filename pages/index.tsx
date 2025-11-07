@@ -4,13 +4,13 @@ import { useEffect } from "react";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
-  /*useEffect(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
       window.location.href = "https://beta.carbonvote.com";
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, []);*/
+  }, []);
   return (
     <main
       className={`gradient-background flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
