@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "next lint --fix",
@@ -118,6 +118,7 @@
     "supabase": "^2.22.6",
     "tailwind-merge": "^2.6.0",
     "tailwind-scrollbar-hide": "^2.0.0",
+    "uuid": "^11.1.0",
     "viem": "^2.21.28",
     "wagmi": "^2.15.0",
     "yarn": "^1.22.21",

@@ -100,6 +100,8 @@ const config: Config = {
         'gradient-primary': 'linear-gradient(135deg, #ff6b6b 0%, #ffd93d 100%)',
         'gradient-secondary':
           'linear-gradient(to right, #667eea 0%, #764ba2 100%)',
+        'main-gradient':
+          'linear-gradient(to right, rgba(255, 115, 115, 1), rgba(255, 226, 226, 1))',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',

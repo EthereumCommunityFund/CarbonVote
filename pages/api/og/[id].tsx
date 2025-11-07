@@ -11,6 +11,7 @@ export const config = {
 export default async function handler(req: NextRequest) {
   try {
     const url = new URL(req.url);
+    const { origin } = url;
     let id = url.searchParams.get('id');
     const timestamp = url.searchParams.get('t'); // Support timestamp for cache busting
 
@@ -165,38 +166,52 @@ export default async function handler(req: NextRequest) {
         >
           {/* Left content area */}
           <div
-            style={{ display: 'flex', flexDirection: 'column', width: '45%' }}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              width: '45%',
+              gap: '10px',
+            }}
           >
             <div
               style={{
-                fontSize: '28px',
-                fontWeight: 'bold',
-                color: '#FF5353',
-                marginBottom: '20px',
+                height: '32px',
+                width: '100%',
                 display: 'flex',
                 alignItems: 'center',
+                gap: '5px',
+                marginBottom: '20px',
               }}
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`${origin}/favicon-32x32.png`}
+                alt="Carbonvote Logo"
+                width="32"
+                height="32"
+                style={{
+                  width: '32px',
+                  height: '32px',
+                }}
+              />
               <div
                 style={{
-                  width: '30px',
-                  height: '30px',
-                  borderRadius: '50%',
-                  background:
-                    'linear-gradient(49.41deg, #FF7373 -45.09%, #FF5353 43.62%)',
-                  marginRight: '10px',
+                  fontSize: '28px',
+                  color: 'rgba(248, 74, 74, 1)',
+                  display: 'flex',
+                  fontWeight: '1000',
                 }}
-              ></div>
-              Carbonvote.com
+              >
+                Carbonvote.com
+              </div>
             </div>
 
             {/* Poll title */}
             <div
               style={{
                 fontSize: '32px',
-                fontWeight: 'bold',
-                marginBottom: '20px',
-                color: '#333',
+                fontWeight: '1200',
+                color: 'rgba(0, 0, 0, 1)',
                 display: 'flex',
               }}
             >
